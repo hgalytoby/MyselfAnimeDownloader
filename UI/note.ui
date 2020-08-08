@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Note</class>
+ <widget class="QWidget" name="Note">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>345</width>
+    <height>200</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>注意事項</string>
+  </property>
+  <widget class="QLabel" name="note_label">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>341</width>
+     <height>141</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>慢速: 1 次 1 個連接
+一般: 1 次 3 個連接
+高速: 1 次 8 個連接
+星爆: 1 次 16 個連接
+
+連接值越高吃的網速就越多。
+同時下載數量越高，記憶體與網速就吃越多。</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="confirm_pushButton">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>160</y>
+     <width>71</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton{
+background-color:#dedede;
+border-radius:6px
+}
+QPushButton:hover {
+background-color:#aaaa7f;
+color: #ffffff;
+}
+QPushButton:pressed{
+background-color:#dedede;
+color: #000000;
+}</string>
+   </property>
+   <property name="text">
+    <string>確定</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

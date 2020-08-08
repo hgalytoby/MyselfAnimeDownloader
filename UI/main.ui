@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1021</width>
-    <height>439</height>
+    <height>570</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,7 @@
       <x>10</x>
       <y>10</y>
       <width>1001</width>
-      <height>401</height>
+      <height>405</height>
      </rect>
     </property>
     <property name="font">
@@ -28,11 +28,14 @@
       <pointsize>12</pointsize>
      </font>
     </property>
+    <property name="whatsThis">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
     <property name="styleSheet">
      <string notr="true">QTabWidget:pane {border-top:0px solid #e8f3f9;background: transparent; }</string>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="week_page">
      <attribute name="title">
@@ -53,9 +56,14 @@
          <attribute name="title">
           <string>一</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_4">
+         <layout class="QGridLayout" name="monday_gridLayout">
           <item row="0" column="0">
            <widget class="QScrollArea" name="Monday_scrollArea">
+            <property name="font">
+             <font>
+              <pointsize>16</pointsize>
+             </font>
+            </property>
             <property name="frameShape">
              <enum>QFrame::NoFrame</enum>
             </property>
@@ -68,7 +76,7 @@
                <x>0</x>
                <y>0</y>
                <width>965</width>
-               <height>309</height>
+               <height>313</height>
               </rect>
              </property>
             </widget>
@@ -80,7 +88,7 @@
          <attribute name="title">
           <string>二</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_5">
+         <layout class="QGridLayout" name="tuesday_gridLayout">
           <item row="0" column="0">
            <widget class="QScrollArea" name="Tuesday_scrollArea">
             <property name="frameShape">
@@ -95,7 +103,7 @@
                <x>0</x>
                <y>0</y>
                <width>965</width>
-               <height>309</height>
+               <height>313</height>
               </rect>
              </property>
             </widget>
@@ -107,7 +115,7 @@
          <attribute name="title">
           <string>三</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_3">
+         <layout class="QGridLayout" name="wednesday_gridLayout">
           <item row="0" column="0">
            <widget class="QScrollArea" name="Wednesday_scrollArea">
             <property name="frameShape">
@@ -122,7 +130,7 @@
                <x>0</x>
                <y>0</y>
                <width>965</width>
-               <height>309</height>
+               <height>313</height>
               </rect>
              </property>
             </widget>
@@ -134,7 +142,7 @@
          <attribute name="title">
           <string>四</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_6">
+         <layout class="QGridLayout" name="thursday_gridLayout">
           <item row="0" column="0">
            <widget class="QScrollArea" name="Thursday_scrollArea">
             <property name="frameShape">
@@ -149,7 +157,7 @@
                <x>0</x>
                <y>0</y>
                <width>965</width>
-               <height>309</height>
+               <height>313</height>
               </rect>
              </property>
             </widget>
@@ -161,7 +169,7 @@
          <attribute name="title">
           <string>五</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_7">
+         <layout class="QGridLayout" name="friday_gridLayout">
           <item row="0" column="0">
            <widget class="QScrollArea" name="Friday_scrollArea">
             <property name="frameShape">
@@ -176,7 +184,7 @@
                <x>0</x>
                <y>0</y>
                <width>965</width>
-               <height>309</height>
+               <height>313</height>
               </rect>
              </property>
             </widget>
@@ -188,7 +196,7 @@
          <attribute name="title">
           <string>六</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_8">
+         <layout class="QGridLayout" name="staurday_gridLayout">
           <item row="0" column="0">
            <widget class="QScrollArea" name="Staurday_scrollArea">
             <property name="frameShape">
@@ -203,7 +211,7 @@
                <x>0</x>
                <y>0</y>
                <width>965</width>
-               <height>309</height>
+               <height>313</height>
               </rect>
              </property>
             </widget>
@@ -215,7 +223,7 @@
          <attribute name="title">
           <string>日</string>
          </attribute>
-         <layout class="QGridLayout" name="gridLayout_9">
+         <layout class="QGridLayout" name="sunday_gridLayout">
           <item row="0" column="0">
            <widget class="QScrollArea" name="Sunday_scrollArea">
             <property name="frameShape">
@@ -230,7 +238,7 @@
                <x>0</x>
                <y>0</y>
                <width>965</width>
-               <height>309</height>
+               <height>313</height>
               </rect>
              </property>
             </widget>
@@ -539,11 +547,110 @@ p, li { white-space: pre-wrap; }
       </item>
      </layout>
     </widget>
-    <widget class="QWidget" name="tab_2">
+    <widget class="QWidget" name="download_page">
+     <property name="whatsThis">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;123&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <attribute name="title">
-      <string>Tab 2</string>
+      <string>下載列表</string>
      </attribute>
+     <layout class="QGridLayout" name="down_list_gridLayout">
+      <item row="0" column="0">
+       <widget class="QTableWidget" name="download_tableWidget">
+        <property name="gridStyle">
+         <enum>Qt::NoPen</enum>
+        </property>
+        <property name="sortingEnabled">
+         <bool>false</bool>
+        </property>
+        <attribute name="horizontalHeaderCascadingSectionResizes">
+         <bool>false</bool>
+        </attribute>
+        <column>
+         <property name="text">
+          <string>名稱</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>狀態</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>進度</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+     </layout>
     </widget>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>470</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+      <underline>false</underline>
+     </font>
+    </property>
+    <property name="whatsThis">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="text">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:16pt; color:#ff007f;&quot;&gt;12&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QProgressBar" name="progressBar">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
+      <y>460</y>
+      <width>118</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>8</number>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+    <property name="textVisible">
+     <bool>true</bool>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+    <property name="textDirection">
+     <enum>QProgressBar::BottomToTop</enum>
+    </property>
+    <property name="format">
+     <string>%p%</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>440</y>
+      <width>251</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout"/>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

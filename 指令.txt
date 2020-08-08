@@ -1,0 +1,4 @@
+pyuic5 -o .\UI\main_ui.py .\UI\main.ui
+pyuic5 -o .\UI\config_ui.py .\UI\config.ui
+pyuic5 -o .\UI\save_ui.py .\UI\save.ui
+pyuic5 -o .\UI\note_ui.py .\UI\note.ui

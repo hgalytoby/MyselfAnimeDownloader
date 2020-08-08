@@ -2,35 +2,79 @@ import os
 import sys
 import json
 import time
-import shutil
 import random
 import datetime
 import requests
+from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures import ThreadPoolExecutor
 from UI.main_ui import Ui_Anime
 from UI.config_ui import Ui_Config
+from UI.save_ui import Ui_Save
+from UI.note_ui import Ui_Note
 from bs4 import BeautifulSoup
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtCore, QtWidgets, QtGui, QtWebEngineWidgets
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36'}
+
+
+def render(url):
+    """Fully render HTML, JavaScript and all."""
+
+    class Render(QtWebEngineWidgets.QWebEngineView):
+        def __init__(self, url):
+            self.html = None
+            self.app = QtWidgets.QApplication(sys.argv)
+            QtWebEngineWidgets.QWebEngineView.__init__(self)
+            self.loadFinished.connect(self._loadFinished)
+            self.load(QtCore.QUrl(url))
+            while self.html is None:
+                self.app.processEvents(
+                    QtCore.QEventLoop.ExcludeUserInputEvents | QtCore.QEventLoop.ExcludeSocketNotifiers | QtCore.QEventLoop.WaitForMoreEvents)
+            self.app.quit()
+
+        def _callable(self, data):
+            if not os.path.isfile('html.json'):
+                json.dump({url: data}, open('html.json', 'w', encoding='utf-8'), indent=2)
+            else:
+                result = json.load(open('html.json', 'r', encoding='utf-8'))
+                result.update({url: data})
+                json.dump(result, open('html.json', 'w', encoding='utf-8'), indent=2)
+            self.html = data
+
+        def _loadFinished(self, result):
+            self.page().toHtml(self._callable)
+
+    return Render(url).html
 
 
 class Anime(QtWidgets.QMainWindow, Ui_Anime):
     def __init__(self):
         super(Anime, self).__init__()
         self.setupUi(self)
-        self.res = requests.Session()
+        json.dump({}, open('html.json', 'w', encoding='utf-8'))
         self.video_data = dict()
         self.week_data()
         self.mouseHoverOnTabBar()
         self.anime_page_Visible()
+        self.pushbutton_hand()
         self.setFixedSize(self.width(), self.height())
         self.story_checkbox_dict = dict()
         self.menu.actions()[0].triggered.connect(self.config)
         self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
         self.download_pushbutton.clicked.connect(self.download_anime)
         self.download_anime_Thread = dict()
+        self.download_count = 0
+        self.download_progressBar_dict = dict()
+        self.download_status_label_dict = dict()
+        self.download_tableWidget.setColumnWidth(0, 400)
+        self.download_tableWidget.setColumnWidth(1, 150)
+        # self.download_tableWidget.setColumnWidth(2, 431)
+        self.download_tableWidget.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+
+    def pushbutton_hand(self):
+        self.story_list_all_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.download_pushbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 
     def download_anime(self):
         for i in self.story_checkbox_dict:
@@ -38,16 +82,31 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 data = json.loads(self.story_checkbox_dict[i].objectName())
                 anime = data['data']['name'] + data['data']['num']
                 if anime not in self.download_anime_Thread:
-                    print('in')
+                    self.download_tableWidget.setRowCount(self.download_count + 1)
+                    name = QtWidgets.QTableWidgetItem(f"{data['data']['name']}　　{data['data']['num']}")
+                    status = QtWidgets.QTableWidgetItem('準備中')
+                    self.download_progressBar_dict.update({anime: QtWidgets.QProgressBar()})
+                    self.download_progressBar_dict[anime].setValue(0)
+                    self.download_progressBar_dict[anime].setAlignment(QtCore.Qt.AlignCenter)
+                    self.download_status_label_dict.update({anime: status})
+                    self.download_status_label_dict[anime].setTextAlignment(QtCore.Qt.AlignCenter)
+                    self.download_tableWidget.setItem(self.download_count, 0, name)
+                    self.download_tableWidget.setItem(self.download_count, 1, status)
+                    self.download_tableWidget.setCellWidget(self.download_count, 2,
+                                                            self.download_progressBar_dict[anime])
+                    self.download_count += 1
                     self.download_anime_Thread[anime] = Download_Video(data=data)
                     self.download_anime_Thread[anime].download_video.connect(self.download_anime_task)
                     self.download_anime_Thread[anime].start()
 
     def download_anime_task(self, signal):
-        print('完成度', '%.2f' % signal["success"], '%')
-        if signal['success'] == 100 and self.download_anime_Thread[signal['td']].ok is True:
-            # del self.download_anime_Thread[signal['td']]
-            self.download_anime_Thread[signal['td']].terminate()
+        if int(signal['success']) == 100 and signal['status']:
+            self.download_status_label_dict[signal['name']].setText('已完成')
+            self.download_progressBar_dict[signal['name']].setValue(100)
+            self.download_anime_Thread[signal['name']].terminate()
+        else:
+            self.download_status_label_dict[signal['name']].setText('下載中')
+            self.download_progressBar_dict[signal['name']].setValue(signal["success"] - 1)
 
     def config(self):
         self.config_windows = Config()
@@ -118,8 +177,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                          "color: black;\n"
                                          " }\n"
                                          )
+                anime_name.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
                 anime_name.clicked.connect(self.week_button_event)
-                update_num = QtWidgets.QLabel(f'<span style=\"{signal[i][m]["color"]}\">{signal[i][m]["update"]}')
+                update_num = QtWidgets.QLabel(
+                    f'<span style=\" font-size:16pt; {signal[i][m]["color"]}\">{signal[i][m]["update"]}')
                 update_num.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
                 form_layout.addRow(anime_name, update_num)
             week[i].setLayout(form_layout)
@@ -128,6 +189,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         sender = self.sender()
         pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
         url = pushButton.objectName()
+        executor = ProcessPoolExecutor(max_workers=1)
+        executor.submit(render, url)
         self.anime_info = Anime_info(url=url)
         self.anime_info.anime_info_signal.connect(self.anime_info_data)
         self.anime_info.start()
@@ -177,51 +240,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 return True
         return super().eventFilter(obj, event)
 
-    def get_m3u8(self):
-        pass
-
-    # def get_video_url(self):
-    #     # url = 'https://myself-bbs.com/thread-45388-1-1.html'
-    #     res = 'https://v.myself-bbs.com/vpx/45388/001/'
-    #     m3u8_url = 'https://vpx57.myself-bbs.com/45388/001/720p.m3u8'
-    #     res = self.res.get(url=res, headers=self.headers).json()
-    #     host = sorted(res['host'], key=lambda i: i.get('weight'), reverse=True)
-    #     m3u8_data = self.res.get(url=host[0]['host'] + res['video']['720p'], headers=self.headers).text
-    #     m3u8_count = m3u8_data.count('EXTINF')
-    #     'https://vpx57.myself-bbs.com/45388/001/720p_003.ts'
-    #     task = list()
-    #     print(m3u8_count)
-    #     for i in range(m3u8_count):
-    #         video = f"{host[0]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
-    #         threading.Thread(target=self.download_video, args=(i, video)).start()
-    #     while True:
-    #         if len(self.video_data) == m3u8_count:
-    #             break
-    #         time.sleep(1)
-    #         print(len(self.video_data))
-    #     for i in range(m3u8_count):
-    #         with open('test.mp4', 'ab') as v:
-    #             v.write(self.video_data[i])
-
-        # v.write(data)
-
-    # print(self.video_data)
-    # data = self.res.get(url=video, headers=self.headers).content
-    # print(data)
-    # with open('test.mp4', 'ab') as v:
-    #     v.write(data)
-    # task.append(f"{host[0]['host']}{res['video']['720p'].split('.')[0]}{i:03d}.ts")
-
-    # print(res, res.count('EXTINF'))
-
-    # html = BeautifulSoup(res, features='lxml')
-    # for i in html.find_all('ul', class_='main_list'):
-    #     print(i)
-
-    # print(url)
-    # with open('test.mp4', 'ab') as v:
-    #     v.write(data)
-
 
 class Week_data_signal(QtCore.QThread):
     week_data_signal = QtCore.pyqtSignal(dict)
@@ -256,17 +274,29 @@ class Anime_info(QtCore.QThread):
         self.url = url
 
     def run(self):
-        res = requests.get(url=self.url, headers=headers).text
+        while True:
+            try:
+                data = json.load(open('html.json', 'r', encoding='utf-8'))
+                if self.url in data:
+                    res = data[self.url]
+                    break
+                time.sleep(1)
+            except json.decoder.JSONDecodeError:
+                time.sleep(1)
+
+        # res = self.html.render(url=self.url)
         html = BeautifulSoup(res, features='lxml')
         data = dict()
         for i in html.find_all('ul', class_='main_list'):
             total = dict()
-            for j, m in enumerate(i.find_all('a')):
-                if j % 2 == 0:
-                    title = m.text
-                else:
-                    url = str(m.attrs['data-href']).replace('player/play', 'vpx').replace('\r', '')
-                    total.update({title: url})
+            title = list()
+            for j in i.find_all('a', href="javascript:;"):
+                title.append(j.text)
+            for j, m in enumerate(i.find_all('ul', class_="display_none")):
+                for k in m.find_all('a'):
+                    if k.text == '站內':
+                        url = str(k['data-href']).replace('player/play', 'vpx').replace('\n', '').replace('\r', '')
+                        total.update({title[j]: url})
             data.update({'total': total})
         for i in html.find_all('div', class_='info_info'):
             for j, m in enumerate(i.find_all('li')):
@@ -284,7 +314,7 @@ class Anime_info(QtCore.QThread):
         for i in html.find_all('div', class_='z'):
             for j, m in enumerate(i.find_all('a')):
                 if j == 4:
-                    data.update({'name': m.text})
+                    data.update({'name': m.text.split('【')[0]})
         self.anime_info_signal.emit(data)
 
 
@@ -296,8 +326,10 @@ class Download_Video(QtCore.QThread):
         self.data = data
         self.video_data = dict()
         self.ban = '//:*?"<>|.'
-        self.td = dict()
-        self.ok = False
+        self.result = dict()
+        self.folder_name = self.badname(self.data['data']['name'])
+        self.file_name = self.badname(self.data['data']['num'])
+        self.path = json.load(open('config.json', 'r', encoding='utf-8'))
 
     def badname(self, name):
         for i in self.ban:
@@ -305,15 +337,14 @@ class Download_Video(QtCore.QThread):
         return name.strip()
 
     def run(self):
+        if not os.path.isdir(f'{self.path["path"]}/{self.folder_name}'):
+            os.mkdir(f'{self.path["path"]}/{self.folder_name}')
         res = requests.get(url=self.data['data']['url'], headers=headers)
-        print(res.json())
         while True:
             if res:
                 break
             time.sleep(5)
         res = res.json()
-        # print(res)
-        # host = sorted(res['host'], key=lambda i: i.get('weight'), reverse=True)
         host = res['host']
         m3u8_data = requests.get(url=host[0]['host'] + res['video']['720p'], headers=headers)
         while True:
@@ -328,22 +359,20 @@ class Download_Video(QtCore.QThread):
         while True:
             if len(self.video_data) == m3u8_count:
                 break
-            time.sleep(5)
-            result = {'success': (len(self.video_data) / m3u8_count * 100),
-                      'td': self.data["data"]["name"] + self.data["data"]["num"]}
-            self.download_video.emit(result)
+            time.sleep(1)
+            self.result.update({'success': int((len(self.video_data) / m3u8_count * 100)),
+                      'name': self.data["data"]["name"] + self.data["data"]["num"],
+                      'status': False})
+            self.download_video.emit(self.result)
             print(f'{self.data["data"]["name"] + self.data["data"]["num"]} 目標:{m3u8_count} 當前:{len(self.video_data)}')
         self.write_video(m3u8_count)
         del self.video_data
-        self.ok = True
+        self.result['status'] = True
+        self.download_video.emit(self.result)
 
     def write_video(self, m3u8_count):
-        folder_name = self.badname(self.data['data']['name'])
-        file_name = self.badname(self.data['data']['num'])
-        if not os.path.isdir(folder_name):
-            os.mkdir(folder_name)
         for i in range(m3u8_count):
-            with open(f'{folder_name}/{file_name}.mp4', 'ab') as v:
+            with open(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4', 'ab') as v:
                 v.write(self.video_data[i])
 
     def video(self, i, res, host):
@@ -370,25 +399,56 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         self.browse_pushButton.clicked.connect(self.download_path)
         self.save_pushButton.clicked.connect(self.save_config)
         self.cancel_pushButton.clicked.connect(self.exit)
+        self.note_pushButton.clicked.connect(self.note_event)
         self.setFixedSize(self.width(), self.height())
 
     def config(self):
         if not os.path.isfile('config.json'):
-            json.dump({'path': ''}, open('config.json', 'w', encoding='utf-8'))
+            json.dump({'path': ''}, open('config.json', 'w', encoding='utf-8'), indent=2)
         else:
             config = json.load(open('config.json', 'r', encoding='utf-8'))
             self.download_path_lineEdit.setText(config['path'])
 
     def save_config(self):
         path = self.download_path_lineEdit.text()
-        json.dump({'path': path}, open('config.json', 'w', encoding='utf-8'))
+        json.dump({'path': path}, open('config.json', 'w', encoding='utf-8'), indent=2)
+        self.save = Save(config=self)
+        self.save.show()
 
     def download_path(self):
-        download_path = QtWidgets.QFileDialog.getExistingDirectory(self, "選取資料夾")
+        download_path = QtWidgets.QFileDialog.getExistingDirectory(self, "選取資料夾", self.download_path_lineEdit.text())
         self.download_path_lineEdit.setText(download_path)
+
+    def note_event(self):
+        self.note_windows = Note()
+        self.note_windows.show()
 
     def exit(self):
         self.close()
+
+
+class Save(QtWidgets.QMainWindow, Ui_Save):
+    def __init__(self, config):
+        super(Save, self, ).__init__()
+        self.setupUi(self)
+        self.setFixedSize(self.width(), self.height())
+        self.confirm_pushButton.clicked.connect(self.confirm)
+        self.config = config
+
+    def confirm(self):
+        self.close()
+        self.config.close()
+
+class Note(QtWidgets.QMainWindow, Ui_Note):
+    def __init__(self):
+        super(Note, self, ).__init__()
+        self.setupUi(self)
+        self.setFixedSize(self.width(), self.height())
+        self.confirm_pushButton.clicked.connect(self.confirm)
+
+    def confirm(self):
+        self.close()
+
 
 
 if __name__ == '__main__':
