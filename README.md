@@ -6,9 +6,10 @@
 ## 運行
 安裝 requirements.txt <br>
 `
-pip install -r -requirements.text
-執行 main.py 即可
+pip install -r -requirements.txt
 `
+<br>
+執行 main.py <br>
 
 ## 問題<br>
 網頁上的 source 碼 與 requests.get後的結果。<br>
@@ -23,6 +24,7 @@ res = requests.get(url=url, headers=headers)
 print(res.text)
 ```
 發現沒辦法取得到圖上紅框的 url。<br>
+接著我有將 header 加入更多的參數，以及丟cookies，依然沒有辦法取得URL。<br>
 但我發現每個 url 都是有規則的!，所以當下覺得抓不到也沒關係自己寫規則出來即可。<br>
 ```
 第 01 話  https://v.myself-bbs.com/player/play/43773/001
@@ -34,7 +36,7 @@ print(res.text)
 ![image](https://i.imgur.com/88FrgLG.png)
 有些動漫有OVA、OAD以及有些動漫並沒有按照第1話001、第二話002的規矩。<br>
 結論是一定得爬網頁上的 URL ! <br>
-接著我用 Firefox 觀察網址碼<br><br>
+接著我用 Firefox 觀察網址碼。<br><br>
 點擊前
 ![image](https://i.imgur.com/qYxUiRs.png)
 
@@ -42,7 +44,7 @@ print(res.text)
 ![image](https://i.imgur.com/XSy5D2z.png)
 發現網站是執行 javascript 後才能看到URL。<br>
 我在Network 沒發現 json 檔的請求網址。<br>
-之後用搜尋的方式，只有在原始網能找到<br><br>
+之後用搜尋的方式，只有在原始網能找到。<br><br>
 ![image](https://i.imgur.com/w8YZk3x.png)
 
 ## 解決問題
@@ -69,8 +71,9 @@ print(html)
 最後我選擇使用 Selenium 套件，此套件是我最初最後的選擇，因為使用者對應自己的瀏覽器下載驅動。<br>
 Firefox，其下載地址是：https://github.com/mozilla/geckodriver/releases <br>
 chrome，其下載地址是：https://chromedriver.chromium.org/downloads <br>
-當我將 Selenium 與我的程式碼串接後，我發現了可以用 PyQt 內的瀏覽器，幫我取得網頁碼!<br>
-參考網址: 
+當我將 Selenium 與我的程式碼串接後，我發現了可以用 PyQt 內的瀏覽器，幫我取得網頁碼<br>
+參考網址: <br>
 1. https://stackoverflow.com/questions/37754138/how-to-render-html-with-pyqt5s-qwebengineview <br>
 2. https://stackoverflow.com/questions/57813303/how-to-get-html-of-a-page-loaded-in-qwebengineview <br>
-最終我捨棄了 Selenium 套件，並將兩個網址的程式碼套到我的程式裡面，並可選擇要使用哪個方法! <br>
+## 結論
+最終我捨棄了 Selenium 套件，使用兩個網址的程式碼並套到我的程式裡面，並可選擇要使用哪個方法！ <br>
