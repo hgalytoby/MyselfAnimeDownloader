@@ -280,7 +280,7 @@ color: #000000;
    <widget class="QLabel" name="simultaneous_download_label">
     <property name="geometry">
      <rect>
-      <x>430</x>
+      <x>460</x>
       <y>27</y>
       <width>131</width>
       <height>21</height>
@@ -301,9 +301,9 @@ color: #000000;
    <widget class="QLineEdit" name="simultaneous_download_lineEdit">
     <property name="geometry">
      <rect>
-      <x>560</x>
+      <x>580</x>
       <y>28</y>
-      <width>71</width>
+      <width>51</width>
       <height>20</height>
      </rect>
     </property>
@@ -314,6 +314,12 @@ color: #000000;
     </property>
     <property name="toolTip">
      <string>輸入數字</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QPushButton" name="note_pushButton">

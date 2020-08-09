@@ -13,10 +13,21 @@
   <property name="windowTitle">
    <string>Anime Download</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"> QMenu::item {
+padding: 2px 20px 2px 30px;
+width: 15px; 
+}
+ QMenu::icon {
+padding-left: 20px;
+width: 40px;     
+height: 40px;
+}</string>
+  </property>
   <property name="iconSize">
    <size>
-    <width>100</width>
-    <height>100</height>
+    <width>24</width>
+    <height>24</height>
    </size>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -633,6 +644,17 @@ p, li { white-space: pre-wrap; }
     <addaction name="menu_exit"/>
    </widget>
    <addaction name="menu"/>
+  </widget>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
   </widget>
   <action name="menu_config">
    <property name="icon">

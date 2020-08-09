@@ -1,4 +1,8 @@
 {
   "path": "I:/myself",
-  "speed": "genera"
+  "speed": {
+    "type": "starburst",
+    "value": 16
+  },
+  "simultaneous": 1
 }

@@ -15,7 +15,16 @@ class Ui_Anime(object):
     def setupUi(self, Anime):
         Anime.setObjectName("Anime")
         Anime.resize(1020, 440)
-        Anime.setIconSize(QtCore.QSize(100, 100))
+        Anime.setStyleSheet(" QMenu::item {\n"
+"padding: 2px 20px 2px 30px;\n"
+"width: 15px; \n"
+"}\n"
+" QMenu::icon {\n"
+"padding-left: 20px;\n"
+"width: 40px;     \n"
+"height: 40px;\n"
+"}")
+        Anime.setIconSize(QtCore.QSize(24, 24))
         self.centralwidget = QtWidgets.QWidget(Anime)
         self.centralwidget.setObjectName("centralwidget")
         self.anime_info_tabWidget = QtWidgets.QTabWidget(self.centralwidget)
@@ -282,6 +291,9 @@ class Ui_Anime(object):
         self.menu.setFont(font)
         self.menu.setObjectName("menu")
         Anime.setMenuBar(self.menubar)
+        self.toolBar = QtWidgets.QToolBar(Anime)
+        self.toolBar.setObjectName("toolBar")
+        Anime.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
         self.menu_config = QtWidgets.QAction(Anime)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(".\\UI\\../image/config.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -350,6 +362,7 @@ class Ui_Anime(object):
         item.setText(_translate("Anime", "進度"))
         self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.download_page), _translate("Anime", "下載列表"))
         self.menu.setTitle(_translate("Anime", "設定"))
+        self.toolBar.setWindowTitle(_translate("Anime", "toolBar"))
         self.menu_config.setText(_translate("Anime", "設定"))
         self.menu_exit.setText(_translate("Anime", "離開"))
         self.menu_about.setText(_translate("Anime", "關於"))
