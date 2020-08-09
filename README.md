@@ -1,7 +1,7 @@
 # Myself_Anime
 ## 瀏覽
 
-![image](https://i.imgur.com/XStl1vg.gif)
+![image](https://i.imgur.com/rHrIvj9.gif)
 
 ## 運行
 安裝 requirements.txt <br>
