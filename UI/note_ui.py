@@ -26,6 +26,7 @@ class Ui_Note(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.confirm_pushButton.setFont(font)
+        self.confirm_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.confirm_pushButton.setStyleSheet("QPushButton{\n"
 "background-color:#dedede;\n"
 "border-radius:6px\n"

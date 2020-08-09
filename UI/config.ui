@@ -49,6 +49,9 @@ color: #000000;
      <pointsize>12</pointsize>
     </font>
    </property>
+   <property name="cursor">
+    <cursorShape>PointingHandCursor</cursorShape>
+   </property>
    <property name="toolTip">
     <string>儲存</string>
    </property>
@@ -69,6 +72,9 @@ color: #000000;
     <font>
      <pointsize>12</pointsize>
     </font>
+   </property>
+   <property name="cursor">
+    <cursorShape>PointingHandCursor</cursorShape>
    </property>
    <property name="toolTip">
     <string>取消</string>
@@ -149,6 +155,9 @@ color: #000000;
      <font>
       <pointsize>12</pointsize>
      </font>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
     </property>
     <property name="toolTip">
      <string>瀏覽</string>
@@ -321,6 +330,9 @@ color: #000000;
       <pointsize>12</pointsize>
       <underline>true</underline>
      </font>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
     </property>
     <property name="toolTip">
      <string>重要事項</string>

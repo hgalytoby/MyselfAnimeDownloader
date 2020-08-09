@@ -29,6 +29,7 @@ class Ui_Save(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.confirm_pushButton.setFont(font)
+        self.confirm_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.confirm_pushButton.setObjectName("confirm_pushButton")
 
         self.retranslateUi(Save)

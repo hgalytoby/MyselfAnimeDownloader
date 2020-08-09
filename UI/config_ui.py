@@ -36,12 +36,14 @@ class Ui_Config(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.save_pushButton.setFont(font)
+        self.save_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.save_pushButton.setObjectName("save_pushButton")
         self.cancel_pushButton = QtWidgets.QPushButton(Config)
         self.cancel_pushButton.setGeometry(QtCore.QRect(570, 190, 71, 31))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.cancel_pushButton.setFont(font)
+        self.cancel_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.cancel_pushButton.setObjectName("cancel_pushButton")
         self.general_groupBox = QtWidgets.QGroupBox(Config)
         self.general_groupBox.setGeometry(QtCore.QRect(10, 20, 641, 71))
@@ -66,6 +68,7 @@ class Ui_Config(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.browse_pushButton.setFont(font)
+        self.browse_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.browse_pushButton.setStyleSheet("")
         self.browse_pushButton.setObjectName("browse_pushButton")
         self.download_groupBox = QtWidgets.QGroupBox(Config)
@@ -118,6 +121,7 @@ class Ui_Config(object):
         font.setPointSize(12)
         font.setUnderline(True)
         self.note_pushButton.setFont(font)
+        self.note_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.note_pushButton.setStyleSheet("QPushButton{\n"
 "background: transparent;\n"
 "border-radius:6px;\n"

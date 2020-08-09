@@ -13,6 +13,12 @@
   <property name="windowTitle">
    <string>Anime Download</string>
   </property>
+  <property name="iconSize">
+   <size>
+    <width>100</width>
+    <height>100</height>
+   </size>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTabWidget" name="anime_info_tabWidget">
     <property name="geometry">
@@ -28,6 +34,9 @@
       <pointsize>12</pointsize>
      </font>
     </property>
+    <property name="cursor">
+     <cursorShape>ArrowCursor</cursorShape>
+    </property>
     <property name="whatsThis">
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
@@ -38,6 +47,9 @@
      <number>0</number>
     </property>
     <widget class="QWidget" name="week_page">
+     <property name="cursor">
+      <cursorShape>ArrowCursor</cursorShape>
+     </property>
      <attribute name="title">
       <string>更新表</string>
      </attribute>
@@ -437,6 +449,9 @@ border-radius:6px
            <pointsize>16</pointsize>
           </font>
          </property>
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
+         </property>
          <property name="styleSheet">
           <string notr="true">QPushButton{
 background-color:#dedede;
@@ -501,6 +516,9 @@ color: #000000;
           <font>
            <pointsize>16</pointsize>
           </font>
+         </property>
+         <property name="cursor">
+          <cursorShape>PointingHandCursor</cursorShape>
          </property>
          <property name="styleSheet">
           <string notr="true">QPushButton{
@@ -619,7 +637,7 @@ p, li { white-space: pre-wrap; }
   <action name="menu_config">
    <property name="icon">
     <iconset>
-     <normaloff>../image/config.png</normaloff>../image/config.png</iconset>
+     <normaloff>../image/config.ico</normaloff>../image/config.ico</iconset>
    </property>
    <property name="text">
     <string>設定</string>
@@ -629,11 +647,17 @@ p, li { white-space: pre-wrap; }
      <pointsize>12</pointsize>
     </font>
    </property>
+   <property name="menuRole">
+    <enum>QAction::TextHeuristicRole</enum>
+   </property>
+   <property name="priority">
+    <enum>QAction::NormalPriority</enum>
+   </property>
   </action>
   <action name="menu_exit">
    <property name="icon">
     <iconset>
-     <normaloff>../image/exit.png</normaloff>../image/exit.png</iconset>
+     <normaloff>../image/exit.ico</normaloff>../image/exit.ico</iconset>
    </property>
    <property name="text">
     <string>離開</string>
@@ -642,7 +666,7 @@ p, li { white-space: pre-wrap; }
   <action name="menu_about">
    <property name="icon">
     <iconset>
-     <normaloff>../image/about.png</normaloff>../image/about.png</iconset>
+     <normaloff>../image/about.ico</normaloff>../image/about.ico</iconset>
    </property>
    <property name="text">
     <string>關於</string>
