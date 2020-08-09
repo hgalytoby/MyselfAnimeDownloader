@@ -5,6 +5,7 @@ import time
 import random
 import datetime
 import requests
+import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures import ThreadPoolExecutor
 from UI.main_ui import Ui_Anime
@@ -18,55 +19,26 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36'}
 
 
-def render(url):
-    """Fully render HTML, JavaScript and all."""
-
-    class Render(QtWebEngineWidgets.QWebEngineView):
-        def __init__(self, url):
-            self.html = None
-            self.app = QtWidgets.QApplication(sys.argv)
-            QtWebEngineWidgets.QWebEngineView.__init__(self)
-            self.loadFinished.connect(self._loadFinished)
-            self.load(QtCore.QUrl(url))
-            while self.html is None:
-                self.app.processEvents(
-                    QtCore.QEventLoop.ExcludeUserInputEvents | QtCore.QEventLoop.ExcludeSocketNotifiers | QtCore.QEventLoop.WaitForMoreEvents)
-            self.app.quit()
-
-        def _callable(self, data):
-            if not os.path.isfile('html.json'):
-                json.dump({url: data}, open('html.json', 'w', encoding='utf-8'), indent=2)
-            else:
-                result = json.load(open('html.json', 'r', encoding='utf-8'))
-                result.update({url: data})
-                json.dump(result, open('html.json', 'w', encoding='utf-8'), indent=2)
-            self.html = data
-
-        def _loadFinished(self, result):
-            self.page().toHtml(self._callable)
-
-    return Render(url).html
-
-
 class Anime(QtWidgets.QMainWindow, Ui_Anime):
     def __init__(self):
         super(Anime, self).__init__()
         self.setupUi(self)
-        json.dump({}, open('html.json', 'w', encoding='utf-8'))
-        self.video_data = dict()
         self.week_data()
         self.mouseHoverOnTabBar()
         self.anime_page_Visible()
         self.pushbutton_hand()
         self.setFixedSize(self.width(), self.height())
-        self.story_checkbox_dict = dict()
         self.menu.actions()[0].triggered.connect(self.config)
         self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
         self.download_pushbutton.clicked.connect(self.download_anime)
+        self.video_data = dict()
+        self.story_checkbox_dict = dict()
         self.download_anime_Thread = dict()
-        self.download_count = 0
         self.download_progressBar_dict = dict()
         self.download_status_label_dict = dict()
+        self.download_count = 0
+        self.get_html_queue = multiprocessing.Manager().Queue()
+        self.result_html_queue = multiprocessing.Manager().Queue()
         self.download_tableWidget.setColumnWidth(0, 400)
         self.download_tableWidget.setColumnWidth(1, 150)
         # self.download_tableWidget.setColumnWidth(2, 431)
@@ -190,8 +162,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
         url = pushButton.objectName()
         executor = ProcessPoolExecutor(max_workers=1)
-        executor.submit(render, url)
-        self.anime_info = Anime_info(url=url)
+        executor.submit(html, self.get_html_queue, self.result_html_queue, 'one')
+        self.anime_info = Anime_info(url=url, get_html_queue=self.get_html_queue,
+                                     result_html_queue=self.result_html_queue)
         self.anime_info.anime_info_signal.connect(self.anime_info_data)
         self.anime_info.start()
         self.anime_info_tabWidget.setCurrentIndex(1)
@@ -226,6 +199,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.story_checkbox_dict.update({i: checkbox})
             self.story_list_scrollAreaWidgetContents_Layout.addWidget(checkbox)
         self.anime_page_Visible(status=True)
+        self.anime_info.terminate()
 
     def mouseHoverOnTabBar(self):
         self.tabBar = self.week_tabWidget.tabBar()
@@ -269,22 +243,23 @@ class Week_data_signal(QtCore.QThread):
 class Anime_info(QtCore.QThread):
     anime_info_signal = QtCore.pyqtSignal(dict)
 
-    def __init__(self, url):
+    def __init__(self, url, get_html_queue, result_html_queue):
         super(Anime_info, self).__init__()
         self.url = url
+        self.get_html_queue = get_html_queue
+        self.result_html_queue = result_html_queue
+
+    def getter(self):
+        while True:
+            if self.result_html_queue.qsize() > 0:
+                res = self.result_html_queue.get()
+                return res
+            time.sleep(1)
 
     def run(self):
-        while True:
-            try:
-                data = json.load(open('html.json', 'r', encoding='utf-8'))
-                if self.url in data:
-                    res = data[self.url]
-                    break
-                time.sleep(1)
-            except json.decoder.JSONDecodeError:
-                time.sleep(1)
-
-        # res = self.html.render(url=self.url)
+        print('in')
+        self.get_html_queue.put(self.url)
+        res = self.getter()
         html = BeautifulSoup(res, features='lxml')
         data = dict()
         for i in html.find_all('ul', class_='main_list'):
@@ -361,8 +336,8 @@ class Download_Video(QtCore.QThread):
                 break
             time.sleep(1)
             self.result.update({'success': int((len(self.video_data) / m3u8_count * 100)),
-                      'name': self.data["data"]["name"] + self.data["data"]["num"],
-                      'status': False})
+                                'name': self.data["data"]["name"] + self.data["data"]["num"],
+                                'status': False})
             self.download_video.emit(self.result)
             print(f'{self.data["data"]["name"] + self.data["data"]["num"]} 目標:{m3u8_count} 當前:{len(self.video_data)}')
         self.write_video(m3u8_count)
@@ -400,9 +375,13 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         self.save_pushButton.clicked.connect(self.save_config)
         self.cancel_pushButton.clicked.connect(self.exit)
         self.note_pushButton.clicked.connect(self.note_event)
-        self.setFixedSize(self.width(), self.height())
 
     def config(self):
+        self.setFixedSize(self.width(), self.height())
+        self.note_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.cancel_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.save_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.browse_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         if not os.path.isfile('config.json'):
             json.dump({'path': ''}, open('config.json', 'w', encoding='utf-8'), indent=2)
         else:
@@ -439,6 +418,7 @@ class Save(QtWidgets.QMainWindow, Ui_Save):
         self.close()
         self.config.close()
 
+
 class Note(QtWidgets.QMainWindow, Ui_Note):
     def __init__(self):
         super(Note, self, ).__init__()
@@ -449,6 +429,64 @@ class Note(QtWidgets.QMainWindow, Ui_Note):
     def confirm(self):
         self.close()
 
+
+def html(get_html=None, result_html=None, choose='one'):
+    """
+    兩種用法，結果都是一樣的。
+    1.
+    app = QtWidgets.QApplication(sys.argv)
+    browser = QtWebEngineWidgets.QWebEngineView()
+    browser.load(QtCore.QUrl(url))
+    browser.loadFinished.connect(on_load_finished)
+    app.exec_()
+    2.
+    r = render(url)
+    result_html.put(r)
+    """
+
+    def render(url):
+
+        class Render(QtWebEngineWidgets.QWebEngineView):
+            def __init__(self, url):
+                self.html = None
+                self.app = QtWidgets.QApplication(sys.argv)
+                QtWebEngineWidgets.QWebEngineView.__init__(self)
+                self.loadFinished.connect(self._loadFinished)
+                self.load(QtCore.QUrl(url))
+                while self.html is None:
+                    self.app.processEvents(
+                        QtCore.QEventLoop.ExcludeUserInputEvents | QtCore.QEventLoop.ExcludeSocketNotifiers | QtCore.QEventLoop.WaitForMoreEvents)
+                self.app.quit()
+
+            def _callable(self, data):
+                self.html = data
+
+            def _loadFinished(self, result):
+                self.page().toHtml(self._callable)
+
+        return Render(url).html
+
+    def callback_function(html):
+        result_html.put(html)
+        browser.close()
+
+    def on_load_finished():
+        browser.page().runJavaScript("document.getElementsByTagName('html')[0].innerHTML", callback_function)
+
+    while True:
+        if get_html.qsize() > 0:
+            url = get_html.get()
+            if choose == 'one':
+                r = render(url)
+                result_html.put(r)
+            else:
+                app = QtWidgets.QApplication(sys.argv)
+                browser = QtWebEngineWidgets.QWebEngineView()
+                browser.load(QtCore.QUrl(url))
+                browser.loadFinished.connect(on_load_finished)
+                app.exec_()
+            break
+        time.sleep(1)
 
 
 if __name__ == '__main__':
