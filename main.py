@@ -3,6 +3,7 @@ import sys
 import json
 import time
 import random
+import re
 import shutil
 import datetime
 import requests
@@ -13,6 +14,7 @@ from UI.main_ui import Ui_Anime
 from UI.config_ui import Ui_Config
 from UI.save_ui import Ui_Save
 from UI.note_ui import Ui_Note
+from UI.url_ui import Ui_Url
 from bs4 import BeautifulSoup
 from PyQt5 import QtCore, QtWidgets, QtGui, QtWebEngineWidgets
 
@@ -38,14 +40,16 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.setWindowIcon(QtGui.QIcon('image/logo.ico'))
         self.write_config()
         self.week_data()
-        self.mouseHoverOnTabBar()
         self.anime_page_Visible()
+        self.load_anime_label.setVisible(False)
+        self.mouseHoverOnTabBar()
         self.load_simultaneously()
         self.setFixedSize(self.width(), self.height())
-        self.menu.actions()[0].triggered.connect(self.config)
-        self.menu.actions()[2].triggered.connect(self.close)
+        # self.menu.actions()[0].triggered.connect(config.show)
+        self.menu.actions()[2].triggered.connect(self.closeEvent)
         self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
         self.download_pushbutton.clicked.connect(self.download_anime)
+        self.customize_pushButton.clicked.connect(self.anime_info_event)
         self.now_download_value = 1
         self.download_tableWidget_rowcount = 0
         self.download_video_mission_list = list()
@@ -57,12 +61,15 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.download_tableWidget.setColumnWidth(1, 150)
         # self.download_tableWidget.setColumnWidth(2, 431)
         self.download_tableWidget.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
+        self.statusBar().showMessage('狀態欄')
+
+    def closeEvent(self, event):
+        QtWidgets.QApplication.closeAllWindows()
 
     def write_config(self):
         config = {'path': '', 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5}
         if not os.path.isfile('config.json'):
-            data = {'path': '', 'speed': {}}
-            json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
+            json.dump(config, open('config.json', 'w', encoding='utf-8'), indent=2)
         else:
             data = json.load(open('config.json', 'r', encoding='utf-8'))
             for i in config:
@@ -127,6 +134,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def anime_page_Visible(self, status=False):
         if status:
+            self.load_anime_label.setVisible(False)
             self.image_label.setVisible(True)
             self.type_label.setVisible(True)
             self.premiere_label.setVisible(True)
@@ -140,6 +148,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.story_list_scrollArea.setVisible(True)
             self.download_pushbutton.setVisible(True)
         else:
+            self.load_anime_label.setVisible(True)
             self.image_label.setVisible(False)
             self.type_label.setVisible(False)
             self.premiere_label.setVisible(False)
@@ -181,24 +190,36 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                          " }\n"
                                          )
                 anime_name.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-                anime_name.clicked.connect(self.week_button_event)
+                anime_name.clicked.connect(self.anime_info_event)
                 update_num = QtWidgets.QLabel(
                     f'<span style=\" font-size:16pt; {signal[i][m]["color"]}\">{signal[i][m]["update"]}')
                 update_num.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
                 form_layout.addRow(anime_name, update_num)
             week[i].setLayout(form_layout)
+        self.load_week_label.setVisible(False)
 
-    def week_button_event(self):
+    def anime_info_event(self):
         sender = self.sender()
         pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
-        url = pushButton.objectName()
-        self.anime_info = Anime_info(url=url)
-        self.anime_info.anime_info_signal.connect(self.anime_info_data)
-        self.anime_info.start()
-        self.anime_info_tabWidget.setCurrentIndex(1)
-        self.anime_page_Visible()
+        ok = True
+        if pushButton.objectName() == 'customize_pushButton':
+            if re.match('^https://myself-bbs.com/thread-[0-9]{4,6}-\d-\d.html$', self.customize_lineEdit.text()):
+                url = self.customize_lineEdit.text()
+            else:
+                url_error.show()
+                ok = False
+        else:
+            url = pushButton.objectName()
+        if ok:
+            self.load_anime_label.setVisible(True)
+            self.anime_info = Anime_info(url=url)
+            self.anime_info.anime_info_signal.connect(self.anime_info_data)
+            self.anime_info.start()
+            self.anime_info_tabWidget.setCurrentIndex(1)
+            self.anime_page_Visible()
 
     def anime_info_data(self, signal):
+        self.customize_lineEdit.clear()
         self.story_list_all_pushButton.setText('全選')
         self.introduction_textBrowser.clear()
         self.story_checkbox_dict.clear()
@@ -280,10 +301,14 @@ class Anime_info(QtCore.QThread):
         html = BeautifulSoup(res, features='lxml')
         data = dict()
         total = dict()
-        for i in html.find_all('ul', class_='display_none'):
-            title = i.find_previous_sibling("a").text
-            url = i.select_one("a")["data-href"].replace('player/play', 'vpx').replace("\r", "").replace("\n", "")
-            total.update({title: url})
+        for i in html.select('ul.main_list'):
+            for j in i.find_all('a', href='javascript:;'):
+                title = j.text
+                for k in j.parent.select("ul.display_none li"):
+                    a = k.select_one("a[data-href*='v.myself-bbs.com']")
+                    if k.select_one("a").text == '站內':
+                        url = a["data-href"].replace('player/play', 'vpx').replace("\r", "").replace("\n", "")
+                        total.update({title: url})
         data.update({'total': total})
         for i in html.find_all('div', class_='info_info'):
             for j, m in enumerate(i.find_all('li')):
@@ -417,7 +442,6 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         self.browse_pushButton.clicked.connect(self.download_path)
         self.save_pushButton.clicked.connect(self.save_config)
         self.cancel_pushButton.clicked.connect(self.close)
-        self.note_pushButton.clicked.connect(self.note_event)
         self.simultaneous_download_lineEdit.setValidator(QtGui.QIntValidator())
         self.speed_radioButton_dict = {self.slow_radioButton: {'type': 'slow', 'value': 1},
                                        self.genera_radioButton: {'type': 'genera', 'value': 5},
@@ -443,24 +467,19 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         for i in self.speed_radioButton_dict:
             if i.isChecked():
                 speed = self.speed_radioButton_dict[i]
-
                 break
         data = {'path': path, 'speed': speed, 'simultaneous': int(simultaneous)}
         json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
-        self.save = Save(config=self)
-        self.save.show()
+        save.config = self
+        save.show()
 
     def download_path(self):
         download_path = QtWidgets.QFileDialog.getExistingDirectory(self, "選取資料夾", self.download_path_lineEdit.text())
         self.download_path_lineEdit.setText(download_path)
 
-    def note_event(self):
-        self.note_windows = Note()
-        self.note_windows.show()
-
 
 class Save(QtWidgets.QMainWindow, Ui_Save):
-    def __init__(self, config):
+    def __init__(self, config=None):
         super(Save, self, ).__init__()
         self.setupUi(self)
         self.setFixedSize(self.width(), self.height())
@@ -478,6 +497,13 @@ class Note(QtWidgets.QMainWindow, Ui_Note):
         self.setupUi(self)
         self.setFixedSize(self.width(), self.height())
         self.confirm_pushButton.clicked.connect(self.close)
+
+class Url(QtWidgets.QMainWindow, Ui_Url):
+    def __init__(self):
+        super(Url, self, ).__init__()
+        self.setupUi(self)
+        self.setFixedSize(self.width(), self.height())
+        self.url_error_pushButton.clicked.connect(self.close)
 
 
 def html(get_html=None, result_html=None, choose='one'):
@@ -544,6 +570,12 @@ if __name__ == '__main__':
     # myStyle = MyProxyStyle()
     # app.setStyle(myStyle)
     anime = Anime()
+    url_error = Url()
+    config = Config()
+    save = Save()
+    note = Note()
+    anime.menu.actions()[0].triggered.connect(config.show)
+    config.note_pushButton.clicked.connect(note.show)
     anime.show()
     app.exec_()
     pass

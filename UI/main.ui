@@ -2,19 +2,30 @@
 <ui version="4.0">
  <class>Anime</class>
  <widget class="QMainWindow" name="Anime">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1020</width>
-    <height>471</height>
+    <width>1010</width>
+    <height>460</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Anime Download</string>
   </property>
   <property name="styleSheet">
-   <string notr="true"/>
+   <string notr="true">QScrollBar::vertical {
+border:0px solid grey;
+width: 15px;
+}
+
+QScrollBar::handle:vertical {
+background:#dfdfdf;
+border-radius:6px;
+}</string>
   </property>
   <property name="iconSize">
    <size>
@@ -22,12 +33,21 @@
     <height>24</height>
    </size>
   </property>
+  <property name="documentMode">
+   <bool>false</bool>
+  </property>
+  <property name="dockNestingEnabled">
+   <bool>false</bool>
+  </property>
+  <property name="unifiedTitleAndToolBarOnMac">
+   <bool>false</bool>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTabWidget" name="anime_info_tabWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>10</y>
+      <y>20</y>
       <width>1001</width>
       <height>405</height>
      </rect>
@@ -54,7 +74,7 @@
       <cursorShape>ArrowCursor</cursorShape>
      </property>
      <attribute name="title">
-      <string>更新表</string>
+      <string>每周更新</string>
      </attribute>
      <layout class="QGridLayout" name="week_page_gridLayout">
       <item row="0" column="0">
@@ -217,6 +237,12 @@
             <property name="frameShape">
              <enum>QFrame::NoFrame</enum>
             </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
             <property name="widgetResizable">
              <bool>true</bool>
             </property>
@@ -244,6 +270,12 @@
             <property name="frameShape">
              <enum>QFrame::NoFrame</enum>
             </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
             <property name="widgetResizable">
              <bool>true</bool>
             </property>
@@ -266,6 +298,9 @@
      </layout>
     </widget>
     <widget class="QWidget" name="anime_page">
+     <property name="styleSheet">
+      <string notr="true">QGridLayout {background: transparent; }</string>
+     </property>
      <attribute name="title">
       <string>動漫資訊</string>
      </attribute>
@@ -435,9 +470,9 @@ border-radius:6px
         <widget class="QPushButton" name="story_list_all_pushButton">
          <property name="geometry">
           <rect>
-           <x>45</x>
+           <x>80</x>
            <y>60</y>
-           <width>150</width>
+           <width>91</width>
            <height>30</height>
           </rect>
          </property>
@@ -482,8 +517,17 @@ color: #000000;
            <height>211</height>
           </rect>
          </property>
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="verticalScrollBarPolicy">
+          <enum>Qt::ScrollBarAsNeeded</enum>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAsNeeded</enum>
          </property>
          <property name="widgetResizable">
           <bool>true</bool>
@@ -503,9 +547,9 @@ color: #000000;
         <widget class="QPushButton" name="download_pushbutton">
          <property name="geometry">
           <rect>
-           <x>45</x>
+           <x>60</x>
            <y>320</y>
-           <width>150</width>
+           <width>121</width>
            <height>30</height>
           </rect>
          </property>
@@ -607,13 +651,140 @@ p, li { white-space: pre-wrap; }
      </layout>
     </widget>
    </widget>
+   <widget class="QGroupBox" name="customize_groupBox">
+    <property name="geometry">
+     <rect>
+      <x>590</x>
+      <y>0</y>
+      <width>421</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QGroupBox{
+border:none}</string>
+    </property>
+    <property name="title">
+     <string>每周更新以外的動漫</string>
+    </property>
+    <widget class="QLabel" name="customize_label">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>25</y>
+       <width>71</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>網址:</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="customize_lineEdit">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>23</y>
+       <width>281</width>
+       <height>21</height>
+      </rect>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="customize_pushButton">
+     <property name="geometry">
+      <rect>
+       <x>350</x>
+       <y>21</y>
+       <width>61</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton{
+background-color:#dedede;
+border-radius:6px
+}
+QPushButton:hover {
+background-color:#aaaa7f;
+color: #ffffff;
+}
+QPushButton:pressed{
+background-color:#dedede;
+color: #000000;
+}</string>
+     </property>
+     <property name="text">
+      <string>確定</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="load_week_label">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>160</y>
+      <width>221</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>18</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>每周動漫更新讀取中</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="load_anime_label">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>160</y>
+      <width>221</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>18</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>動漫資訊讀取中</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1020</width>
+     <width>1010</width>
      <height>26</height>
     </rect>
    </property>
@@ -636,17 +807,6 @@ p, li { white-space: pre-wrap; }
     <addaction name="menu_exit"/>
    </widget>
    <addaction name="menu"/>
-  </widget>
-  <widget class="QToolBar" name="toolBar">
-   <property name="windowTitle">
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
   </widget>
   <action name="menu_config">
    <property name="icon">
