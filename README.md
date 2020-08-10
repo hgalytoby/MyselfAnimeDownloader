@@ -1,5 +1,5 @@
 # Myself_Anime
-## 瀏覽
+## 預覽
 
 ![image](https://i.imgur.com/qAckhuk.gif)
 
@@ -10,6 +10,20 @@ pip install -r -requirements.txt
 `
 <br>
 執行 main.py <br>
+
+## 已實現功能
+1.設定內的功能都已實現。<br>
+2.查看每周動漫更新進度。<br>
+3.下載動漫。<br>
+
+## 尚未實現功能
+1.暫停下載、繼續下載、取消下載。<br>
+2.提升下載優先權、降低下載優先權。<br>
+3.歷史紀錄。<br>
+4.程式目前使用的記憶體消耗量、狀態、連線數量。<br>
+5.輸入指定動漫 URL，沒在每周更新內也能下載。<br>
+6.美觀。<br>
+7.尚未想到。<br>
 
 ## 問題<br>
 網頁上的 source 碼 與 requests.get後的結果。<br>
@@ -23,9 +37,9 @@ headers = {
 res = requests.get(url=url, headers=headers)  
 print(res.text)
 ```
-發現沒辦法取得到圖上紅框的 url。<br>
-接著我有將 header 加入更多的參數，以及丟cookies，依然沒有辦法取得URL。<br>
-但我發現每個 url 都是有規則的!，所以當下覺得抓不到也沒關係自己寫規則出來即可。<br>
+發現沒辦法取得到圖上紅框的 URL。<br>
+接著我有將 header 加入更多的參數，以及丟cookies，依然沒有辦法取得 URL。<br>
+但我發現每個 URL 都是有規則的!，所以當下覺得抓不到也沒關係自己寫規則出來即可。<br>
 ```
 第 01 話  https://v.myself-bbs.com/player/play/43773/001
 第 02 話  https://v.myself-bbs.com/player/play/43773/002
@@ -43,7 +57,7 @@ print(res.text)
 點擊後
 ![image](https://i.imgur.com/XSy5D2z.png)
 發現網站是執行 javascript 後才能看到URL。<br>
-我在Network 沒發現 json 檔的請求網址。<br>
+我在 Network 沒發現 Json 檔的請求網址。<br>
 之後用搜尋的方式，只有在原始網能找到。<br><br>
 ![image](https://i.imgur.com/w8YZk3x.png)
 

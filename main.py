@@ -43,6 +43,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.load_simultaneously()
         self.setFixedSize(self.width(), self.height())
         self.menu.actions()[0].triggered.connect(self.config)
+        self.menu.actions()[2].triggered.connect(self.close)
         self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
         self.download_pushbutton.clicked.connect(self.download_anime)
         self.now_download_value = 1
@@ -52,8 +53,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.download_anime_Thread = dict()
         self.download_progressBar_dict = dict()
         self.download_status_label_dict = dict()
-        self.get_html_queue = multiprocessing.Manager().Queue()
-        self.result_html_queue = multiprocessing.Manager().Queue()
         self.download_tableWidget.setColumnWidth(0, 400)
         self.download_tableWidget.setColumnWidth(1, 150)
         # self.download_tableWidget.setColumnWidth(2, 431)
@@ -193,10 +192,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         sender = self.sender()
         pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
         url = pushButton.objectName()
-        executor = ProcessPoolExecutor(max_workers=1)
-        executor.submit(html, self.get_html_queue, self.result_html_queue, 'one')
-        self.anime_info = Anime_info(url=url, get_html_queue=self.get_html_queue,
-                                     result_html_queue=self.result_html_queue)
+        self.anime_info = Anime_info(url=url)
         self.anime_info.anime_info_signal.connect(self.anime_info_data)
         self.anime_info.start()
         self.anime_info_tabWidget.setCurrentIndex(1)
@@ -275,44 +271,28 @@ class Week_data_signal(QtCore.QThread):
 class Anime_info(QtCore.QThread):
     anime_info_signal = QtCore.pyqtSignal(dict)
 
-    def __init__(self, url, get_html_queue, result_html_queue):
+    def __init__(self, url):
         super(Anime_info, self).__init__()
         self.url = url
-        self.get_html_queue = get_html_queue
-        self.result_html_queue = result_html_queue
 
-    def getter(self):
-        while True:
-            if self.result_html_queue.qsize() > 0:
-                res = self.result_html_queue.get()
-                return res
-            time.sleep(1)
-
-    def get_anime_data(self, res):
+    def get_anime_data(self):
+        res = requests.get(url=self.url, headers=headers).text
         html = BeautifulSoup(res, features='lxml')
         data = dict()
-        for i in html.find_all('ul', class_='main_list'):
-            total = dict()
-            title = list()
-            for j in i.find_all('a', href="javascript:;"):
-                title.append(j.text)
-            for j, m in enumerate(i.find_all('ul', class_="display_none")):
-                for k in m.find_all('a'):
-                    if k.text == '站內':
-                        url = str(k['data-href']).replace('player/play', 'vpx').replace('\n', '').replace('\r', '')
-                        total.update({title[j]: url})
-            data.update({'total': total})
+        total = dict()
+        for i in html.find_all('ul', class_='display_none'):
+            title = i.find_previous_sibling("a").text
+            url = i.select_one("a")["data-href"].replace('player/play', 'vpx').replace("\r", "").replace("\n", "")
+            total.update({title: url})
+        data.update({'total': total})
         for i in html.find_all('div', class_='info_info'):
             for j, m in enumerate(i.find_all('li')):
                 data.update({j: m.text})
-                # print(j, m.text)
         for i in html.find_all('div', class_='info_introduction'):
             for j in i.find_all('p'):
                 data.update({'info': j.text})
-                # print(j.text)
         for i in html.find_all('div', class_='info_img_box fl'):
             for j in i.find_all('img'):
-                # print(j['src'])
                 image = requests.get(url=j['src'], headers=headers).content
                 data.update({'image': image})
         for i in html.find_all('div', class_='z'):
@@ -322,9 +302,7 @@ class Anime_info(QtCore.QThread):
         return data
 
     def run(self):
-        self.get_html_queue.put(self.url)
-        res = self.getter()
-        data = self.get_anime_data(res)
+        data = self.get_anime_data()
         self.anime_info_signal.emit(data)
 
 
@@ -417,7 +395,6 @@ class Download_Video(QtCore.QThread):
         self.download_video.emit(self.result)
 
 
-
 class Simultaneously(QtCore.QThread):
     simultaneously_signal = QtCore.pyqtSignal(int)
 
@@ -439,7 +416,7 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         self.setFixedSize(self.width(), self.height())
         self.browse_pushButton.clicked.connect(self.download_path)
         self.save_pushButton.clicked.connect(self.save_config)
-        self.cancel_pushButton.clicked.connect(self.exit)
+        self.cancel_pushButton.clicked.connect(self.close)
         self.note_pushButton.clicked.connect(self.note_event)
         self.simultaneous_download_lineEdit.setValidator(QtGui.QIntValidator())
         self.speed_radioButton_dict = {self.slow_radioButton: {'type': 'slow', 'value': 1},
@@ -481,9 +458,6 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         self.note_windows = Note()
         self.note_windows.show()
 
-    def exit(self):
-        self.close()
-
 
 class Save(QtWidgets.QMainWindow, Ui_Save):
     def __init__(self, config):
@@ -503,10 +477,7 @@ class Note(QtWidgets.QMainWindow, Ui_Note):
         super(Note, self, ).__init__()
         self.setupUi(self)
         self.setFixedSize(self.width(), self.height())
-        self.confirm_pushButton.clicked.connect(self.confirm)
-
-    def confirm(self):
-        self.close()
+        self.confirm_pushButton.clicked.connect(self.close)
 
 
 def html(get_html=None, result_html=None, choose='one'):
@@ -575,3 +546,4 @@ if __name__ == '__main__':
     anime = Anime()
     anime.show()
     app.exec_()
+    pass

@@ -14,16 +14,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Anime(object):
     def setupUi(self, Anime):
         Anime.setObjectName("Anime")
-        Anime.resize(1020, 440)
-        Anime.setStyleSheet(" QMenu::item {\n"
-"padding: 2px 20px 2px 30px;\n"
-"width: 15px; \n"
-"}\n"
-" QMenu::icon {\n"
-"padding-left: 20px;\n"
-"width: 40px;     \n"
-"height: 40px;\n"
-"}")
+        Anime.resize(1020, 471)
+        Anime.setStyleSheet("")
         Anime.setIconSize(QtCore.QSize(24, 24))
         self.centralwidget = QtWidgets.QWidget(Anime)
         self.centralwidget.setObjectName("centralwidget")

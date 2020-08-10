@@ -7,22 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>1020</width>
-    <height>440</height>
+    <height>471</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Anime Download</string>
   </property>
   <property name="styleSheet">
-   <string notr="true"> QMenu::item {
-padding: 2px 20px 2px 30px;
-width: 15px; 
-}
- QMenu::icon {
-padding-left: 20px;
-width: 40px;     
-height: 40px;
-}</string>
+   <string notr="true"/>
   </property>
   <property name="iconSize">
    <size>
