@@ -53,6 +53,20 @@
    <property name="cursor">
     <cursorShape>PointingHandCursor</cursorShape>
    </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton{
+background-color:#dedede;
+border-radius:6px
+}
+QPushButton:hover {
+background-color:#aaaa7f;
+color: #ffffff;
+}
+QPushButton:pressed{
+background-color:#dedede;
+color: #000000;
+}</string>
+   </property>
    <property name="text">
     <string>確定</string>
    </property>

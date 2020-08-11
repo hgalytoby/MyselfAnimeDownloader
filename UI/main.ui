@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1010</width>
+    <width>1021</width>
     <height>460</height>
    </rect>
   </property>
@@ -778,13 +778,70 @@ color: #000000;
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QWidget" name="status_widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>415</y>
+      <width>1011</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget{
+background-color: rgba(255, 255, 240, 100)
+}</string>
+    </property>
+    <widget class="QLabel" name="left_status_label">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>0</y>
+       <width>211</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>狀態: 0 個下載中　　連接設定: 0/20</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="right_ststus_label">
+     <property name="geometry">
+      <rect>
+       <x>780</x>
+       <y>0</y>
+       <width>211</width>
+       <height>20</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>記憶體用量: 10.10MB / 程序: 3.50%</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>10</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>PushButton</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1010</width>
+     <width>1021</width>
      <height>26</height>
     </rect>
    </property>
@@ -816,6 +873,9 @@ color: #000000;
    <property name="text">
     <string>設定</string>
    </property>
+   <property name="statusTip">
+    <string>設定</string>
+   </property>
    <property name="font">
     <font>
      <pointsize>12</pointsize>
@@ -836,6 +896,9 @@ color: #000000;
    <property name="text">
     <string>離開</string>
    </property>
+   <property name="statusTip">
+    <string>離開</string>
+   </property>
   </action>
   <action name="menu_about">
    <property name="icon">
@@ -843,6 +906,9 @@ color: #000000;
      <normaloff>../image/about.ico</normaloff>../image/about.ico</iconset>
    </property>
    <property name="text">
+    <string>關於</string>
+   </property>
+   <property name="statusTip">
     <string>關於</string>
    </property>
   </action>

@@ -26,6 +26,18 @@ class Ui_Url(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.url_error_pushButton.setFont(font)
+        self.url_error_pushButton.setStyleSheet("QPushButton{\n"
+"background-color:#dedede;\n"
+"border-radius:6px\n"
+"}\n"
+"QPushButton:hover {\n"
+"background-color:#aaaa7f;\n"
+"color: #ffffff;\n"
+"}\n"
+"QPushButton:pressed{\n"
+"background-color:#dedede;\n"
+"color: #000000;\n"
+"}")
         self.url_error_pushButton.setObjectName("url_error_pushButton")
 
         self.retranslateUi(Url)
