@@ -16,17 +16,17 @@ pip install -r -requirements.txt
 2.查看每周動漫更新進度。<br>
 3.下載動漫。<br>
 4.每周更新表以外的動漫也能下載。<br>
+5.程式目前使用的記憶體消耗量、狀態、連線數量。<br>
 
 ## 尚未實現功能
 1.暫停下載、繼續下載、取消下載。<br>
 2.提升下載優先權、降低下載優先權。<br>
 3.歷史紀錄。<br>
-4.程式目前使用的記憶體消耗量、狀態、連線數量。<br>
-5.美觀。<br>
-6.完結列表。<br>
-7.尚未想到。<br>
+4.程式美觀。<br>
+5.完結列表。<br>
+6.減少記憶體消耗量。<br>
 
-## 問題<br>
+## 問題(已解決)<br>
 網頁上的 source 碼 與 requests.get後的結果。<br>
 ![image](https://i.imgur.com/9kG6vdj.png)
 ```python
@@ -83,12 +83,18 @@ r.html.render()
 html = BeautifulSoup(res, features='lxml')
 print(html)
 ```
-最後我選擇使用 Selenium 套件，此套件是我最初最後的選擇，因為使用者對應自己的瀏覽器下載驅動。<br>
+我選擇使用 Selenium 套件，此套件是我最初最後的選擇，因為使用者對應自己的瀏覽器下載驅動。<br>
 Firefox，其下載地址是：https://github.com/mozilla/geckodriver/releases <br>
 chrome，其下載地址是：https://chromedriver.chromium.org/downloads <br>
 當我將 Selenium 與我的程式碼串接後，我發現了可以用 PyQt 內的瀏覽器，幫我取得網頁碼<br>
+使用兩個網址的程式碼並套到我的程式裡面，並可選擇要使用哪個方法！<br>
 參考網址: <br>
-1. https://stackoverflow.com/questions/37754138/how-to-render-html-with-pyqt5s-qwebengineview <br>
-2. https://stackoverflow.com/questions/57813303/how-to-get-html-of-a-page-loaded-in-qwebengineview <br>
+1.　https://stackoverflow.com/questions/37754138/how-to-render-html-with-pyqt5s-qwebengineview <br>
+2.　https://stackoverflow.com/questions/57813303/how-to-get-html-of-a-page-loaded-in-qwebengineview <br>
+<br>
+我將所有關於URL的問題解決後，有名熱心的網友提供了我可以直接 requests 就能取得 URL 的的方法，用 BeautifulSoup 使用 css select 取得URL，我再一次將我的程式做修改！<br>
+這段過程花了我將近兩天的時間終於解決了！<br>
+
+
 ## 結論
 最終我捨棄了 Selenium 套件，使用兩個網址的程式碼並套到我的程式裡面，並可選擇要使用哪個方法！ <br>

@@ -14,6 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Config(object):
     def setupUi(self, Config):
         Config.setObjectName("Config")
+        Config.setWindowModality(QtCore.Qt.ApplicationModal)
         Config.resize(660, 230)
         font = QtGui.QFont()
         font.setPointSize(16)
@@ -21,7 +22,9 @@ class Ui_Config(object):
         Config.setToolTip("")
         Config.setStyleSheet("QPushButton{\n"
 "background-color:#dedede;\n"
-"border-radius:6px\n"
+"border-radius:6px;\n"
+"width: 71px;\n"
+"height: 31px;\n"
 "}\n"
 "QPushButton:hover {\n"
 "background-color:#aaaa7f;\n"

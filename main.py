@@ -3,6 +3,7 @@ import sys
 import json
 import time
 import random
+import gc
 import re
 import shutil
 import psutil
@@ -23,52 +24,6 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36'}
 
 
-class asP():
-    import ast
-    def __init__(self, mq=None):
-        self.mq = mq
-        self.run()
-
-    def writer(self, command: dict):
-        k = list(command.keys())[0]
-        cmd = command[k]
-        data, path, folder_name, file_name = cmd['data'], cmd['path'], cmd['folder_name'], cmd['file_name']
-        print('Ts number: {}'.format(k), f'{path}/{folder_name}/{file_name}.tmp', ' is writing')
-        with open(f'{path}/{folder_name}/{file_name}.tmp', 'a') as v:
-            v.write(str({k: data}))
-            v.write('\n')
-
-    def done(self, command: dict):
-        k = list(command.keys())[0]
-        cmd = command[k]
-        path, folder_name, file_name, res = cmd['path'], cmd['folder_name'], cmd['file_name'], dict()
-        with open(f'{path}/{folder_name}/{file_name}.tmp', 'r') as v:
-            for i in v.readlines():
-                res.update(self.ast.literal_eval(i.split('\n')[0]))
-
-        with open(f'{path}/{folder_name}/{file_name}.tmp', 'wb') as v:
-            for i in sorted(res.keys()):
-                # print(res[i])
-                v.write(res[i])
-
-        if os.path.isfile(f'{path}/{folder_name}/{file_name}.mp4'):
-            os.remove(f'{path}/{folder_name}/{file_name}.mp4')
-
-        os.rename(f'{path}/{folder_name}/{file_name}.tmp', f'{path}/{folder_name}/{file_name}.mp4')
-
-    def run(self):
-        if self.mq is None: return None
-        assert isinstance(self.mq, mp.managers.BaseProxy), 'Fuck u'
-        while True:
-            if self.mq.qsize() > 0:
-                command = self.mq.get()
-                if 'done' not in list(command.keys()):
-                    self.writer(command)
-                else:
-                    self.done(command)
-            time.sleep(0.05)
-
-
 class MyProxyStyle(QtWidgets.QProxyStyle):
     pass
 
@@ -85,23 +40,20 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         super(Anime, self).__init__()
         self.setupUi(self)
         self.pid = os.getpid()
-        # self.mq = mp.Manager().Queue()
-        self.m = mom(self.pid)
-        self.m.start()
         self.setWindowIcon(QtGui.QIcon('image/logo.ico'))
+        self.download_tableWidget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.write_config()
         self.load_week_data()
         self.anime_page_Visible()
         self.load_anime_label.setVisible(False)
         self.mouseHoverOnTabBar()
-        self.load_simultaneously()
+        self.loading_config_status()
         self.setFixedSize(self.width(), self.height())
         # self.menu.actions()[0].triggered.connect(config.show)
         self.menu.actions()[2].triggered.connect(self.closeEvent)
         self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
         self.download_pushbutton.clicked.connect(self.download_anime)
         self.customize_pushButton.clicked.connect(self.anime_info_event)
-        # self.backend_processing(self.mq)
         self.now_download_value = 1
         self.download_tableWidget_rowcount = 0
         self.download_video_mission_list = list()
@@ -113,12 +65,69 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.download_tableWidget.setColumnWidth(1, 150)
         # self.download_tableWidget.setColumnWidth(2, 431)
         self.download_tableWidget.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
-        # self.status()
-        self.status_widget.setVisible(False)
+        self.download_tableWidget.cellClicked.connect(self.print_row)
+        self.load_week_label_status = False
+        self.load_anime_label_status = False
+        self.download_tableWidget.verticalHeader().setVisible(False)
+        self.download_tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.anime_info_tabWidget.currentChanged.connect(self.doubleClicked_table)
+        self.download_tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.download_tableWidget.customContextMenuRequested.connect(self.on_customContextMenuRequested)
+        self.download_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.pushButton.clicked.connect(self.del_ob)
 
-    # def backend_processing(self, mq):
-    #     self.bp = mp.Process(target=asP, args=[mq])
-    #     self.bp.start()
+    def del_ob(self):
+        gc.collect()
+
+    def on_customContextMenuRequested(self, pos):
+        # print(pos)
+        # it = self.download_tableWidget.itemAt(pos)
+        select = list()
+        for i in self.download_tableWidget.selectedItems()[::2]:
+            select.append(i.row())
+        select.sort(reverse=True)
+        # row_num = i.row()
+        # print(self.download_tableWidget.selectionModel().selection().indexes())
+        # if it is None:
+        #     return
+        # row = it.row()
+        # column = it.column()
+        # print(c)
+        # item_range = QtWidgets.QTableWidgetSelectionRange(0, c, self.download_tableWidget.rowCount() - 1, c)
+        # self.download_tableWidget.setRangeSelected(item_range, True)
+        # for i in select:
+        #     download_anime_Thread_name = self.download_tableWidget.item(i, 0).text()
+        #     download_anime_Thread_name = ''.join(download_anime_Thread_name.split('　　'))
+        #     print(download_anime_Thread_name)
+        if len(select) == 0:
+            return None
+        menu = QtWidgets.QMenu()
+        if len(select) > 1:
+            delete_column_action = menu.addAction("All Delete column")
+        else:
+            delete_column_action = menu.addAction("Delete column")
+        action = menu.exec_(self.download_tableWidget.viewport().mapToGlobal(pos))
+        if action == delete_column_action:
+            for i in select:
+                download_anime_Thread_name = self.download_tableWidget.item(i, 0).text()
+                download_anime_Thread_name = ''.join(download_anime_Thread_name.split('　　'))
+                # self.download_anime_Thread[download_anime_Thread_name].terminate()
+                del self.download_anime_Thread[download_anime_Thread_name]
+                # self.download_anime_Thread[download_anime_Thread_name].wait()
+                self.download_tableWidget.removeRow(i)
+
+    def doubleClicked_table(self, index):
+        if index != 0 and not self.load_week_label_status:
+            self.load_week_label.setVisible(False)
+        elif index == 0 and not self.load_week_label_status:
+            self.load_week_label.setVisible(True)
+        if index != 1 and self.load_anime_label_status:
+            self.load_anime_label.setVisible(False)
+        elif index == 1 and self.load_anime_label_status:
+            self.load_anime_label.setVisible(True)
+
+    def print_row(self, r, c):
+        print(r, c)
 
     def status(self):
         pass
@@ -127,7 +136,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         QtWidgets.QApplication.closeAllWindows()
 
     def write_config(self):
-        config = {'path': '', 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5}
+        config = {'path': os.getcwd(), 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5}
         if not os.path.isfile('config.json'):
             json.dump(config, open('config.json', 'w', encoding='utf-8'), indent=2)
         else:
@@ -137,13 +146,19 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                     data[i] = config[i]
             json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
 
-    def load_simultaneously(self):
-        self.simultaneously = Simultaneously()
-        self.simultaneously.simultaneously_signal.connect(self.load_simultaneously_mission)
-        self.simultaneously.start()
+    def loading_config_status(self):
+        self.config_status = Loading_config_status(pid=os.getpid())
+        self.config_status.loading_config_status_signal.connect(self.loading_config_status_mission)
+        self.config_status.start()
 
-    def load_simultaneously_mission(self, signal):
-        self.simultaneously_value = signal
+    def loading_config_status_mission(self, signal):
+        self.simultaneously_value = signal['simultaneous']
+        self.speed_value = signal['speed']['value']
+        self.left_status_label.setText(
+            f'狀態: {self.now_download_value - 1} 個下載中　　連接設定: {self.speed_value} / {self.simultaneously_value}')
+        self.right_ststus_label.setText(f'記憶體: {signal["memory"]}MB / 程序: {signal["cpu"]}%')
+        gc.collect()
+
 
     def download_anime(self):
         for i in self.story_checkbox_dict:
@@ -174,7 +189,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         if int(signal['success']) == 100:
             self.download_status_label_dict[signal['name']].setText('已完成')
             self.download_progressBar_dict[signal['name']].setValue(signal["success"])
-            self.download_anime_Thread[signal['name']].terminate()
+            # self.download_anime_Thread[signal['name']].terminate()
+            # self.download_anime_Thread[signal['name']].quit()
+            # self.download_anime_Thread[signal['name']].wait()
             del self.download_anime_Thread[signal['name']]
         else:
             self.download_status_label_dict[signal['name']].setText('下載中')
@@ -259,8 +276,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 form_layout.addRow(anime_name, update_num)
             week[i].setLayout(form_layout)
         self.load_week_label.setVisible(False)
+        self.load_week_label_status = True
         del signal
-        self.week_data.terminate()
+        self.week_data.quit()
+        self.week_data.wait()
         del self.week_data
 
     def anime_info_event(self):
@@ -272,12 +291,17 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                         self.customize_lineEdit.text().strip()):
                 url = self.customize_lineEdit.text().strip()
             else:
-                url_error.show()
+                url = self.customize_lineEdit.text().strip()
+                QtWidgets.QMessageBox.information(self, '錯誤',
+                                                  f"<font size=5  color=#000000>網址有誤！</font> <br/><font size=4  color=#000000>確認輸入的 <a href={url}>網址 </a><font size=4  color=#000000>是否正確！<",
+                                                  QtWidgets.QMessageBox.Ok)
                 ok = False
         else:
             url = pushButton.objectName()
         if ok:
             self.load_anime_label.setVisible(True)
+            self.load_anime_label_status = True
+
             self.anime_info = Anime_info(url=url)
             self.anime_info.anime_info_signal.connect(self.anime_info_data)
             self.anime_info.start()
@@ -315,8 +339,11 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.story_list_scrollAreaWidgetContents_Layout.addWidget(checkbox)
         del signal
         self.anime_page_Visible(status=True)
-        self.anime_info.terminate()
-        del self.anime_info
+        self.load_anime_label_status = False
+        # self.anime_info.terminate()
+        # self.anime_info.wait()
+        # self.anime_info.quit()
+        # del self.anime_info
 
     def mouseHoverOnTabBar(self):
         self.tabBar = self.week_tabWidget.tabBar()
@@ -330,7 +357,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 self.tabBar.setCurrentIndex(index)
                 return True
         return super().eventFilter(obj, event)
-
 
 class Week_data_signal(QtCore.QThread):
     week_data_signal = QtCore.pyqtSignal(dict)
@@ -388,6 +414,7 @@ class Anime_info(QtCore.QThread):
             for j in i.find_all('img'):
                 image = requests.get(url=j['src'], headers=headers).content
                 data.update({'image': image})
+                del image
         for i in html.find_all('div', class_='z'):
             for j, m in enumerate(i.find_all('a')):
                 if j == 4:
@@ -403,17 +430,16 @@ class Anime_info(QtCore.QThread):
 class Download_Video(QtCore.QThread):
     download_video = QtCore.pyqtSignal(dict)
 
-    def __init__(self, data, mq=None):
+    def __init__(self, data):
         super(Download_Video, self).__init__()
         self.data = data
-        # self.video_data = dict()
         self.video_data = 0
         self.ban = '//:*?"<>|.'
         self.result = dict()
-        # if mq is not None: self.mq = mq
         self.folder_name = self.badname(self.data['data']['name'])
         self.file_name = self.badname(self.data['data']['num'])
         self.path = json.load(open('config.json', 'r', encoding='utf-8'))
+        self.t = dict()
 
     def badname(self, name):
         for i in self.ban:
@@ -445,37 +471,28 @@ class Download_Video(QtCore.QThread):
                        'file_name': self.file_name}}
         return command
 
-    def video(self, i, res):
-        url = f"{random.choices(res['host'])[0]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
+    def video(self, i, res, host):
+        host_value = 0
+        url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
         while True:
             try:
-                data = requests.get(url=url, headers=headers, timeout=3)
+                data = requests.get(url=url, headers=headers, stream=True, timeout=3)
+                # data = requests.get(url=url, headers=headers, timeout=3)
                 if data:
                     while True:
                         if self.video_data == i:
                             with open(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4', 'ab') as v:
-                                v.write(data.content)
+                                shutil.copyfileobj(data.raw, v)
+                                # v.write(data.content)
                             del data
                             self.video_data += 1
                             break
                         time.sleep(1)
                     break
-                    # if mq is not None:
-                    #     self.video_data[i] = True
-                    #     command = self.build_cmd(i, data)
-                    #     self.mq.put(command)
-                    # else:
-                    #     self.video_data[i] = data.content
-                    # break
             except:
-                url = f"{random.choices(res['host'])[0]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
-                time.sleep(5)
-
-    def write_video(self, m3u8_count):
-        for i in range(m3u8_count):
-            with open(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4', 'ab') as v:
-                v.write(self.video_data[i])
-                # shutil.copyfileobj(self.video_data[i], v)
+                host_value += 1
+                url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
+                time.sleep(1)
 
     def turn_me(self):
         while True:
@@ -493,11 +510,12 @@ class Download_Video(QtCore.QThread):
         res = self.get_host_video_data()
         m3u8_data = self.get_m3u8_data(res)
         m3u8_count = m3u8_data.count('EXTINF')
-        executor = ThreadPoolExecutor(max_workers=self.path['speed']['value'])
+        executor = ThreadPoolExecutor(max_workers=anime.speed_value)
+        host = sorted(res['host'], key=lambda i: i.get('weight'), reverse=True)
         # if os.path.isfile(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.tmp'):
         #     os.remove(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.tmp')
         for i in range(m3u8_count):
-            executor.submit(self.video, i, res)
+            executor.submit(self.video, i, res, host)
         while True:
             self.result.update({'success': int(self.video_data / m3u8_count * 100),
                                 'name': self.data["data"]["name"] + self.data["data"]["num"],
@@ -506,41 +524,26 @@ class Download_Video(QtCore.QThread):
             if self.video_data == m3u8_count:
                 break
             time.sleep(0.5)
-        # if 'mq' not in list(self.__dict__.keys()):
-        #     self.write_video(m3u8_count)
-        # else:
-        #     command = self.build_cmd('done', None)
-        #     self.mq.put(command)
         del executor
         anime.now_download_value -= 1
 
 
-class Simultaneously(QtCore.QThread):
-    simultaneously_signal = QtCore.pyqtSignal(int)
+class Loading_config_status(QtCore.QThread):
+    loading_config_status_signal = QtCore.pyqtSignal(dict)
 
-    def __init__(self):
-        super(Simultaneously, self).__init__()
+    def __init__(self, pid):
+        super(Loading_config_status, self).__init__()
+        self.info = psutil.Process(pid)
 
     def run(self):
         while True:
             config = json.load(open('config.json', 'r', encoding='utf-8'))
-            self.simultaneously_signal.emit(config['simultaneous'])
-            time.sleep(3)
-
-
-class mom(QtCore.QThread):
-    simultaneously_signal = QtCore.pyqtSignal(int)
-
-    def __init__(self, pid):
-        super(mom, self).__init__()
-        self.pid = pid
-
-    def run(self):
-        # print(self.pid)
-        while True:
-            info = psutil.Process(self.pid)
-            # print(info.cpu_percent(), '...', info.memory_full_info().uss/(1024*1024)-20)
-            '先不管'
+            cpu = '%.2f' % (self.info.cpu_percent() / psutil.cpu_count())
+            memory = '%.2f' % (self.info.memory_full_info().uss / 1024 / 1024)
+            config.update({'cpu': cpu, 'memory': memory})
+            # self.info.memory_full_info().rss / 1024 / 1024
+            # self.info.cpu_percent(interval=1), self.info.memory_info()[0] / float(2 ** 20)
+            self.loading_config_status_signal.emit(config)
             time.sleep(1)
 
 
@@ -554,10 +557,16 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         self.save_pushButton.clicked.connect(self.save_config)
         self.cancel_pushButton.clicked.connect(self.close)
         self.simultaneous_download_lineEdit.setValidator(QtGui.QIntValidator())
+        self.note_pushButton.clicked.connect(self.note_message_box)
         self.speed_radioButton_dict = {self.slow_radioButton: {'type': 'slow', 'value': 1},
-                                       self.genera_radioButton: {'type': 'genera', 'value': 5},
+                                       self.genera_radioButton: {'type': 'genera', 'value': 3},
                                        self.high_radioButton: {'type': 'high', 'value': 8},
                                        self.starburst_radioButton: {'type': 'starburst', 'value': 16}}
+
+    def note_message_box(self):
+        QtWidgets.QMessageBox().information(self, "注意事項",
+                                            '慢速: 1 次 1 個連接<br/>一般: 1 次 3 個連接<br/>高速: 1 次 8 個連接<br/>星爆: 1 次 16 個連接<br/><br/>連接值:1次取得多少影片來源。<br/>連接值越高吃的網速就越多。<br/>同時下載數量越高，記憶體與網速就吃越多。',
+                                            QtWidgets.QMessageBox.Yes)
 
     def config(self):
         config = json.load(open('config.json', 'r', encoding='utf-8'))
@@ -602,79 +611,65 @@ class Save(QtWidgets.QMainWindow, Ui_Save):
         self.config.close()
 
 
-class Note(QtWidgets.QMainWindow, Ui_Note):
-    def __init__(self):
-        super(Note, self, ).__init__()
-        self.setupUi(self)
-        self.setFixedSize(self.width(), self.height())
-        self.confirm_pushButton.clicked.connect(self.close)
 
 
-class Url(QtWidgets.QMainWindow, Ui_Url):
-    def __init__(self):
-        super(Url, self, ).__init__()
-        self.setupUi(self)
-        self.setFixedSize(self.width(), self.height())
-        self.url_error_pushButton.clicked.connect(self.close)
-
-
-def html(get_html=None, result_html=None, choose='one'):
-    """
-    兩種用法，結果都是一樣的。
-    1.
-    app = QtWidgets.QApplication(sys.argv)
-    browser = QtWebEngineWidgets.QWebEngineView()
-    browser.load(QtCore.QUrl(url))
-    browser.loadFinished.connect(on_load_finished)
-    app.exec_()
-    2.
-    r = render(url)
-    result_html.put(r)
-    """
-
-    def render(url):
-
-        class Render(QtWebEngineWidgets.QWebEngineView):
-            def __init__(self, url):
-                self.html = None
-                self.app = QtWidgets.QApplication(sys.argv)
-                QtWebEngineWidgets.QWebEngineView.__init__(self)
-                self.loadFinished.connect(self._loadFinished)
-                self.load(QtCore.QUrl(url))
-                while self.html is None:
-                    self.app.processEvents(
-                        QtCore.QEventLoop.ExcludeUserInputEvents | QtCore.QEventLoop.ExcludeSocketNotifiers | QtCore.QEventLoop.WaitForMoreEvents)
-                self.app.quit()
-
-            def _callable(self, data):
-                self.html = data
-
-            def _loadFinished(self, result):
-                self.page().toHtml(self._callable)
-
-        return Render(url).html
-
-    def callback_function(html):
-        result_html.put(html)
-        browser.close()
-
-    def on_load_finished():
-        browser.page().runJavaScript("document.getElementsByTagName('html')[0].innerHTML", callback_function)
-
-    while True:
-        if get_html.qsize() > 0:
-            url = get_html.get()
-            if choose == 'one':
-                r = render(url)
-                result_html.put(r)
-            else:
-                app = QtWidgets.QApplication(sys.argv)
-                browser = QtWebEngineWidgets.QWebEngineView()
-                browser.load(QtCore.QUrl(url))
-                browser.loadFinished.connect(on_load_finished)
-                app.exec_()
-            break
-        time.sleep(1)
+# def html(get_html=None, result_html=None, choose='one'):
+#     """
+#     兩種用法，結果都是一樣的。
+#     1.
+#     app = QtWidgets.QApplication(sys.argv)
+#     browser = QtWebEngineWidgets.QWebEngineView()
+#     browser.load(QtCore.QUrl(url))
+#     browser.loadFinished.connect(on_load_finished)
+#     app.exec_()
+#     2.
+#     r = render(url)
+#     result_html.put(r)
+#     """
+#
+#     def render(url):
+#
+#         class Render(QtWebEngineWidgets.QWebEngineView):
+#             def __init__(self, url):
+#                 self.html = None
+#                 self.app = QtWidgets.QApplication(sys.argv)
+#                 QtWebEngineWidgets.QWebEngineView.__init__(self)
+#                 self.loadFinished.connect(self._loadFinished)
+#                 self.load(QtCore.QUrl(url))
+#                 while self.html is None:
+#                     self.app.processEvents(
+#                         QtCore.QEventLoop.ExcludeUserInputEvents | QtCore.QEventLoop.ExcludeSocketNotifiers | QtCore.QEventLoop.WaitForMoreEvents)
+#                 self.app.quit()
+#
+#             def _callable(self, data):
+#                 self.html = data
+#
+#             def _loadFinished(self, result):
+#                 self.page().toHtml(self._callable)
+#
+#         return Render(url).html
+#
+#     def callback_function(html):
+#         result_html.put(html)
+#         browser.close()
+#
+#     def on_load_finished():
+#         browser.page().runJavaScript("document.getElementsByTagName('html')[0].innerHTML", callback_function)
+#
+#     while True:
+#         if get_html.qsize() > 0:
+#             url = get_html.get()
+#             if choose == 'one':
+#                 r = render(url)
+#                 result_html.put(r)
+#             else:
+#                 app = QtWidgets.QApplication(sys.argv)
+#                 browser = QtWebEngineWidgets.QWebEngineView()
+#                 browser.load(QtCore.QUrl(url))
+#                 browser.loadFinished.connect(on_load_finished)
+#                 app.exec_()
+#             break
+#         time.sleep(1)
 
 
 if __name__ == '__main__':
@@ -682,12 +677,15 @@ if __name__ == '__main__':
     # myStyle = MyProxyStyle()
     # app.setStyle(myStyle)
     anime = Anime()
-    url_error = Url()
     config = Config()
     save = Save()
-    note = Note()
     anime.menu.actions()[0].triggered.connect(config.show)
-    config.note_pushButton.clicked.connect(note.show)
+    # note = QMessageBox.information(self,  # 使用infomation信息框
+    #                                "标题",
+    #                                "消息" * 10,
+    #                                )
+    # config.note_pushButton.clicked.connect(lambda: emsg.showMessage('Message: ' + lineedit.text()))
+
     anime.show()
     app.exec_()
 

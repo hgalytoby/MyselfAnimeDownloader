@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>Config</class>
  <widget class="QWidget" name="Config">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -24,7 +27,9 @@
   <property name="styleSheet">
    <string notr="true">QPushButton{
 background-color:#dedede;
-border-radius:6px
+border-radius:6px;
+width: 71px;
+height: 31px;
 }
 QPushButton:hover {
 background-color:#aaaa7f;

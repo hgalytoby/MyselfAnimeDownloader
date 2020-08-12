@@ -14,6 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Note(object):
     def setupUi(self, Note):
         Note.setObjectName("Note")
+        Note.setWindowModality(QtCore.Qt.ApplicationModal)
         Note.resize(345, 200)
         self.note_label = QtWidgets.QLabel(Note)
         self.note_label.setGeometry(QtCore.QRect(10, 10, 341, 141))

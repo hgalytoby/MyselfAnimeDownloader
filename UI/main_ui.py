@@ -24,7 +24,20 @@ class Ui_Anime(object):
 "QScrollBar::handle:vertical {\n"
 "background:#dfdfdf;\n"
 "border-radius:6px;\n"
-"}")
+"}\n"
+"QPushButton{\n"
+"background-color:#dedede;\n"
+"border-radius:6px\n"
+"}\n"
+"QPushButton:hover {\n"
+"background-color:#aaaa7f;\n"
+"color: #ffffff;\n"
+"}\n"
+"QPushButton:pressed{\n"
+"background-color:#dedede;\n"
+"color: #000000;\n"
+"}\n"
+"")
         Anime.setIconSize(QtCore.QSize(24, 24))
         Anime.setDocumentMode(False)
         Anime.setDockNestingEnabled(False)
@@ -277,6 +290,9 @@ class Ui_Anime(object):
         self.down_list_gridLayout = QtWidgets.QGridLayout(self.download_page)
         self.down_list_gridLayout.setObjectName("down_list_gridLayout")
         self.download_tableWidget = QtWidgets.QTableWidget(self.download_page)
+        self.download_tableWidget.setStyleSheet("QTableView::item{\n"
+"gridline-color:#000000\n"
+"}")
         self.download_tableWidget.setGridStyle(QtCore.Qt.NoPen)
         self.download_tableWidget.setObjectName("download_tableWidget")
         self.download_tableWidget.setColumnCount(3)
@@ -347,14 +363,14 @@ class Ui_Anime(object):
 "}")
         self.status_widget.setObjectName("status_widget")
         self.left_status_label = QtWidgets.QLabel(self.status_widget)
-        self.left_status_label.setGeometry(QtCore.QRect(20, 0, 211, 16))
+        self.left_status_label.setGeometry(QtCore.QRect(20, 0, 211, 20))
         self.left_status_label.setObjectName("left_status_label")
         self.right_ststus_label = QtWidgets.QLabel(self.status_widget)
         self.right_ststus_label.setGeometry(QtCore.QRect(780, 0, 211, 20))
         self.right_ststus_label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.right_ststus_label.setObjectName("right_ststus_label")
         self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(410, 10, 75, 23))
+        self.pushButton.setGeometry(QtCore.QRect(400, 10, 75, 23))
         self.pushButton.setObjectName("pushButton")
         Anime.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(Anime)

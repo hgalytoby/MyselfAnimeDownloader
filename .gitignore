@@ -1,2 +1,7 @@
-/venv
 /.idea
+/dist
+/build
+/venv
+config.json
+main.spec
+test.py

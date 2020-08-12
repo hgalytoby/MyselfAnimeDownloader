@@ -14,6 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Url(object):
     def setupUi(self, Url):
         Url.setObjectName("Url")
+        Url.setWindowModality(QtCore.Qt.ApplicationModal)
         Url.resize(120, 80)
         self.url_error_label = QtWidgets.QLabel(Url)
         self.url_error_label.setGeometry(QtCore.QRect(25, 10, 81, 31))

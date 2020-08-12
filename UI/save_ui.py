@@ -14,6 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Save(object):
     def setupUi(self, Save):
         Save.setObjectName("Save")
+        Save.setWindowModality(QtCore.Qt.WindowModal)
         Save.resize(217, 83)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -30,6 +31,18 @@ class Ui_Save(object):
         font.setPointSize(12)
         self.confirm_pushButton.setFont(font)
         self.confirm_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.confirm_pushButton.setStyleSheet("QPushButton{\n"
+"background-color:#dedede;\n"
+"border-radius:6px\n"
+"}\n"
+"QPushButton:hover {\n"
+"background-color:#aaaa7f;\n"
+"color: #ffffff;\n"
+"}\n"
+"QPushButton:pressed{\n"
+"background-color:#dedede;\n"
+"color: #000000;\n"
+"}")
         self.confirm_pushButton.setObjectName("confirm_pushButton")
 
         self.retranslateUi(Save)
