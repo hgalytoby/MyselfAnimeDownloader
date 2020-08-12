@@ -26,7 +26,10 @@ pip install -r -requirements.txt
 5.完結列表。<br>
 6.減少記憶體消耗量。<br>
 
-## 問題(已解決)<br>
+## 問題 1 (尚未解決)<br>
+各個 QThread 做完事情，留下的記憶體不知道如何釋放。
+
+## 問題 2 (已解決)<br>
 網頁上的 source 碼 與 requests.get後的結果。<br>
 ![image](https://i.imgur.com/9kG6vdj.png)
 ```python
@@ -94,7 +97,3 @@ chrome，其下載地址是：https://chromedriver.chromium.org/downloads <br>
 <br>
 我將所有關於URL的問題解決後，有名熱心的網友提供了我可以直接 requests 就能取得 URL 的的方法，用 BeautifulSoup 使用 css select 取得URL，我再一次將我的程式做修改！<br>
 這段過程花了我將近兩天的時間終於解決了！<br>
-
-
-## 結論
-最終我捨棄了 Selenium 套件，使用兩個網址的程式碼並套到我的程式裡面，並可選擇要使用哪個方法！ <br>
