@@ -30,7 +30,7 @@ pip install -r -requirements.txt
 每下載一個影片  下載前與下載後增加大概 4MB 記憶體，下載越多記憶體佔用量就越多，目前還不知道記憶體如何釋放。<br>
 
 ## 問題 2 (尚未解決)<br>
-下載影片途中 會出現 QThread: Destroyed while thread is still running 的問題。
+下載影片途中 會出現 QThread: Destroyed while thread is still running 的問題，程式就會崩潰。
 目前不知道該如何解決。
 
 ## 問題 3 (已解決)<br>

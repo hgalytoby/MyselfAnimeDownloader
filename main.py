@@ -80,10 +80,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.download_tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.download_tableWidget.customContextMenuRequested.connect(self.on_customContextMenuRequested)
         self.download_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        # self.pushButton.clicked.connect(self.del_ob)
 
-    # def del_ob(self):
-    #     gc.collect()
 
     def on_customContextMenuRequested(self, pos):
         # print(pos)
@@ -110,16 +107,16 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             delete_row_action = menu.addAction("刪除選取項目")
         all_delete_row_action = menu.addAction("清除已完成")
         action = menu.exec_(self.download_tableWidget.viewport().mapToGlobal(pos))
-        if action == delete_row_action:
-            for i in select:
-                download_anime_Thread_name = self.download_tableWidget.item(i, 0).text()
-                download_anime_Thread_name = ''.join(download_anime_Thread_name.split('　　'))
-                # self.download_anime_Thread[download_anime_Thread_name].terminate()
-                del self.download_anime_Thread[download_anime_Thread_name]
-                # self.download_anime_Thread[download_anime_Thread_name].wait()
-                self.download_tableWidget.removeRow(i)
-        elif action == all_delete_row_action:
-            pass
+        # if action == delete_row_action:
+        #     for i in select:
+        #         download_anime_Thread_name = self.download_tableWidget.item(i, 0).text()
+        #         download_anime_Thread_name = ''.join(download_anime_Thread_name.split('　　'))
+        #         # self.download_anime_Thread[download_anime_Thread_name].terminate()
+        #         del self.download_anime_Thread[download_anime_Thread_name]
+        #         # self.download_anime_Thread[download_anime_Thread_name].wait()
+        #         self.download_tableWidget.removeRow(i)
+        # elif action == all_delete_row_action:
+        #     pass
 
     def doubleClicked_table(self, index):
         if index != 0 and not self.load_week_label_status:
