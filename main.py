@@ -49,6 +49,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.mouseHoverOnTabBar()
         self.loading_config_status()
         self.setFixedSize(self.width(), self.height())
+        self.week = {0: self.Monday_scrollAreaWidgetContents, 1: self.Tuesday_scrollAreaWidgetContents,
+                     2: self.Wednesday_scrollAreaWidgetContents, 3: self.Thursday_scrollAreaWidgetContents,
+                     4: self.Friday_scrollAreaWidgetContents, 5: self.Staurday_scrollAreaWidgetContents,
+                     6: self.Sunday_scrollAreaWidgetContents}
         # self.menu.actions()[0].triggered.connect(config.show)
         self.menu.actions()[2].triggered.connect(self.closeEvent)
         self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
@@ -57,10 +61,13 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.now_download_value = 1
         self.download_tableWidget_rowcount = 0
         self.download_video_mission_list = list()
+        self.week_dict = dict()
+        self.week_layout = dict()
         self.story_checkbox_dict = dict()
         self.download_anime_Thread = dict()
         self.download_progressBar_dict = dict()
         self.download_status_label_dict = dict()
+        self.tableWidgetItem_download_dict = dict()
         self.download_tableWidget.setColumnWidth(0, 400)
         self.download_tableWidget.setColumnWidth(1, 150)
         # self.download_tableWidget.setColumnWidth(2, 431)
@@ -83,38 +90,39 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         # print(pos)
         # it = self.download_tableWidget.itemAt(pos)
         select = list()
-        for i in self.download_tableWidget.selectedItems()[::2]:
+        # for i in self.download_tableWidget.selectedItems()[::2]:
+        #     select.append(i.row())
+        for i in self.download_tableWidget.selectedIndexes()[::3]:
             select.append(i.row())
         select.sort(reverse=True)
-        # row_num = i.row()
+
+        # select.sort(reverse=True)
         # print(self.download_tableWidget.selectionModel().selection().indexes())
         # if it is None:
         #     return
         # row = it.row()
         # column = it.column()
-        # print(c)
         # item_range = QtWidgets.QTableWidgetSelectionRange(0, c, self.download_tableWidget.rowCount() - 1, c)
         # self.download_tableWidget.setRangeSelected(item_range, True)
-        # for i in select:
-        #     download_anime_Thread_name = self.download_tableWidget.item(i, 0).text()
-        #     download_anime_Thread_name = ''.join(download_anime_Thread_name.split('　　'))
-        #     print(download_anime_Thread_name)
-        if len(select) == 0:
-            return None
-        menu = QtWidgets.QMenu()
-        if len(select) > 1:
-            delete_column_action = menu.addAction("All Delete column")
-        else:
-            delete_column_action = menu.addAction("Delete column")
-        action = menu.exec_(self.download_tableWidget.viewport().mapToGlobal(pos))
-        if action == delete_column_action:
-            for i in select:
-                download_anime_Thread_name = self.download_tableWidget.item(i, 0).text()
-                download_anime_Thread_name = ''.join(download_anime_Thread_name.split('　　'))
-                # self.download_anime_Thread[download_anime_Thread_name].terminate()
-                del self.download_anime_Thread[download_anime_Thread_name]
-                # self.download_anime_Thread[download_anime_Thread_name].wait()
-                self.download_tableWidget.removeRow(i)
+        # if len(select) == 0:
+        #     return None
+        # menu = QtWidgets.QMenu()
+        # if len(select) > 1:
+        #     delete_row_action = menu.addAction("刪除所有選取項目")
+        # else:
+        #     delete_row_action = menu.addAction("刪除選取項目")
+        # all_delete_row_action = menu.addAction("清除已完成")
+        # action = menu.exec_(self.download_tableWidget.viewport().mapToGlobal(pos))
+        # if action == delete_row_action:
+        #     for i in select:
+        #         download_anime_Thread_name = self.download_tableWidget.item(i, 0).text()
+        #         download_anime_Thread_name = ''.join(download_anime_Thread_name.split('　　'))
+        #         # self.download_anime_Thread[download_anime_Thread_name].terminate()
+        #         del self.download_anime_Thread[download_anime_Thread_name]
+        #         # self.download_anime_Thread[download_anime_Thread_name].wait()
+        #         self.download_tableWidget.removeRow(i)
+        # elif action == all_delete_row_action:
+        #     pass
 
     def doubleClicked_table(self, index):
         if index != 0 and not self.load_week_label_status:
@@ -157,8 +165,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.left_status_label.setText(
             f'狀態: {self.now_download_value - 1} 個下載中　　連接設定: {self.speed_value} / {self.simultaneously_value}')
         self.right_ststus_label.setText(f'記憶體: {signal["memory"]}MB / 程序: {signal["cpu"]}%')
-        gc.collect()
-
+        # gc.collect()
 
     def download_anime(self):
         for i in self.story_checkbox_dict:
@@ -167,35 +174,36 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 anime = data['data']['name'] + data['data']['num']
                 if anime not in self.download_anime_Thread:
                     self.download_tableWidget.setRowCount(self.download_tableWidget_rowcount + 1)
-                    name = QtWidgets.QTableWidgetItem(f"{data['data']['name']}　　{data['data']['num']}")
-                    status = QtWidgets.QTableWidgetItem('準備中')
-                    self.download_progressBar_dict.update({anime: QtWidgets.QProgressBar()})
-                    self.download_progressBar_dict[anime].setValue(0)
-                    self.download_progressBar_dict[anime].setAlignment(QtCore.Qt.AlignCenter)
-                    self.download_status_label_dict.update({anime: status})
-                    self.download_status_label_dict[anime].setTextAlignment(QtCore.Qt.AlignCenter)
-                    self.download_tableWidget.setItem(self.download_tableWidget_rowcount, 0, name)
-                    self.download_tableWidget.setItem(self.download_tableWidget_rowcount, 1, status)
+                    self.tableWidgetItem_download_dict.update(
+                        {anime: {'name': QtWidgets.QTableWidgetItem(f"{data['data']['name']}　　{data['data']['num']}"),
+                                 'status': QtWidgets.QTableWidgetItem('準備中'),
+                                 'schedule': QtWidgets.QProgressBar()}})
+                    self.tableWidgetItem_download_dict[anime]['status'].setTextAlignment(QtCore.Qt.AlignCenter)
+                    self.tableWidgetItem_download_dict[anime]['schedule'].setValue(0)
+                    self.tableWidgetItem_download_dict[anime]['schedule'].setAlignment(QtCore.Qt.AlignCenter)
+                    self.download_tableWidget.setItem(self.download_tableWidget_rowcount, 0,
+                                                      self.tableWidgetItem_download_dict[anime]['name'])
+                    self.download_tableWidget.setItem(self.download_tableWidget_rowcount, 1,
+                                                      self.tableWidgetItem_download_dict[anime]['status'])
                     self.download_tableWidget.setCellWidget(self.download_tableWidget_rowcount, 2,
-                                                            self.download_progressBar_dict[anime])
+                                                            self.tableWidgetItem_download_dict[anime]['schedule'])
                     self.download_tableWidget_rowcount += 1
                     self.download_video_mission_list.append(anime)
-                    # self.download_anime_Thread[anime] = Download_Video(data=data, mq=self.mq)
                     self.download_anime_Thread[anime] = Download_Video(data=data)
                     self.download_anime_Thread[anime].download_video.connect(self.download_anime_task)
                     self.download_anime_Thread[anime].start()
 
     def download_anime_task(self, signal):
         if int(signal['success']) == 100:
-            self.download_status_label_dict[signal['name']].setText('已完成')
-            self.download_progressBar_dict[signal['name']].setValue(signal["success"])
+            self.tableWidgetItem_download_dict[signal['name']]['status'].setText('已完成')
+            self.tableWidgetItem_download_dict[signal['name']]['schedule'].setValue(signal["success"])
             # self.download_anime_Thread[signal['name']].terminate()
             # self.download_anime_Thread[signal['name']].quit()
             # self.download_anime_Thread[signal['name']].wait()
             del self.download_anime_Thread[signal['name']]
         else:
-            self.download_status_label_dict[signal['name']].setText('下載中')
-            self.download_progressBar_dict[signal['name']].setValue(signal["success"])
+            self.tableWidgetItem_download_dict[signal['name']]['status'].setText('下載中')
+            self.tableWidgetItem_download_dict[signal['name']]['schedule'].setValue(signal["success"])
 
     def config(self):
         self.config_windows = Config()
@@ -247,39 +255,35 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.week_data.start()
 
     def week_data_task(self, signal):
-        week = {0: self.Monday_scrollAreaWidgetContents, 1: self.Tuesday_scrollAreaWidgetContents,
-                2: self.Wednesday_scrollAreaWidgetContents, 3: self.Thursday_scrollAreaWidgetContents,
-                4: self.Friday_scrollAreaWidgetContents, 5: self.Staurday_scrollAreaWidgetContents,
-                6: self.Sunday_scrollAreaWidgetContents}
         for i in signal:
-            form_layout = QtWidgets.QFormLayout()
+            self.week_layout.update({i: QtWidgets.QFormLayout()})
             for j, m in enumerate(signal[i]):
-                anime_name = QtWidgets.QPushButton('．' + m)
-                anime_name.setObjectName(signal[i][m]['url'])
-                anime_name.setStyleSheet("QPushButton {\n"
-                                         "background-color:transparent;\n"
-                                         "color: #339900;\n"
-                                         "font-size:22px;\n"
-                                         "}"
-                                         "QPushButton:hover{background-color:transparent; color: black;}\n"
-                                         "QPushButton:pressed{\n"
-                                         "background-color: #ffffff;\n"
-                                         "border-style: inset;\n"
-                                         "color: black;\n"
-                                         " }\n"
-                                         )
-                anime_name.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-                anime_name.clicked.connect(self.anime_info_event)
-                update_num = QtWidgets.QLabel(
-                    f'<span style=\" font-size:16pt; {signal[i][m]["color"]}\">{signal[i][m]["update"]}')
-                update_num.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
-                form_layout.addRow(anime_name, update_num)
-            week[i].setLayout(form_layout)
+                self.week_dict.update({m: {'pushbutton': QtWidgets.QPushButton('．' + m),
+                                           'update': QtWidgets.QLabel(
+                                               f'<span style=\" font-size:16pt; {signal[i][m]["color"]}\">{signal[i][m]["update"]}')}})
+                self.week_dict[m]['pushbutton'].setObjectName(signal[i][m]['url'])
+                self.week_dict[m]['pushbutton'].setStyleSheet("QPushButton {\n"
+                                                              "background-color:transparent;\n"
+                                                              "color: #339900;\n"
+                                                              "font-size:22px;\n"
+                                                              "}"
+                                                              "QPushButton:hover{background-color:transparent; color: black;}\n"
+                                                              "QPushButton:pressed{\n"
+                                                              "background-color: #ffffff;\n"
+                                                              "border-style: inset;\n"
+                                                              "color: black;\n"
+                                                              " }\n"
+                                                              )
+                self.week_dict[m]['pushbutton'].setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                self.week_dict[m]['pushbutton'].clicked.connect(self.anime_info_event)
+                self.week_dict[m]['update'].setAlignment(
+                    QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
+                self.week_layout[i].addRow(self.week_dict[m]['pushbutton'], self.week_dict[m]['update'])
+            self.week[i].setLayout(self.week_layout[i])
         self.load_week_label.setVisible(False)
         self.load_week_label_status = True
-        del signal
-        self.week_data.quit()
-        self.week_data.wait()
+        # self.week_data.quit()
+        # self.week_data.wait()
         del self.week_data
 
     def anime_info_event(self):
@@ -292,16 +296,22 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 url = self.customize_lineEdit.text().strip()
             else:
                 url = self.customize_lineEdit.text().strip()
-                QtWidgets.QMessageBox.information(self, '錯誤',
-                                                  f"<font size=5  color=#000000>網址有誤！</font> <br/><font size=4  color=#000000>確認輸入的 <a href={url}>網址 </a><font size=4  color=#000000>是否正確！<",
-                                                  QtWidgets.QMessageBox.Ok)
+                self.url_error = QtWidgets.QMessageBox.information(self, '錯誤',
+                                                                   f"<font size=5  color=#000000>網址有誤！</font> <br/><font size=4  color=#000000>確認輸入的 <a href={url}>網址 </a><font size=4  color=#000000>是否正確！<",
+                                                                   QtWidgets.QMessageBox.Ok)
+                # QMessageBox {
+                #     background-color: #333333;
+                # }
+                #
+                # QMessageBox QLabel {
+                #     color: #aaa;
+                # }
                 ok = False
         else:
             url = pushButton.objectName()
         if ok:
             self.load_anime_label.setVisible(True)
             self.load_anime_label_status = True
-
             self.anime_info = Anime_info(url=url)
             self.anime_info.anime_info_signal.connect(self.anime_info_data)
             self.anime_info.start()
@@ -313,10 +323,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.story_list_all_pushButton.setText('全選')
         self.introduction_textBrowser.clear()
         self.story_checkbox_dict.clear()
-        pix = QtGui.QPixmap()
-        pix.loadFromData(signal['image'])
+        self.pix = QtGui.QPixmap()
+        self.pix.loadFromData(signal['image'])
         self.image_label.clear()
-        self.image_label.setPixmap(pix)
+        self.image_label.setPixmap(self.pix)
         self.type_label.setText(signal[0])
         self.premiere_label.setText(signal[1])
         self.total_set_label.setText(signal[2])
@@ -332,12 +342,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         else:
             self.story_list_scrollArea.setGeometry(QtCore.QRect(10, 100, 211, 60 + len(signal['total']) * 20))
         for i, m in enumerate(signal['total']):
-            checkbox = QtWidgets.QCheckBox(m)
             data = json.dumps({'data': {'name': signal['name'], 'num': m, 'url': signal['total'][m]}})
-            checkbox.setObjectName(data)
-            self.story_checkbox_dict.update({i: checkbox})
-            self.story_list_scrollAreaWidgetContents_Layout.addWidget(checkbox)
-        del signal
+            self.story_checkbox_dict.update({i: QtWidgets.QCheckBox(m)})
+            self.story_checkbox_dict[i].setObjectName(data)
+            self.story_list_scrollAreaWidgetContents_Layout.addWidget(self.story_checkbox_dict[i])
         self.anime_page_Visible(status=True)
         self.load_anime_label_status = False
         # self.anime_info.terminate()
@@ -357,6 +365,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 self.tabBar.setCurrentIndex(index)
                 return True
         return super().eventFilter(obj, event)
+
 
 class Week_data_signal(QtCore.QThread):
     week_data_signal = QtCore.pyqtSignal(dict)
@@ -380,6 +389,7 @@ class Week_data_signal(QtCore.QThread):
                     anime_data.update({num[k]['title']: {'update': num[k + len(num) // 2].text, 'color': color[k],
                                                          'url': f'https://myself-bbs.com/{num[k]["href"]}'}})
                 week_dict.update({index: anime_data})
+        del res, html
         self.week_data_signal.emit(week_dict)
 
 
@@ -436,10 +446,10 @@ class Download_Video(QtCore.QThread):
         self.video_data = 0
         self.ban = '//:*?"<>|.'
         self.result = dict()
+        self.stop = False
         self.folder_name = self.badname(self.data['data']['name'])
         self.file_name = self.badname(self.data['data']['num'])
         self.path = json.load(open('config.json', 'r', encoding='utf-8'))
-        self.t = dict()
 
     def badname(self, name):
         for i in self.ban:
@@ -463,13 +473,6 @@ class Download_Video(QtCore.QThread):
                     return m3u8_data.text
             except:
                 time.sleep(5)
-
-    def build_cmd(self, i, data):
-        command = {i: {'data': data.content if data is not None else data,
-                       'path': self.path['path'],
-                       'folder_name': self.folder_name,
-                       'file_name': self.file_name}}
-        return command
 
     def video(self, i, res, host):
         host_value = 0
@@ -520,12 +523,14 @@ class Download_Video(QtCore.QThread):
             self.result.update({'success': int(self.video_data / m3u8_count * 100),
                                 'name': self.data["data"]["name"] + self.data["data"]["num"],
                                 })
-            self.download_video.emit(self.result)
             if self.video_data == m3u8_count:
+                self.download_video.emit(self.result)
+                anime.now_download_value -= 1
                 break
-            time.sleep(0.5)
-        del executor
-        anime.now_download_value -= 1
+            self.download_video.emit(self.result)
+            time.sleep(1)
+        self.quit()
+        self.wait()
 
 
 class Loading_config_status(QtCore.QThread):
@@ -609,8 +614,6 @@ class Save(QtWidgets.QMainWindow, Ui_Save):
     def confirm(self):
         self.close()
         self.config.close()
-
-
 
 
 # def html(get_html=None, result_html=None, choose='one'):
