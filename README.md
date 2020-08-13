@@ -1,6 +1,6 @@
 # MyselfAnimeDownloader
 ## 預覽
-
+圖為最初的範本，不一定是現在的樣貌。
 ![image](https://i.imgur.com/qAckhuk.gif)
 
 ## 運行
