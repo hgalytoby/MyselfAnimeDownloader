@@ -1,4 +1,4 @@
-# Myself_Anime
+# MyselfAnimeDownloader
 ## 預覽
 
 ![image](https://i.imgur.com/qAckhuk.gif)
@@ -27,9 +27,13 @@ pip install -r -requirements.txt
 6.減少記憶體消耗量。<br>
 
 ## 問題 1 (尚未解決)<br>
-各個 QThread 做完事情，留下的記憶體不知道如何釋放。
+每下載一個影片  下載前與下載後增加大概 4MB 記憶體，下載越多記憶體佔用量就越多，目前還不知道記憶體如何釋放。<br>
 
-## 問題 2 (已解決)<br>
+## 問題 2 (尚未解決)<br>
+下載影片途中 會出現 QThread: Destroyed while thread is still running 的問題。
+目前不知道該如何解決。
+
+## 問題 3 (已解決)<br>
 網頁上的 source 碼 與 requests.get後的結果。<br>
 ![image](https://i.imgur.com/9kG6vdj.png)
 ```python

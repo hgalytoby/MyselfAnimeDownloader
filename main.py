@@ -3,13 +3,11 @@ import sys
 import json
 import time
 import random
-import gc
 import re
 import shutil
 import psutil
 import datetime
 import requests
-# import multiprocessing as mp
 from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures import ThreadPoolExecutor
 from UI.main_ui import Ui_Anime
@@ -17,6 +15,7 @@ from UI.config_ui import Ui_Config
 from UI.save_ui import Ui_Save
 from UI.note_ui import Ui_Note
 from UI.url_ui import Ui_Url
+from UI.about_ui import Ui_About
 from bs4 import BeautifulSoup
 from PyQt5 import QtCore, QtWidgets, QtGui, QtWebEngineWidgets
 
@@ -81,10 +80,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.download_tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.download_tableWidget.customContextMenuRequested.connect(self.on_customContextMenuRequested)
         self.download_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.pushButton.clicked.connect(self.del_ob)
+        # self.pushButton.clicked.connect(self.del_ob)
 
-    def del_ob(self):
-        gc.collect()
+    # def del_ob(self):
+    #     gc.collect()
 
     def on_customContextMenuRequested(self, pos):
         # print(pos)
@@ -95,8 +94,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         for i in self.download_tableWidget.selectedIndexes()[::3]:
             select.append(i.row())
         select.sort(reverse=True)
-
-        # select.sort(reverse=True)
         # print(self.download_tableWidget.selectionModel().selection().indexes())
         # if it is None:
         #     return
@@ -104,25 +101,25 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         # column = it.column()
         # item_range = QtWidgets.QTableWidgetSelectionRange(0, c, self.download_tableWidget.rowCount() - 1, c)
         # self.download_tableWidget.setRangeSelected(item_range, True)
-        # if len(select) == 0:
-        #     return None
-        # menu = QtWidgets.QMenu()
-        # if len(select) > 1:
-        #     delete_row_action = menu.addAction("刪除所有選取項目")
-        # else:
-        #     delete_row_action = menu.addAction("刪除選取項目")
-        # all_delete_row_action = menu.addAction("清除已完成")
-        # action = menu.exec_(self.download_tableWidget.viewport().mapToGlobal(pos))
-        # if action == delete_row_action:
-        #     for i in select:
-        #         download_anime_Thread_name = self.download_tableWidget.item(i, 0).text()
-        #         download_anime_Thread_name = ''.join(download_anime_Thread_name.split('　　'))
-        #         # self.download_anime_Thread[download_anime_Thread_name].terminate()
-        #         del self.download_anime_Thread[download_anime_Thread_name]
-        #         # self.download_anime_Thread[download_anime_Thread_name].wait()
-        #         self.download_tableWidget.removeRow(i)
-        # elif action == all_delete_row_action:
-        #     pass
+        if len(select) == 0:
+            return None
+        menu = QtWidgets.QMenu()
+        if len(select) > 1:
+            delete_row_action = menu.addAction("刪除所有選取項目")
+        else:
+            delete_row_action = menu.addAction("刪除選取項目")
+        all_delete_row_action = menu.addAction("清除已完成")
+        action = menu.exec_(self.download_tableWidget.viewport().mapToGlobal(pos))
+        if action == delete_row_action:
+            for i in select:
+                download_anime_Thread_name = self.download_tableWidget.item(i, 0).text()
+                download_anime_Thread_name = ''.join(download_anime_Thread_name.split('　　'))
+                # self.download_anime_Thread[download_anime_Thread_name].terminate()
+                del self.download_anime_Thread[download_anime_Thread_name]
+                # self.download_anime_Thread[download_anime_Thread_name].wait()
+                self.download_tableWidget.removeRow(i)
+        elif action == all_delete_row_action:
+            pass
 
     def doubleClicked_table(self, index):
         if index != 0 and not self.load_week_label_status:
@@ -146,13 +143,17 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
     def write_config(self):
         config = {'path': os.getcwd(), 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5}
         if not os.path.isfile('config.json'):
-            json.dump(config, open('config.json', 'w', encoding='utf-8'), indent=2)
+            data = config
+            json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
         else:
             data = json.load(open('config.json', 'r', encoding='utf-8'))
             for i in config:
                 if i not in data:
                     data[i] = config[i]
             json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
+        self.simultaneously_value = data['simultaneous']
+        self.speed_value = data['speed']['value']
+        return data['simultaneous'], data['speed']['value']
 
     def loading_config_status(self):
         self.config_status = Loading_config_status(pid=os.getpid())
@@ -160,19 +161,17 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.config_status.start()
 
     def loading_config_status_mission(self, signal):
-        self.simultaneously_value = signal['simultaneous']
-        self.speed_value = signal['speed']['value']
         self.left_status_label.setText(
             f'狀態: {self.now_download_value - 1} 個下載中　　連接設定: {self.speed_value} / {self.simultaneously_value}')
         self.right_ststus_label.setText(f'記憶體: {signal["memory"]}MB / 程序: {signal["cpu"]}%')
-        # gc.collect()
 
     def download_anime(self):
         for i in self.story_checkbox_dict:
             if self.story_checkbox_dict[i].isChecked():
                 data = json.loads(self.story_checkbox_dict[i].objectName())
                 anime = data['data']['name'] + data['data']['num']
-                if anime not in self.download_anime_Thread:
+                if anime not in self.download_anime_Thread or (
+                        anime in self.download_anime_Thread and self.download_anime_Thread[anime]['over']):
                     self.download_tableWidget.setRowCount(self.download_tableWidget_rowcount + 1)
                     self.tableWidgetItem_download_dict.update(
                         {anime: {'name': QtWidgets.QTableWidgetItem(f"{data['data']['name']}　　{data['data']['num']}"),
@@ -189,20 +188,21 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                             self.tableWidgetItem_download_dict[anime]['schedule'])
                     self.download_tableWidget_rowcount += 1
                     self.download_video_mission_list.append(anime)
-                    self.download_anime_Thread[anime] = Download_Video(data=data)
-                    self.download_anime_Thread[anime].download_video.connect(self.download_anime_task)
-                    self.download_anime_Thread[anime].start()
+                    self.download_anime_Thread.update({anime: {'thread': Download_Video(data=data),
+                                                               'over': False}})
+                    self.download_anime_Thread[anime]['thread'].download_video.connect(self.download_anime_task)
+                    self.download_anime_Thread[anime]['thread'].start()
 
     def download_anime_task(self, signal):
         if int(signal['success']) == 100:
             self.tableWidgetItem_download_dict[signal['name']]['status'].setText('已完成')
             self.tableWidgetItem_download_dict[signal['name']]['schedule'].setValue(signal["success"])
-            # self.download_anime_Thread[signal['name']].terminate()
-            # self.download_anime_Thread[signal['name']].quit()
-            # self.download_anime_Thread[signal['name']].wait()
-            del self.download_anime_Thread[signal['name']]
+            self.download_anime_Thread[signal['name']]['over'] = True
         else:
-            self.tableWidgetItem_download_dict[signal['name']]['status'].setText('下載中')
+            if self.download_anime_Thread[signal['name']]['thread'].stop:
+                self.tableWidgetItem_download_dict[signal['name']]['status'].setText('暫停')
+            else:
+                self.tableWidgetItem_download_dict[signal['name']]['status'].setText('下載中')
             self.tableWidgetItem_download_dict[signal['name']]['schedule'].setValue(signal["success"])
 
     def config(self):
@@ -291,11 +291,11 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
         ok = True
         if pushButton.objectName() == 'customize_pushButton':
-            if re.match('^https://myself-bbs.com/thread-[0-9]{4,6}-\d-\d.html$',
-                        self.customize_lineEdit.text().strip()):
-                url = self.customize_lineEdit.text().strip()
+            url = self.customize_lineEdit.text().strip()
+            if re.match('^https://myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) \
+                    or re.match('^https://myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url):
+                pass
             else:
-                url = self.customize_lineEdit.text().strip()
                 self.url_error = QtWidgets.QMessageBox.information(self, '錯誤',
                                                                    f"<font size=5  color=#000000>網址有誤！</font> <br/><font size=4  color=#000000>確認輸入的 <a href={url}>網址 </a><font size=4  color=#000000>是否正確！<",
                                                                    QtWidgets.QMessageBox.Ok)
@@ -443,7 +443,8 @@ class Download_Video(QtCore.QThread):
     def __init__(self, data):
         super(Download_Video, self).__init__()
         self.data = data
-        self.video_data = 0
+        self.video_num = 0
+        self.video_data = dict()
         self.ban = '//:*?"<>|.'
         self.result = dict()
         self.stop = False
@@ -459,41 +460,55 @@ class Download_Video(QtCore.QThread):
     def get_host_video_data(self):
         while True:
             try:
-                res = requests.get(url=self.data['data']['url'], headers=headers, timeout=5)
-                if res:
-                    return res.json()
+                if not self.stop:
+                    res = requests.get(url=self.data['data']['url'], headers=headers, timeout=5)
+                    if res:
+                        return res.json()
             except:
                 time.sleep(5)
 
     def get_m3u8_data(self, res):
         while True:
             try:
-                m3u8_data = requests.get(url=res['host'][0]['host'] + res['video']['720p'], headers=headers, timeout=5)
-                if m3u8_data:
-                    return m3u8_data.text
+                if not self.stop:
+                    m3u8_data = requests.get(url=res['host'][0]['host'] + res['video']['720p'], headers=headers,
+                                             timeout=5)
+                    if m3u8_data:
+                        return m3u8_data.text
             except:
                 time.sleep(5)
 
     def video(self, i, res, host):
         host_value = 0
         url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
+        ok = False
         while True:
             try:
-                data = requests.get(url=url, headers=headers, stream=True, timeout=3)
-                # data = requests.get(url=url, headers=headers, timeout=3)
-                if data:
-                    while True:
-                        if self.video_data == i:
-                            with open(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4', 'ab') as v:
-                                shutil.copyfileobj(data.raw, v)
-                                # v.write(data.content)
-                            del data
-                            self.video_data += 1
-                            break
-                        time.sleep(1)
-                    break
+                if not self.stop:
+                    self.video_data.update({i: requests.get(url=url, headers=headers, stream=True, timeout=3)})
+                    # data = requests.get(url=url, headers=headers, timeout=3)
+                    if self.video_data[i]:
+                        while True:
+                            if self.video_num == i:
+                                with open(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4', 'ab') as v:
+                                    shutil.copyfileobj(self.video_data[i].raw, v)
+                                    # v.write(data.content)
+                                ok = True
+                                del self.video_data[i]
+                                self.video_num += 1
+                                break
+                            if self.stop:
+                                del self.video_data[i]
+                                break
+                            time.sleep(1)
+                    if ok:
+                        break
+                time.sleep(5)
             except:
-                host_value += 1
+                if host_value > len(host):
+                    host_value = 0
+                else:
+                    host_value += 1
                 url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
                 time.sleep(1)
 
@@ -513,22 +528,23 @@ class Download_Video(QtCore.QThread):
         res = self.get_host_video_data()
         m3u8_data = self.get_m3u8_data(res)
         m3u8_count = m3u8_data.count('EXTINF')
-        executor = ThreadPoolExecutor(max_workers=anime.speed_value)
         host = sorted(res['host'], key=lambda i: i.get('weight'), reverse=True)
         # if os.path.isfile(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.tmp'):
         #     os.remove(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.tmp')
+        self.executor = ThreadPoolExecutor(max_workers=anime.speed_value)
         for i in range(m3u8_count):
-            executor.submit(self.video, i, res, host)
+            self.executor.submit(self.video, i, res, host)
         while True:
-            self.result.update({'success': int(self.video_data / m3u8_count * 100),
+            self.result.update({'success': int(self.video_num / m3u8_count * 100),
                                 'name': self.data["data"]["name"] + self.data["data"]["num"],
                                 })
-            if self.video_data == m3u8_count:
+            if self.video_num == m3u8_count:
                 self.download_video.emit(self.result)
                 anime.now_download_value -= 1
                 break
             self.download_video.emit(self.result)
             time.sleep(1)
+        time.sleep(3)
         self.quit()
         self.wait()
 
@@ -595,6 +611,8 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
                 break
         data = {'path': path, 'speed': speed, 'simultaneous': int(simultaneous)}
         json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
+        anime.simultaneously_value = data['simultaneous']
+        anime.speed_value = data['speed']['value']
         save.config = self
         save.show()
 
@@ -614,6 +632,17 @@ class Save(QtWidgets.QMainWindow, Ui_Save):
     def confirm(self):
         self.close()
         self.config.close()
+
+
+class About(QtWidgets.QMainWindow, Ui_About):
+    def __init__(self):
+        super(About, self, ).__init__()
+        self.setupUi(self)
+        self.setFixedSize(self.width(), self.height())
+        self.pixmap = QtGui.QPixmap("./image/logo.ico")  # 按指定路径找到图片，注意路径必须用双引号包围，不能用单引号
+        self.image_label.setPixmap(self.pixmap)
+        self.image_label.setScaledContents(True)
+        self.close_pushButton.clicked.connect(self.close)
 
 
 # def html(get_html=None, result_html=None, choose='one'):
@@ -682,16 +711,12 @@ if __name__ == '__main__':
     anime = Anime()
     config = Config()
     save = Save()
+    about = About()
     anime.menu.actions()[0].triggered.connect(config.show)
-    # note = QMessageBox.information(self,  # 使用infomation信息框
-    #                                "标题",
-    #                                "消息" * 10,
-    #                                )
-    # config.note_pushButton.clicked.connect(lambda: emsg.showMessage('Message: ' + lineedit.text()))
-
+    anime.menu.actions()[1].triggered.connect(about.show)
     anime.show()
     app.exec_()
-
+    # 'https://myself-bbs.com/thread-43773-1-1.html'
     # print(os.getpid())
     # print(psutil.virtual_memory())
     # process = psutil.Process(os.getpid())
