@@ -2,22 +2,19 @@ import os
 import sys
 import json
 import time
-import random
+import gc
+# import random
 import re
 import shutil
 import psutil
-import datetime
 import requests
-from concurrent.futures import ProcessPoolExecutor
+# from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures import ThreadPoolExecutor
 from UI.main_ui import Ui_Anime
 from UI.config_ui import Ui_Config
-from UI.save_ui import Ui_Save
-from UI.note_ui import Ui_Note
-from UI.url_ui import Ui_Url
 from UI.about_ui import Ui_About
 from bs4 import BeautifulSoup
-from PyQt5 import QtCore, QtWidgets, QtGui, QtWebEngineWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36'}
@@ -61,7 +58,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.download_tableWidget_rowcount = 0
         self.download_video_mission_list = list()
         self.week_dict = dict()
-        self.week_layout = dict()
+        self.week_layout_dict = dict()
         self.story_checkbox_dict = dict()
         self.download_anime_Thread = dict()
         self.download_progressBar_dict = dict()
@@ -80,9 +77,19 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.download_tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.download_tableWidget.customContextMenuRequested.connect(self.on_customContextMenuRequested)
         self.download_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.pushButton.clicked.connect(self.k)
 
+    def k(self):
+        """
+        測試。
+        """
+        print('in')
+        gc.collect()
 
     def on_customContextMenuRequested(self, pos):
+        """
+        下載列表右鍵選單。
+        """
         # print(pos)
         # it = self.download_tableWidget.itemAt(pos)
         select = list()
@@ -119,6 +126,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         #     pass
 
     def doubleClicked_table(self, index):
+        """
+        TabWidget切換時，判斷讀取動漫資訊是否顯示。
+        """
         if index != 0 and not self.load_week_label_status:
             self.load_week_label.setVisible(False)
         elif index == 0 and not self.load_week_label_status:
@@ -131,13 +141,17 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
     def print_row(self, r, c):
         print(r, c)
 
-    def status(self):
-        pass
-
     def closeEvent(self, event):
+        """
+        關閉主視窗其餘子視窗也會關閉。
+        """
         QtWidgets.QApplication.closeAllWindows()
 
     def write_config(self):
+        """
+        每次打開會判斷有沒有 config.json。
+        """
+
         config = {'path': os.getcwd(), 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5}
         if not os.path.isfile('config.json'):
             data = config
@@ -153,16 +167,25 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         return data['simultaneous'], data['speed']['value']
 
     def loading_config_status(self):
+        """
+        創讀取狀態列的 Thread。
+        """
         self.config_status = Loading_config_status(pid=os.getpid())
         self.config_status.loading_config_status_signal.connect(self.loading_config_status_mission)
         self.config_status.start()
 
     def loading_config_status_mission(self, signal):
+        """
+        接收狀態列 Thread 信號。
+        """
         self.left_status_label.setText(
             f'狀態: {self.now_download_value - 1} 個下載中　　連接設定: {self.speed_value} / {self.simultaneously_value}')
         self.right_ststus_label.setText(f'記憶體: {signal["memory"]}MB / 程序: {signal["cpu"]}%')
 
     def download_anime(self):
+        """
+        創下載動漫 Thread。
+        """
         for i in self.story_checkbox_dict:
             if self.story_checkbox_dict[i].isChecked():
                 data = json.loads(self.story_checkbox_dict[i].objectName())
@@ -191,6 +214,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                     self.download_anime_Thread[anime]['thread'].start()
 
     def download_anime_task(self, signal):
+        """
+        接收下載動漫 Thread。
+        """
         if int(signal['success']) == 100:
             self.tableWidgetItem_download_dict[signal['name']]['status'].setText('已完成')
             self.tableWidgetItem_download_dict[signal['name']]['schedule'].setValue(signal["success"])
@@ -203,10 +229,16 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.tableWidgetItem_download_dict[signal['name']]['schedule'].setValue(signal["success"])
 
     def config(self):
+        """
+        開啟設定介面。
+        """
         self.config_windows = Config()
         self.config_windows.show()
 
     def check_checkbox(self):
+        """
+        動漫資訊的 checkbox 判斷。
+        """
         if self.story_list_all_pushButton.text() == '全選':
             for i in self.story_checkbox_dict:
                 self.story_checkbox_dict[i].setChecked(True)
@@ -217,6 +249,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.story_list_all_pushButton.setText('全選')
 
     def anime_page_Visible(self, status=False):
+        """
+        動漫資訊裡的各個物件顯示與隱藏。
+        """
         if status:
             self.load_anime_label.setVisible(False)
             self.image_label.setVisible(True)
@@ -247,13 +282,19 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.download_pushbutton.setVisible(False)
 
     def load_week_data(self):
-        self.week_data = Week_data_signal()
+        """
+        創每周動漫更新表 Thread。
+        """
+        self.week_data = Week_data()
         self.week_data.week_data_signal.connect(self.week_data_task)
         self.week_data.start()
 
     def week_data_task(self, signal):
+        """
+        接收每周動漫更新表 Thread。
+        """
         for i in signal:
-            self.week_layout.update({i: QtWidgets.QFormLayout()})
+            self.week_layout_dict.update({i: QtWidgets.QFormLayout()})
             for j, m in enumerate(signal[i]):
                 self.week_dict.update({m: {'pushbutton': QtWidgets.QPushButton('．' + m),
                                            'update': QtWidgets.QLabel(
@@ -275,8 +316,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 self.week_dict[m]['pushbutton'].clicked.connect(self.anime_info_event)
                 self.week_dict[m]['update'].setAlignment(
                     QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
-                self.week_layout[i].addRow(self.week_dict[m]['pushbutton'], self.week_dict[m]['update'])
-            self.week[i].setLayout(self.week_layout[i])
+                self.week_layout_dict[i].addRow(self.week_dict[m]['pushbutton'], self.week_dict[m]['update'])
+            self.week[i].setLayout(self.week_layout_dict[i])
         self.load_week_label.setVisible(False)
         self.load_week_label_status = True
         # self.week_data.quit()
@@ -284,13 +325,16 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         del self.week_data
 
     def anime_info_event(self):
+        """
+        每周動漫表的動漫按鈕事件，並創動漫資訊 Thread。
+        """
         sender = self.sender()
         pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
         ok = True
         if pushButton.objectName() == 'customize_pushButton':
             url = self.customize_lineEdit.text().strip()
-            if re.match('^https://myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) \
-                    or re.match('^https://myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url):
+            if re.match(r'^https://myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) \
+                    or re.match(r'^https://myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url):
                 pass
             else:
                 self.url_error = QtWidgets.QMessageBox.information(self, '錯誤',
@@ -316,6 +360,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.anime_page_Visible()
 
     def anime_info_data(self, signal):
+        """
+        接收動漫資訊 Thread。
+        """
         self.customize_lineEdit.clear()
         self.story_list_all_pushButton.setText('全選')
         self.introduction_textBrowser.clear()
@@ -351,11 +398,17 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         # del self.anime_info
 
     def mouseHoverOnTabBar(self):
+        """
+        滑鼠移動。
+        """
         self.tabBar = self.week_tabWidget.tabBar()
         self.tabBar.setMouseTracking(True)
         self.tabBar.installEventFilter(self)
 
     def eventFilter(self, obj, event):
+        """
+        滑鼠移動到 TabWidget 不用點擊就會自動切換頁面。
+        """
         if obj == self.tabBar:
             if event.type() == QtCore.QEvent.MouseMove:
                 index = self.tabBar.tabAt(event.pos())
@@ -364,11 +417,14 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         return super().eventFilter(obj, event)
 
 
-class Week_data_signal(QtCore.QThread):
+class Week_data(QtCore.QThread):
+    """
+    爬每周動漫資訊。
+    """
     week_data_signal = QtCore.pyqtSignal(dict)
 
     def __init__(self):
-        super(Week_data_signal, self).__init__()
+        super(Week_data, self).__init__()
 
     def run(self):
         res = requests.get(url='https://myself-bbs.com/portal.php', headers=headers).text
@@ -391,6 +447,9 @@ class Week_data_signal(QtCore.QThread):
 
 
 class Anime_info(QtCore.QThread):
+    """
+    爬動漫資訊。
+    """
     anime_info_signal = QtCore.pyqtSignal(dict)
 
     def __init__(self, url):
@@ -435,6 +494,9 @@ class Anime_info(QtCore.QThread):
 
 
 class Download_Video(QtCore.QThread):
+    """
+    下載動漫。
+    """
     download_video = QtCore.pyqtSignal(dict)
 
     def __init__(self, data):
@@ -450,11 +512,17 @@ class Download_Video(QtCore.QThread):
         self.path = json.load(open('config.json', 'r', encoding='utf-8'))
 
     def badname(self, name):
+        """
+        避免不正當名字出現導致資料夾或檔案無法創建。
+        """
         for i in self.ban:
             name = str(name).replace(i, ' ')
         return name.strip()
 
     def get_host_video_data(self):
+        """
+        取得 Host資料。
+        """
         while True:
             try:
                 if not self.stop:
@@ -465,6 +533,9 @@ class Download_Video(QtCore.QThread):
                 time.sleep(5)
 
     def get_m3u8_data(self, res):
+        """
+        取得 m3u8 資料。
+        """
         while True:
             try:
                 if not self.stop:
@@ -476,6 +547,9 @@ class Download_Video(QtCore.QThread):
                 time.sleep(5)
 
     def video(self, i, res, host):
+        """
+        請求 URL 下載影片。
+        """
         host_value = 0
         url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
         ok = False
@@ -510,6 +584,9 @@ class Download_Video(QtCore.QThread):
                 time.sleep(1)
 
     def turn_me(self):
+        """
+        判斷下載列表順序使否輪到自己。
+        """
         while True:
             if anime.download_video_mission_list[0] == self.data["data"]["name"] + self.data["data"]["num"] \
                     and anime.simultaneously_value >= anime.now_download_value:
@@ -547,25 +624,35 @@ class Download_Video(QtCore.QThread):
 
 
 class Loading_config_status(QtCore.QThread):
+    """
+    抓記憶體與CPU。
+    """
     loading_config_status_signal = QtCore.pyqtSignal(dict)
 
     def __init__(self, pid):
         super(Loading_config_status, self).__init__()
         self.info = psutil.Process(pid)
+        self.config = dict()
 
     def run(self):
         while True:
-            config = json.load(open('config.json', 'r', encoding='utf-8'))
+            # config = json.load(open('config.json', 'r', encoding='utf-8'))
             cpu = '%.2f' % (self.info.cpu_percent() / psutil.cpu_count())
-            memory = '%.2f' % (self.info.memory_full_info().uss / 1024 / 1024)
-            config.update({'cpu': cpu, 'memory': memory})
+            memory = '%.2f' % (self.info.memory_full_info().rss / 1024 / 1024)
+            # memory = '%.2f' % (psutil.virtual_memory().percent)
+            # memory = '%.2f' % (self.info.memory_full_info().uss / 1024 / 1024)
+            self.config.update({'cpu': cpu, 'memory': memory})
             # self.info.memory_full_info().rss / 1024 / 1024
-            # self.info.cpu_percent(interval=1), self.info.memory_info()[0] / float(2 ** 20)
-            self.loading_config_status_signal.emit(config)
+
+            self.loading_config_status_signal.emit(self.config)
             time.sleep(1)
 
 
 class Config(QtWidgets.QMainWindow, Ui_Config):
+    """
+    設定視窗。
+    """
+
     def __init__(self):
         super(Config, self).__init__()
         self.setupUi(self)
@@ -582,11 +669,17 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
                                        self.starburst_radioButton: {'type': 'starburst', 'value': 16}}
 
     def note_message_box(self):
+        """
+        注意事項視窗。
+        """
         QtWidgets.QMessageBox().information(self, "注意事項",
                                             '慢速: 1 次 1 個連接<br/>一般: 1 次 3 個連接<br/>高速: 1 次 8 個連接<br/>星爆: 1 次 16 個連接<br/><br/>連接值:1次取得多少影片來源。<br/>連接值越高吃的網速就越多。<br/>同時下載數量越高，記憶體與網速就吃越多。',
                                             QtWidgets.QMessageBox.Yes)
 
     def config(self):
+        """
+        設定視窗介面讀取個個物件設定值。
+        """
         config = json.load(open('config.json', 'r', encoding='utf-8'))
         self.download_path_lineEdit.setText(config['path'])
         if config['speed']['type'] == 'genera':
@@ -600,6 +693,9 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         self.simultaneous_download_lineEdit.setText(str(config['simultaneous']))
 
     def save_config(self):
+        """
+        儲存按鈕事件。
+        """
         path = self.download_path_lineEdit.text()
         simultaneous = self.simultaneous_download_lineEdit.text()
         for i in self.speed_radioButton_dict:
@@ -610,28 +706,22 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
         anime.simultaneously_value = data['simultaneous']
         anime.speed_value = data['speed']['value']
-        save.config = self
-        save.show()
+        QtWidgets.QMessageBox().information(self, "儲存", '資料已成功地儲存。', QtWidgets.QMessageBox.Yes)
+        self.close()
 
     def download_path(self):
+        """
+        瀏覽資料夾按鈕。
+        """
         download_path = QtWidgets.QFileDialog.getExistingDirectory(self, "選取資料夾", self.download_path_lineEdit.text())
         self.download_path_lineEdit.setText(download_path)
 
 
-class Save(QtWidgets.QMainWindow, Ui_Save):
-    def __init__(self, config=None):
-        super(Save, self, ).__init__()
-        self.setupUi(self)
-        self.setFixedSize(self.width(), self.height())
-        self.confirm_pushButton.clicked.connect(self.confirm)
-        self.config = config
-
-    def confirm(self):
-        self.close()
-        self.config.close()
-
-
 class About(QtWidgets.QMainWindow, Ui_About):
+    """
+    關於視窗。
+    """
+
     def __init__(self):
         super(About, self, ).__init__()
         self.setupUi(self)
@@ -707,7 +797,6 @@ if __name__ == '__main__':
     # app.setStyle(myStyle)
     anime = Anime()
     config = Config()
-    save = Save()
     about = About()
     anime.menu.actions()[0].triggered.connect(config.show)
     anime.menu.actions()[1].triggered.connect(about.show)
