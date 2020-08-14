@@ -19,8 +19,9 @@ class Ui_About(object):
         self.image_label = QtWidgets.QLabel(About)
         self.image_label.setGeometry(QtCore.QRect(10, 10, 128, 128))
         self.image_label.setStyleSheet("QLable{\n"
-                                       "border-image: url(./image/about.ico)\n"
-                                       "}")
+                                       "     border-image: url(./image/about.ico)\n"
+                                       "     }\n"
+                                       "    ")
         self.image_label.setObjectName("image_label")
         self.github_label = QtWidgets.QLabel(About)
         self.github_label.setGeometry(QtCore.QRect(210, 30, 101, 31))
@@ -48,18 +49,7 @@ class Ui_About(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.close_pushButton.setFont(font)
-        self.close_pushButton.setStyleSheet("QPushButton{\n"
-                                            "background-color:#dedede;\n"
-                                            "border-radius:6px\n"
-                                            "}\n"
-                                            "QPushButton:hover {\n"
-                                            "background-color:#aaaa7f;\n"
-                                            "color: #ffffff;\n"
-                                            "}\n"
-                                            "QPushButton:pressed{\n"
-                                            "background-color:#dedede;\n"
-                                            "color: #000000;\n"
-                                            "}")
+        self.close_pushButton.setStyleSheet("")
         self.close_pushButton.setObjectName("close_pushButton")
 
         self.retranslateUi(About)
@@ -76,6 +66,7 @@ class Ui_About(object):
                                                     "\n"
                                                     "請支持正版！\n"
                                                     "「下載的影片僅供交流使用，請於24小時內刪除。」\n"
-                                                    "若私作為其他及商業用途而觸犯法律違法。\n"
-                                                    "後果請自行負責，概與本人無關。"))
+                                                    " 若私作為其他及商業用途而觸犯法律違法。\n"
+                                                    " 後果請自行負責，概與本人無關。\n"
+                                                    " "))
         self.close_pushButton.setText(_translate("About", "關閉"))
