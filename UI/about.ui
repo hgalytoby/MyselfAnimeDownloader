@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>About</class>
+ <widget class="QWidget" name="About">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>275</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>關於</string>
+  </property>
+  <widget class="QLabel" name="image_label">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>128</width>
+     <height>128</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLable{
+     border-image: url(./image/about.ico)
+     }
+    </string>
+   </property>
+   <property name="text">
+    <string>image_label</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="github_label">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>30</y>
+     <width>101</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>17</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>&lt;a href=&quot;https://github.com/hgalytoby/MyselfAnimeDownloader&quot;&gt;Github&lt;/a&gt;</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+   <property name="openExternalLinks">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="dudulu_label">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>60</y>
+     <width>171</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>組件與設計者：嘟嘟嚕</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="note_label">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>130</y>
+     <width>371</width>
+     <height>111</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>感謝您使用非MyselfAnume官方下載應用程式。
+
+     請支持正版！
+     「下載的影片僅供交流使用，請於24小時內刪除。」
+     若私作為其他及商業用途而觸犯法律違法。
+     後果請自行負責，概與本人無關。
+    </string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="close_pushButton">
+   <property name="geometry">
+    <rect>
+     <x>324</x>
+     <y>240</y>
+     <width>61</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton{
+     background-color:#dedede;
+     border-radius:6px
+     }
+     QPushButton:hover {
+     background-color:#aaaa7f;
+     color: #ffffff;
+     }
+     QPushButton:pressed{
+     background-color:#dedede;
+     color: #000000;
+     }
+    </string>
+   </property>
+   <property name="text">
+    <string>關閉</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
