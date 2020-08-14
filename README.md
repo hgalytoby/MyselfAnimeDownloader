@@ -1,7 +1,7 @@
 # MyselfAnimeDownloader
 ## 預覽
-圖為最初的範本，不一定是現在的樣貌。
-![image](https://i.imgur.com/qAckhuk.gif)
+圖(最後更新8/15)。
+![image](https://i.imgur.com/xz8HY1Y.gif)
 
 ## 運行
 安裝 requirements.txt <br>
@@ -17,7 +17,7 @@ pip install -r -requirements.txt
 3.下載動漫。<br>
 4.每周更新表以外的動漫也能下載。<br>
 5.程式目前使用的記憶體消耗量、狀態、連線數量。<br>
-6.取消下載清單+硬碟刪除檔案完成，
+6.清楚已完成+取消下載清單+硬碟刪除檔案完成，
 
 ## 尚未實現功能
 1.暫停下載、繼續下載。<br>

@@ -273,11 +273,14 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.tableWidgetItem_download_dict[signal['name']]['status'].setText('已完成')
             self.tableWidgetItem_download_dict[signal['name']]['schedule'].setValue(signal["success"])
         else:
-            if self.download_anime_Thread[signal['name']]['thread'].stop:
-                self.tableWidgetItem_download_dict[signal['name']]['status'].setText('暫停')
-            else:
-                self.tableWidgetItem_download_dict[signal['name']]['status'].setText('下載中')
-            self.tableWidgetItem_download_dict[signal['name']]['schedule'].setValue(signal["success"])
+            try:
+                if self.download_anime_Thread[signal['name']]['thread'].stop:
+                    self.tableWidgetItem_download_dict[signal['name']]['status'].setText('暫停')
+                else:
+                    self.tableWidgetItem_download_dict[signal['name']]['status'].setText('下載中')
+                self.tableWidgetItem_download_dict[signal['name']]['schedule'].setValue(signal["success"])
+            except KeyError:
+                print('應該是 Thread 被刪除，剛好 emit。')
 
     def config(self):
         """
@@ -447,7 +450,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         # self.anime_info.terminate()
         # self.anime_info.wait()
         # self.anime_info.quit()
-        # del self.anime_info
+        del self.anime_info
 
     def mouseHoverOnTabBar(self):
         """
@@ -683,7 +686,7 @@ class Download_Video(QtCore.QThread):
                 if self.exit:
                     break
                 time.sleep(5)
-            except requests.exceptions.RequestException:
+            except requests.exceptions.RequestException or requests.ConnectionError:
                 if host_value - 1 > len(host):
                     host_value = 0
                 else:
@@ -708,14 +711,11 @@ class Loading_config_status(QtCore.QThread):
 
     def run(self):
         while True:
-            # config = json.load(open('config.json', 'r', encoding='utf-8'))
             cpu = '%.2f' % (self.info.cpu_percent() / psutil.cpu_count())
             memory = '%.2f' % (self.info.memory_full_info().rss / 1024 / 1024)
             # memory = '%.2f' % (psutil.virtual_memory().percent)
             # memory = '%.2f' % (self.info.memory_full_info().uss / 1024 / 1024)
             self.config.update({'cpu': cpu, 'memory': memory})
-            # self.info.memory_full_info().rss / 1024 / 1024
-
             self.loading_config_status_signal.emit(self.config)
             time.sleep(1)
 
@@ -729,6 +729,7 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         super(Config, self).__init__()
         self.setupUi(self)
         self.config()
+        self.setWindowIcon(QtGui.QIcon('image/logo.ico'))
         self.setFixedSize(self.width(), self.height())
         self.browse_pushButton.clicked.connect(self.download_path)
         self.save_pushButton.clicked.connect(self.save_config)
@@ -746,7 +747,7 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         """
         QtWidgets.QMessageBox().information(self, "注意事項",
                                             '慢速: 1 次 1 個連接<br/>一般: 1 次 3 個連接<br/>高速: 1 次 8 個連接<br/>星爆: 1 次 16 個連接<br/><br/>連接值:1次取得多少影片來源。<br/>連接值越高吃的網速就越多。<br/>同時下載數量越高，記憶體與網速就吃越多。',
-                                            QtWidgets.QMessageBox.Yes)
+                                            QtWidgets.QMessageBox.Ok)
 
     def config(self):
         """
@@ -779,7 +780,7 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         anime.save_path = data['path']
         anime.simultaneously_value = data['simultaneous']
         anime.speed_value = data['speed']['value']
-        QtWidgets.QMessageBox().information(self, '儲存', "<font size='6'>資料已成功地儲存。</font>", QtWidgets.QMessageBox.Yes)
+        QtWidgets.QMessageBox().information(self, '儲存', "<font size='6'>資料已成功地儲存。</font>", QtWidgets.QMessageBox.Ok)
         self.close()
 
     def download_path(self):
@@ -798,8 +799,9 @@ class About(QtWidgets.QMainWindow, Ui_About):
     def __init__(self):
         super(About, self, ).__init__()
         self.setupUi(self)
+        self.setWindowIcon(QtGui.QIcon('image/logo.ico'))
         self.setFixedSize(self.width(), self.height())
-        self.pixmap = QtGui.QPixmap("./image/logo.ico")  # 按指定路径找到图片，注意路径必须用双引号包围，不能用单引号
+        self.pixmap = QtGui.QPixmap("./image/logo.ico")
         self.image_label.setPixmap(self.pixmap)
         self.image_label.setScaledContents(True)
         self.close_pushButton.clicked.connect(self.close)
