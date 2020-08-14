@@ -25,27 +25,14 @@
    <string/>
   </property>
   <property name="styleSheet">
-   <string notr="true">QPushButton{
-background-color:#dedede;
-border-radius:6px;
-width: 71px;
-height: 31px;
-}
-QPushButton:hover {
-background-color:#aaaa7f;
-color: #ffffff;
-}
-QPushButton:pressed{
-background-color:#dedede;
-color: #000000;
-}</string>
+   <string notr="true"/>
   </property>
   <widget class="QPushButton" name="save_pushButton">
    <property name="geometry">
     <rect>
      <x>20</x>
      <y>190</y>
-     <width>61</width>
+     <width>51</width>
      <height>31</height>
     </rect>
    </property>
@@ -67,9 +54,9 @@ color: #000000;
   <widget class="QPushButton" name="cancel_pushButton">
    <property name="geometry">
     <rect>
-     <x>570</x>
+     <x>590</x>
      <y>190</y>
-     <width>71</width>
+     <width>51</width>
      <height>31</height>
     </rect>
    </property>
@@ -134,7 +121,7 @@ color: #000000;
      <rect>
       <x>100</x>
       <y>20</y>
-      <width>431</width>
+      <width>471</width>
       <height>31</height>
      </rect>
     </property>
@@ -150,9 +137,9 @@ color: #000000;
    <widget class="QPushButton" name="browse_pushButton">
     <property name="geometry">
      <rect>
-      <x>560</x>
+      <x>580</x>
       <y>20</y>
-      <width>71</width>
+      <width>51</width>
       <height>31</height>
      </rect>
     </property>

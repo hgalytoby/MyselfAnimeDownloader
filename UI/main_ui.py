@@ -17,27 +17,21 @@ class Ui_Anime(object):
         Anime.setWindowModality(QtCore.Qt.NonModal)
         Anime.resize(1021, 460)
         Anime.setStyleSheet("QScrollBar::vertical {\n"
-"border:0px solid grey;\n"
-"width: 15px;\n"
-"}\n"
-"\n"
-"QScrollBar::handle:vertical {\n"
-"background:#dfdfdf;\n"
-"border-radius:6px;\n"
-"}\n"
-"QPushButton{\n"
-"background-color:#dedede;\n"
-"border-radius:6px\n"
-"}\n"
-"QPushButton:hover {\n"
-"background-color:#aaaa7f;\n"
-"color: #ffffff;\n"
-"}\n"
-"QPushButton:pressed{\n"
-"background-color:#dedede;\n"
-"color: #000000;\n"
-"}\n"
-"")
+                            "border:0px solid grey;\n"
+                            "width: 15px;\n"
+                            "}\n"
+                            "\n"
+                            "QScrollBar::handle:vertical {\n"
+                            "background:#dfdfdf;\n"
+                            "border-radius:6px;\n"
+                            "}\n"
+                            "\n"
+                            " QMessageBox::QPushButton{\n"
+                            "background-color:#dedede;\n"
+                            "border-radius:6px;\n"
+                            "width: 71px;\n"
+                            "height: 31px;\n"
+                            "}")
         Anime.setIconSize(QtCore.QSize(24, 24))
         Anime.setDocumentMode(False)
         Anime.setDockNestingEnabled(False)
@@ -224,27 +218,16 @@ class Ui_Anime(object):
 "}")
         self.story_list_label.setObjectName("story_list_label")
         self.story_list_all_pushButton = QtWidgets.QPushButton(self.story_list_widget)
-        self.story_list_all_pushButton.setGeometry(QtCore.QRect(80, 60, 91, 30))
+        self.story_list_all_pushButton.setGeometry(QtCore.QRect(10, 320, 61, 30))
         self.story_list_all_pushButton.setMinimumSize(QtCore.QSize(0, 0))
         font = QtGui.QFont()
         font.setPointSize(16)
         self.story_list_all_pushButton.setFont(font)
         self.story_list_all_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.story_list_all_pushButton.setStyleSheet("QPushButton{\n"
-"background-color:#dedede;\n"
-"border-radius:6px\n"
-"}\n"
-"QPushButton:hover {\n"
-"background-color:#aaaa7f;\n"
-"color: #ffffff;\n"
-"}\n"
-"QPushButton:pressed{\n"
-"background-color:#dedede;\n"
-"color: #000000;\n"
-"}")
+        self.story_list_all_pushButton.setStyleSheet("")
         self.story_list_all_pushButton.setObjectName("story_list_all_pushButton")
         self.story_list_scrollArea = QtWidgets.QScrollArea(self.story_list_widget)
-        self.story_list_scrollArea.setGeometry(QtCore.QRect(10, 100, 211, 211))
+        self.story_list_scrollArea.setGeometry(QtCore.QRect(10, 60, 211, 251))
         self.story_list_scrollArea.setStyleSheet("")
         self.story_list_scrollArea.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.story_list_scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
@@ -252,30 +235,19 @@ class Ui_Anime(object):
         self.story_list_scrollArea.setWidgetResizable(True)
         self.story_list_scrollArea.setObjectName("story_list_scrollArea")
         self.story_list_scrollAreaWidgetContents = QtWidgets.QWidget()
-        self.story_list_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 211, 211))
+        self.story_list_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 211, 251))
         self.story_list_scrollAreaWidgetContents.setObjectName("story_list_scrollAreaWidgetContents")
         self.story_list_scrollAreaWidgetContents_Layout = QtWidgets.QVBoxLayout(self.story_list_scrollAreaWidgetContents)
         self.story_list_scrollAreaWidgetContents_Layout.setObjectName("story_list_scrollAreaWidgetContents_Layout")
         self.story_list_scrollArea.setWidget(self.story_list_scrollAreaWidgetContents)
         self.download_pushbutton = QtWidgets.QPushButton(self.story_list_widget)
-        self.download_pushbutton.setGeometry(QtCore.QRect(60, 320, 121, 30))
+        self.download_pushbutton.setGeometry(QtCore.QRect(110, 320, 101, 30))
         self.download_pushbutton.setMinimumSize(QtCore.QSize(0, 0))
         font = QtGui.QFont()
         font.setPointSize(16)
         self.download_pushbutton.setFont(font)
         self.download_pushbutton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.download_pushbutton.setStyleSheet("QPushButton{\n"
-"background-color:#dedede;\n"
-"border-radius:6px\n"
-"}\n"
-"QPushButton:hover {\n"
-"background-color:#aaaa7f;\n"
-"color: #ffffff;\n"
-"}\n"
-"QPushButton:pressed{\n"
-"background-color:#dedede;\n"
-"color: #000000;\n"
-"}")
+        self.download_pushbutton.setStyleSheet("")
         self.download_pushbutton.setObjectName("download_pushbutton")
         self.anime_page_gridLayout.addWidget(self.story_list_widget, 0, 3, 4, 1)
         self.introduction_textBrowser = QtWidgets.QTextBrowser(self.anime_page)
@@ -321,25 +293,14 @@ class Ui_Anime(object):
         self.customize_label.setFont(font)
         self.customize_label.setObjectName("customize_label")
         self.customize_lineEdit = QtWidgets.QLineEdit(self.customize_groupBox)
-        self.customize_lineEdit.setGeometry(QtCore.QRect(60, 23, 281, 21))
+        self.customize_lineEdit.setGeometry(QtCore.QRect(60, 23, 291, 21))
         self.customize_lineEdit.setObjectName("customize_lineEdit")
         self.customize_pushButton = QtWidgets.QPushButton(self.customize_groupBox)
-        self.customize_pushButton.setGeometry(QtCore.QRect(350, 21, 61, 23))
+        self.customize_pushButton.setGeometry(QtCore.QRect(360, 21, 51, 26))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.customize_pushButton.setFont(font)
-        self.customize_pushButton.setStyleSheet("QPushButton{\n"
-"background-color:#dedede;\n"
-"border-radius:6px\n"
-"}\n"
-"QPushButton:hover {\n"
-"background-color:#aaaa7f;\n"
-"color: #ffffff;\n"
-"}\n"
-"QPushButton:pressed{\n"
-"background-color:#dedede;\n"
-"color: #000000;\n"
-"}")
+        self.customize_pushButton.setStyleSheet("")
         self.customize_pushButton.setObjectName("customize_pushButton")
         self.load_week_label = QtWidgets.QLabel(self.centralwidget)
         self.load_week_label.setGeometry(QtCore.QRect(370, 160, 221, 51))
@@ -369,9 +330,6 @@ class Ui_Anime(object):
         self.right_ststus_label.setGeometry(QtCore.QRect(780, 0, 211, 20))
         self.right_ststus_label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.right_ststus_label.setObjectName("right_ststus_label")
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(400, 10, 75, 23))
-        self.pushButton.setObjectName("pushButton")
         Anime.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(Anime)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1021, 26))
@@ -451,7 +409,8 @@ class Ui_Anime(object):
         item.setText(_translate("Anime", "狀態"))
         item = self.download_tableWidget.horizontalHeaderItem(2)
         item.setText(_translate("Anime", "進度"))
-        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.download_page), _translate("Anime", "下載列表"))
+        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.download_page),
+                                             _translate("Anime", "下載清單"))
         self.customize_groupBox.setTitle(_translate("Anime", "每周更新以外的動漫"))
         self.customize_label.setText(_translate("Anime", "網址:"))
         self.customize_pushButton.setText(_translate("Anime", "確定"))
@@ -459,7 +418,6 @@ class Ui_Anime(object):
         self.load_anime_label.setText(_translate("Anime", "動漫資訊讀取中"))
         self.left_status_label.setText(_translate("Anime", "狀態: 0 個下載中　　連接設定: 0/20"))
         self.right_ststus_label.setText(_translate("Anime", "記憶體用量: 10.10MB / 程序: 3.50%"))
-        self.pushButton.setText(_translate("Anime", "PushButton"))
         self.menu.setTitle(_translate("Anime", "設定"))
         self.menu_config.setText(_translate("Anime", "設定"))
         self.menu_config.setStatusTip(_translate("Anime", "設定"))

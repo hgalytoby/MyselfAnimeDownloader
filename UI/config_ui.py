@@ -20,29 +20,16 @@ class Ui_Config(object):
         font.setPointSize(16)
         Config.setFont(font)
         Config.setToolTip("")
-        Config.setStyleSheet("QPushButton{\n"
-"background-color:#dedede;\n"
-"border-radius:6px;\n"
-"width: 71px;\n"
-"height: 31px;\n"
-"}\n"
-"QPushButton:hover {\n"
-"background-color:#aaaa7f;\n"
-"color: #ffffff;\n"
-"}\n"
-"QPushButton:pressed{\n"
-"background-color:#dedede;\n"
-"color: #000000;\n"
-"}")
+        Config.setStyleSheet("")
         self.save_pushButton = QtWidgets.QPushButton(Config)
-        self.save_pushButton.setGeometry(QtCore.QRect(20, 190, 61, 31))
+        self.save_pushButton.setGeometry(QtCore.QRect(20, 190, 51, 31))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.save_pushButton.setFont(font)
         self.save_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.save_pushButton.setObjectName("save_pushButton")
         self.cancel_pushButton = QtWidgets.QPushButton(Config)
-        self.cancel_pushButton.setGeometry(QtCore.QRect(570, 190, 71, 31))
+        self.cancel_pushButton.setGeometry(QtCore.QRect(590, 190, 51, 31))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.cancel_pushButton.setFont(font)
@@ -61,13 +48,13 @@ class Ui_Config(object):
         self.download_path_label.setFont(font)
         self.download_path_label.setObjectName("download_path_label")
         self.download_path_lineEdit = QtWidgets.QLineEdit(self.general_groupBox)
-        self.download_path_lineEdit.setGeometry(QtCore.QRect(100, 20, 431, 31))
+        self.download_path_lineEdit.setGeometry(QtCore.QRect(100, 20, 471, 31))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.download_path_lineEdit.setFont(font)
         self.download_path_lineEdit.setObjectName("download_path_lineEdit")
         self.browse_pushButton = QtWidgets.QPushButton(self.general_groupBox)
-        self.browse_pushButton.setGeometry(QtCore.QRect(560, 20, 71, 31))
+        self.browse_pushButton.setGeometry(QtCore.QRect(580, 20, 51, 31))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.browse_pushButton.setFont(font)

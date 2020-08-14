@@ -18,27 +18,22 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QScrollBar::vertical {
-border:0px solid grey;
-width: 15px;
-}
+       border:0px solid grey;
+       width: 15px;
+       }
 
-QScrollBar::handle:vertical {
-background:#dfdfdf;
-border-radius:6px;
-}
-QPushButton{
-background-color:#dedede;
-border-radius:6px
-}
-QPushButton:hover {
-background-color:#aaaa7f;
-color: #ffffff;
-}
-QPushButton:pressed{
-background-color:#dedede;
-color: #000000;
-}
-</string>
+       QScrollBar::handle:vertical {
+       background:#dfdfdf;
+       border-radius:6px;
+       }
+
+       QMessageBox::QPushButton{
+       background-color:#dedede;
+       border-radius:6px;
+       width: 71px;
+       height: 31px;
+       }
+   </string>
   </property>
   <property name="iconSize">
    <size>
@@ -482,12 +477,12 @@ border-radius:6px
         </widget>
         <widget class="QPushButton" name="story_list_all_pushButton">
          <property name="geometry">
-          <rect>
-           <x>80</x>
-           <y>60</y>
-           <width>91</width>
-           <height>30</height>
-          </rect>
+             <rect>
+                 <x>10</x>
+                 <y>320</y>
+                 <width>61</width>
+                 <height>30</height>
+             </rect>
          </property>
          <property name="minimumSize">
           <size>
@@ -504,18 +499,7 @@ border-radius:6px
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
          <property name="styleSheet">
-          <string notr="true">QPushButton{
-background-color:#dedede;
-border-radius:6px
-}
-QPushButton:hover {
-background-color:#aaaa7f;
-color: #ffffff;
-}
-QPushButton:pressed{
-background-color:#dedede;
-color: #000000;
-}</string>
+             <string notr="true"/>
          </property>
          <property name="text">
           <string>全選</string>
@@ -525,9 +509,9 @@ color: #000000;
          <property name="geometry">
           <rect>
            <x>10</x>
-           <y>100</y>
+              <y>60</y>
            <width>211</width>
-           <height>211</height>
+              <height>251</height>
           </rect>
          </property>
          <property name="styleSheet">
@@ -551,7 +535,7 @@ color: #000000;
             <x>0</x>
             <y>0</y>
             <width>211</width>
-            <height>211</height>
+               <height>251</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="story_list_scrollAreaWidgetContents_Layout"/>
@@ -560,9 +544,9 @@ color: #000000;
         <widget class="QPushButton" name="download_pushbutton">
          <property name="geometry">
           <rect>
-           <x>60</x>
+              <x>110</x>
            <y>320</y>
-           <width>121</width>
+              <width>101</width>
            <height>30</height>
           </rect>
          </property>
@@ -581,18 +565,7 @@ color: #000000;
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
          <property name="styleSheet">
-          <string notr="true">QPushButton{
-background-color:#dedede;
-border-radius:6px
-}
-QPushButton:hover {
-background-color:#aaaa7f;
-color: #ffffff;
-}
-QPushButton:pressed{
-background-color:#dedede;
-color: #000000;
-}</string>
+             <string notr="true"/>
          </property>
          <property name="text">
           <string>開始下載</string>
@@ -630,7 +603,7 @@ p, li { white-space: pre-wrap; }
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;123&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <attribute name="title">
-      <string>下載列表</string>
+         <string>下載清單</string>
      </attribute>
      <layout class="QGridLayout" name="down_list_gridLayout">
       <item row="0" column="0">
@@ -713,19 +686,19 @@ border:none}</string>
       <rect>
        <x>60</x>
        <y>23</y>
-       <width>281</width>
+          <width>291</width>
        <height>21</height>
       </rect>
      </property>
     </widget>
     <widget class="QPushButton" name="customize_pushButton">
      <property name="geometry">
-      <rect>
-       <x>350</x>
-       <y>21</y>
-       <width>61</width>
-       <height>23</height>
-      </rect>
+         <rect>
+             <x>360</x>
+             <y>21</y>
+             <width>51</width>
+             <height>26</height>
+         </rect>
      </property>
      <property name="font">
       <font>
@@ -733,18 +706,7 @@ border:none}</string>
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">QPushButton{
-background-color:#dedede;
-border-radius:6px
-}
-QPushButton:hover {
-background-color:#aaaa7f;
-color: #ffffff;
-}
-QPushButton:pressed{
-background-color:#dedede;
-color: #000000;
-}</string>
+         <string notr="true"/>
      </property>
      <property name="text">
       <string>確定</string>
@@ -839,19 +801,6 @@ background-color: rgba(255, 255, 240, 100)
       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
      </property>
     </widget>
-   </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="geometry">
-     <rect>
-      <x>400</x>
-      <y>10</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>PushButton</string>
-    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
