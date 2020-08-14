@@ -26,10 +26,7 @@
     </rect>
    </property>
    <property name="styleSheet">
-    <string notr="true">QLable{
-     border-image: url(./image/about.ico)
-     }
-    </string>
+    <string notr="true"/>
    </property>
    <property name="text">
     <string>image_label</string>

@@ -18,10 +18,7 @@ class Ui_About(object):
         About.resize(400, 275)
         self.image_label = QtWidgets.QLabel(About)
         self.image_label.setGeometry(QtCore.QRect(10, 10, 128, 128))
-        self.image_label.setStyleSheet("QLable{\n"
-                                       "     border-image: url(./image/about.ico)\n"
-                                       "     }\n"
-                                       "    ")
+        self.image_label.setStyleSheet("")
         self.image_label.setObjectName("image_label")
         self.github_label = QtWidgets.QLabel(About)
         self.github_label.setGeometry(QtCore.QRect(210, 30, 101, 31))

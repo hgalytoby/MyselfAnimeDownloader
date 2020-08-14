@@ -1,10 +1,10 @@
 import os
+import re
 import sys
 import json
 import time
 import gc
 # import random
-import re
 import shutil
 import psutil
 import requests
