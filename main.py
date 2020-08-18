@@ -107,8 +107,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             download_anime_Thread_name = directory_name + file_name
             select.update({i.row(): {'directory': directory_name,
                                      'file_name': file_name,
-                                     'thread': download_anime_Thread_name}})
-        select = dict(sorted(select.items(), reverse=True))
+                                     'thread': download_anime_Thread_name,
+                                     'name': tableWidget_item_name}})
         open_directory = menu.addAction('打開目錄')
         completed_delete_action = menu.addAction('已完成清除')
         raise_priority_action = menu.addAction('提高優先權')
@@ -138,12 +138,15 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 if status == '已完成':
                     self.download_tableWidget.removeRow(i - 1)
                     del self.download_anime_Thread[download_anime_Thread_name]
+                    del self.tableWidgetItem_download_dict[download_anime_Thread_name]
         else:
             if action == open_directory:
                 os.startfile(f'{self.save_path}/{select[list(select.keys())[0]]["directory"]}')
             elif action == raise_priority_action:
+                self.control_tablewidget(data=select, status=True)
                 pass
             elif action == lower_priority_action:
+                self.control_tablewidget(data=select, status=False)
                 pass
             elif action == list_delete_action:
                 self.download_menu_delete_list(data=select, remove_file=False)
@@ -152,10 +155,68 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 self.download_menu_delete_list(data=select, remove_file=True)
                 pass
 
+    def control_tablewidget(self, data=None, status=True):
+        def move_item(mode):
+            for i in data:
+                move_name = self.download_tableWidget.item(i - mode, 0).text()
+                move_name_item = QtWidgets.QTableWidgetItem(move_name)
+                move_status = self.download_tableWidget.item(i - mode, 1).text()
+                move_status_item = QtWidgets.QTableWidgetItem(move_status)
+                move_status_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                move_schedule = QtWidgets.QProgressBar()
+                move_schedule_value = self.download_tableWidget.cellWidget(i - mode, 2).value()
+                move_schedule.setValue(move_schedule_value)
+                move_schedule.setAlignment(QtCore.Qt.AlignCenter)
+                move_item = ''.join(move_name.split('　　'))
+                move_mission = self.download_video_mission_list.index(move_item)
+                select_name = self.download_tableWidget.item(i, 0).text()
+                select_name_item = QtWidgets.QTableWidgetItem(select_name)
+                select_status = self.download_tableWidget.item(i, 1).text()
+                select_status_item = QtWidgets.QTableWidgetItem(select_status)
+                select_status_item.setTextAlignment(QtCore.Qt.AlignCenter)
+                select_schedule = QtWidgets.QProgressBar()
+                select_schedule_value = self.download_tableWidget.cellWidget(i, 2).value()
+                select_schedule.setValue(select_schedule_value)
+                select_schedule.setAlignment(QtCore.Qt.AlignCenter)
+                select_item = ''.join(select_name.split('　　'))
+                select_mission = self.download_video_mission_list.index(select_item)
+                self.tableWidgetItem_download_dict.update(
+                    {select_item: {'name': select_name_item,
+                                   'status': select_status_item,
+                                   'schedule': select_schedule}})
+                self.tableWidgetItem_download_dict.update(
+                    {move_item: {'name': move_name_item,
+                                 'status': move_status_item,
+                                 'schedule': move_schedule}})
+                self.download_video_mission_list[select_mission], self.download_video_mission_list[move_mission] = \
+                    self.download_video_mission_list[move_mission], self.download_video_mission_list[select_mission]
+                self.download_tableWidget.takeItem(i - mode, 0)
+                self.download_tableWidget.setItem(i - mode, 0, select_name_item)
+                self.download_tableWidget.takeItem(i - mode, 1)
+                self.download_tableWidget.setItem(i - mode, 1, select_status_item)
+                self.download_tableWidget.removeCellWidget(i - mode, 2)
+                self.download_tableWidget.setCellWidget(i - mode, 2, select_schedule)
+                self.download_tableWidget.takeItem(i, 0)
+                self.download_tableWidget.setItem(i, 0, move_name_item)
+                self.download_tableWidget.takeItem(i, 1)
+                self.download_tableWidget.setItem(i, 1, move_status_item)
+                self.download_tableWidget.removeCellWidget(i, 2)
+                self.download_tableWidget.setCellWidget(i, 2, move_schedule)
+
+        if status:
+            if 0 in data:
+                del data[0]
+            move_item(mode=1)
+        else:
+            if self.download_tableWidget.rowCount() - 1 in data:
+                del data[self.download_tableWidget.rowCount() - 1]
+            move_item(mode=-1)
+
     def download_menu_delete_list(self, data=None, remove_file=False):
         """
         下載清單，判斷是否要刪除檔案與 Thread 是否存在。
         """
+        data = dict(sorted(data.items(), reverse=True))
         if remove_file:
             text = '你想要刪除這些影片嗎?\n註解: 檔案將被「刪除」。'
         else:
@@ -686,7 +747,7 @@ class Download_Video(QtCore.QThread):
                 if self.exit:
                     break
                 time.sleep(5)
-            except requests.exceptions.RequestException or requests.ConnectionError:
+            except requests.exceptions.RequestException or requests.ConnectionError or requests.exceptions.ChunkedEncodingError:
                 if host_value - 1 > len(host):
                     host_value = 0
                 else:
@@ -695,7 +756,7 @@ class Download_Video(QtCore.QThread):
                 print(url)
                 time.sleep(1)
             except BaseException as error:
-                print(error)
+                print('基礎錯誤', error)
 
 
 class Loading_config_status(QtCore.QThread):
