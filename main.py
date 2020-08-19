@@ -3,8 +3,7 @@ import re
 import sys
 import json
 import time
-import gc
-# import random
+# import gc
 import shutil
 import psutil
 import requests
@@ -244,6 +243,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         TabWidget切換時，判斷讀取動漫資訊是否顯示。
         """
+
         if index != 0 and not self.load_week_label_status:
             self.load_week_label.setVisible(False)
         elif index == 0 and not self.load_week_label_status:
@@ -296,50 +296,53 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def download_anime(self):
         """
-        創下載動漫 Thread。
+        檢查 checkbox 是否被選取，並創建 tablewidgetitem。
         """
         for i in self.story_checkbox_dict:
             if self.story_checkbox_dict[i].isChecked():
                 data = json.loads(self.story_checkbox_dict[i].objectName())
-                anime = data['data']['name'] + data['data']['num']
-                if anime not in self.download_anime_Thread or (
-                        anime in self.download_anime_Thread and self.download_anime_Thread[anime]['over']):
-                    rowcount = self.download_tableWidget.rowCount()
-                    self.download_tableWidget.setRowCount(rowcount + 1)
-                    self.tableWidgetItem_download_dict.update(
-                        {anime: {'name': QtWidgets.QTableWidgetItem(f"{data['data']['name']}　　{data['data']['num']}"),
-                                 'status': QtWidgets.QTableWidgetItem('準備中'),
-                                 'schedule': QtWidgets.QProgressBar()}})
-                    self.tableWidgetItem_download_dict[anime]['status'].setTextAlignment(QtCore.Qt.AlignCenter)
-                    self.tableWidgetItem_download_dict[anime]['schedule'].setValue(0)
-                    self.tableWidgetItem_download_dict[anime]['schedule'].setAlignment(QtCore.Qt.AlignCenter)
-                    self.download_tableWidget.setItem(rowcount, 0,
-                                                      self.tableWidgetItem_download_dict[anime]['name'])
-                    self.download_tableWidget.setItem(rowcount, 1,
-                                                      self.tableWidgetItem_download_dict[anime]['status'])
-                    self.download_tableWidget.setCellWidget(rowcount, 2,
-                                                            self.tableWidgetItem_download_dict[anime]['schedule'])
-                    self.download_video_mission_list.append(anime)
-                    self.download_anime_Thread.update({anime: {'thread': Download_Video(data=data),
-                                                               'over': False}})
-                    self.download_anime_Thread[anime]['thread'].download_video.connect(self.download_anime_task)
-                    self.download_anime_Thread[anime]['thread'].start()
+                self.create_tablewidgetitem(data=data)
+
+    def create_tablewidgetitem(self, data):
+        if data['total_name'] not in self.download_anime_Thread or (
+                data['total_name'] in self.download_anime_Thread and self.download_anime_Thread[data['total_name']][
+            'over']):
+            rowcount = self.download_tableWidget.rowCount()
+            self.download_tableWidget.setRowCount(rowcount + 1)
+            self.tableWidgetItem_download_dict.update(
+                {data['total_name']: {'name': QtWidgets.QTableWidgetItem(data['name_num']),
+                                      'status': QtWidgets.QTableWidgetItem(data['status']),
+                                      'schedule': QtWidgets.QProgressBar()}})
+            self.tableWidgetItem_download_dict[data['total_name']]['status'].setTextAlignment(QtCore.Qt.AlignCenter)
+            self.tableWidgetItem_download_dict[data['total_name']]['schedule'].setValue(data['schedule'])
+            self.tableWidgetItem_download_dict[data['total_name']]['schedule'].setAlignment(QtCore.Qt.AlignCenter)
+            self.download_tableWidget.setItem(rowcount, 0,
+                                              self.tableWidgetItem_download_dict[data['total_name']]['name'])
+            self.download_tableWidget.setItem(rowcount, 1,
+                                              self.tableWidgetItem_download_dict[data['total_name']]['status'])
+            self.download_tableWidget.setCellWidget(rowcount, 2,
+                                                    self.tableWidgetItem_download_dict[data['total_name']]['schedule'])
+            self.download_video_mission_list.append(data['total_name'])
+            self.download_anime_Thread.update({data['total_name']: {'thread': Download_Video(data=data),
+                                                                    'over': False}})
+            self.download_anime_Thread[data['total_name']]['thread'].download_video.connect(self.download_anime_task)
+            self.download_anime_Thread[data['total_name']]['thread'].start()
 
     def download_anime_task(self, signal):
         """
         接收下載動漫 Thread。
         """
-        if int(signal['success']) == 100:
-            self.download_anime_Thread[signal['name']]['over'] = True
-            self.tableWidgetItem_download_dict[signal['name']]['status'].setText('已完成')
-            self.tableWidgetItem_download_dict[signal['name']]['schedule'].setValue(signal["success"])
+        if int(signal['schedule']) == 100:
+            self.download_anime_Thread[signal['total_name']]['over'] = True
+            self.tableWidgetItem_download_dict[signal['total_name']]['status'].setText(signal["status"])
+            self.tableWidgetItem_download_dict[signal['total_name']]['schedule'].setValue(signal["schedule"])
         else:
             try:
-                if self.download_anime_Thread[signal['name']]['thread'].stop:
-                    self.tableWidgetItem_download_dict[signal['name']]['status'].setText('暫停')
+                if self.download_anime_Thread[signal['total_name']]['thread'].stop:
+                    self.tableWidgetItem_download_dict[signal['total_name']]['status'].setText('暫停')
                 else:
-                    self.tableWidgetItem_download_dict[signal['name']]['status'].setText('下載中')
-                self.tableWidgetItem_download_dict[signal['name']]['schedule'].setValue(signal["success"])
+                    self.tableWidgetItem_download_dict[signal['total_name']]['status'].setText(signal["status"])
+                self.tableWidgetItem_download_dict[signal['total_name']]['schedule'].setValue(signal["schedule"])
             except KeyError:
                 print('應該是 Thread 被刪除，剛好 emit。')
 
@@ -502,7 +505,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.story_list_scrollArea.setGeometry(QtCore.QRect(10, 60, 211, 40 + len(signal['total']) * 20))
         for i, m in enumerate(signal['total']):
             data = json.dumps(
-                {'data': {'name': self.badname(signal['name']), 'num': self.badname(m), 'url': signal['total'][m]}})
+                {'name': self.badname(signal['name']), 'num': self.badname(m), 'url': signal['total'][m],
+                 'name_num': f"{self.badname(signal['name'])}　　{self.badname(m)}", 'schedule': 0,
+                 'status': '準備中', 'total_name': self.badname(signal['name']) + self.badname(m)
+                 })
             self.story_checkbox_dict.update({i: QtWidgets.QCheckBox(m)})
             self.story_checkbox_dict[i].setObjectName(data)
             self.story_list_scrollAreaWidgetContents_Layout.addWidget(self.story_checkbox_dict[i])
@@ -622,10 +628,12 @@ class Download_Video(QtCore.QThread):
         super(Download_Video, self).__init__()
         self.data = data
         self.path = json.load(open('config.json', 'r', encoding='utf-8'))
-        self.folder_name = self.data['data']['name']
-        self.file_name = self.data['data']['num']
+        self.folder_name = self.data['name']
+        self.file_name = self.data['num']
         if not os.path.isdir(f'{self.path["path"]}/{self.folder_name}'):
             os.mkdir(f'{self.path["path"]}/{self.folder_name}')
+        if os.path.isfile(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4'):
+            os.remove(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4')
         self.video_num = 0
         self.video_data = dict()
         self.result = dict()
@@ -640,7 +648,7 @@ class Download_Video(QtCore.QThread):
         while True:
             try:
                 if not self.stop and not self.exit:
-                    res = requests.get(url=self.data['data']['url'], headers=headers, timeout=5)
+                    res = requests.get(url=self.data['url'], headers=headers, timeout=5)
                     if res:
                         return res.json()
                 elif self.exit:
@@ -669,7 +677,7 @@ class Download_Video(QtCore.QThread):
         判斷下載列表順序使否輪到自己。
         """
         while True:
-            if anime.download_video_mission_list[0] == self.data["data"]["name"] + self.data["data"]["num"] \
+            if anime.download_video_mission_list[0] == self.data["name"] + self.data["num"] \
                     and anime.simultaneously_value > anime.now_download_value:
                 anime.now_download_value += 1
                 del anime.download_video_mission_list[0]
@@ -694,17 +702,18 @@ class Download_Video(QtCore.QThread):
             for i in range(m3u8_count):
                 executor.submit(self.video, i, res, host)
             while True:
-                self.result.update({'success': int(self.video_num / m3u8_count * 100),
-                                    'name': self.data["data"]["name"] + self.data["data"]["num"],
-                                    })
+                self.data.update({'schedule': int(self.video_num / m3u8_count * 100),
+                                  'status': '下載中',
+                                  })
                 if self.video_num == m3u8_count:
-                    self.download_video.emit(self.result)
+                    self.data.update({'status': '已完成'})
+                    self.download_video.emit(self.data)
                     anime.now_download_value -= 1
                     del self.video_data
                     break
                 if self.exit:
                     break
-                self.download_video.emit(self.result)
+                self.download_video.emit(self.data)
                 time.sleep(1)
             self.quit()
             self.wait()
