@@ -30,7 +30,10 @@ pip install -r -requirements.txt
 ## 問題 1 (尚未解決)<br>
 每下載一個影片  下載前與下載後增加大概 5~10MB 記憶體，下載越多記憶體佔用量就越多，目前還不知道記憶體如何釋放。<br>
 
-## 問題 2 (已解決)<br>
+## 問題 2 (尚未解決)<br>
+程式關閉下次開啟會下載上次未下載完的動漫，偶爾影片片段會重複。
+
+## 問題 3 (已解決)<br>
 網頁上的 source 碼 與 requests.get後的結果。<br>
 ![image](https://i.imgur.com/9kG6vdj.png)
 ```python
