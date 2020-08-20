@@ -2,6 +2,7 @@
 /dist
 /build
 /venv
+/Log
 config.json
 main.spec
 test.py
