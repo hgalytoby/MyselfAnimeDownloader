@@ -6,7 +6,9 @@ import time
 # import gc
 import shutil
 import psutil
+import datetime
 import requests
+import webbrowser
 # from concurrent.futures import ProcessPoolExecutor
 from concurrent.futures import ThreadPoolExecutor
 from UI.main_ui import Ui_Anime
@@ -34,11 +36,15 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
     def __init__(self):
         super(Anime, self).__init__()
         self.setupUi(self)
+        self.ban = '//:*?"<>|.'
         self.now_download_value = 0
+        self.load_week_label_status = False
+        self.load_anime_label_status = False
         self.week_dict = dict()
         self.week_layout_dict = dict()
         self.story_checkbox_dict = dict()
         self.download_anime_Thread = dict()
+        self.history_tableWidget_dict = dict()
         self.download_progressBar_dict = dict()
         self.download_status_label_dict = dict()
         self.tableWidgetItem_download_dict = dict()
@@ -52,30 +58,38 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.mouseHoverOnTabBar()
         self.loading_config_status()
         self.load_download_menu()
+        self.load_history()
         self.setFixedSize(self.width(), self.height())
         self.week = {0: self.Monday_scrollAreaWidgetContents, 1: self.Tuesday_scrollAreaWidgetContents,
                      2: self.Wednesday_scrollAreaWidgetContents, 3: self.Thursday_scrollAreaWidgetContents,
                      4: self.Friday_scrollAreaWidgetContents, 5: self.Staurday_scrollAreaWidgetContents,
                      6: self.Sunday_scrollAreaWidgetContents}
-        # self.menu.actions()[0].triggered.connect(config.show)
-        self.menu.actions()[2].triggered.connect(self.closeEvent)
-        self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
-        self.download_pushbutton.clicked.connect(self.download_anime)
-        self.customize_pushButton.clicked.connect(self.anime_info_event)
-        self.ban = '//:*?"<>|.'
         self.download_tableWidget.setColumnWidth(0, 400)
         self.download_tableWidget.setColumnWidth(1, 150)
         # self.download_tableWidget.setColumnWidth(2, 431)
         self.download_tableWidget.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
         self.download_tableWidget.cellClicked.connect(self.print_row)
-        self.load_week_label_status = False
-        self.load_anime_label_status = False
         self.download_tableWidget.verticalHeader().setVisible(False)
         self.download_tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.anime_info_tabWidget.currentChanged.connect(self.click_on_tablewidget)
         self.download_tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.download_tableWidget.customContextMenuRequested.connect(self.on_custom_context_menu_requested)
+        self.download_tableWidget.customContextMenuRequested.connect(
+            self.download_tableWidget_on_custom_context_menu_requested)
         self.download_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.history_tableWidget.setColumnWidth(1, 150)
+        self.history_tableWidget.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        self.history_tableWidget.verticalHeader().setVisible(False)
+        self.history_tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.history_tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.history_tableWidget.customContextMenuRequested.connect(
+            self.history_tableWidget_on_custom_context_menu_requested)
+        self.history_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+
+        # self.menu.actions()[0].triggered.connect(config.show)
+        self.menu.actions()[2].triggered.connect(self.closeEvent)
+        self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
+        self.download_pushbutton.clicked.connect(self.download_anime)
+        self.customize_pushButton.clicked.connect(self.check_url)
+        self.anime_info_tabWidget.currentChanged.connect(self.click_on_tablewidget)
 
     def badname(self, name):
         """
@@ -85,7 +99,60 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             name = str(name).replace(i, ' ')
         return name.strip()
 
-    def on_custom_context_menu_requested(self, pos):
+    def history_tableWidget_on_custom_context_menu_requested(self, pos):
+        item = self.history_tableWidget.itemAt(pos)
+        menu = QtWidgets.QMenu()
+        go_home_action = menu.addAction('前往官網')
+        load_anime_action = menu.addAction('讀取動漫資訊')
+        delete_select_history_action = menu.addAction('清除選取的歷史紀錄')
+        delete_all_history_action = menu.addAction('清除所有歷史紀錄')
+        select = dict()
+        for i in self.history_tableWidget.selectedIndexes()[::1]:
+            tableWidget_item_name = self.history_tableWidget.item(i.row(), 0).text()
+            tableWidget_item_name = ''.join(tableWidget_item_name.split('　　'))
+            select.update({i.row(): tableWidget_item_name})
+        if item is None:
+            go_home_action.setVisible(False)
+            delete_all_history_action.setVisible(True)
+            load_anime_action.setVisible(False)
+            delete_select_history_action.setVisible(False)
+        else:
+            go_home_action.setVisible(True)
+            delete_all_history_action.setVisible(True)
+            load_anime_action.setVisible(True)
+            delete_select_history_action.setVisible(True)
+        action = menu.exec_(self.history_tableWidget.viewport().mapToGlobal(pos))
+        if action == go_home_action:
+            webbrowser.open(self.history_tableWidget_dict[select[list(select.keys())[0]]]['home'])
+        elif action == load_anime_action:
+            self.loading_anime(url=self.history_tableWidget_dict[select[list(select.keys())[0]]]['home'])
+        elif action == delete_select_history_action:
+            self.history_delete_list(data=select, mode='select')
+        elif action == delete_all_history_action:
+            self.history_delete_list(data=select, mode='all')
+
+    def history_delete_list(self, data=None, mode=None):
+        data = dict(sorted(data.items(), reverse=True))
+        if mode == 'all':
+            text = '確定刪除所有歷史紀錄？'
+        else:
+            text = '確定刪除所選取的歷史紀錄？'
+        msg = QtWidgets.QMessageBox().information(self, '確認', text, QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.No,
+                                                  QtWidgets.QMessageBox.No)
+        if msg == QtWidgets.QMessageBox.Ok:
+            if mode == 'all':
+                for i in os.listdir('./Log/history/'):
+                    os.remove(f'./Log/history/{i}')
+                self.history_tableWidget.clearContents()
+                self.history_tableWidget_dict.clear()
+                self.history_tableWidget.setRowCount(0)
+            else:
+                for i in data:
+                    os.remove(f'./Log/history/{data[i]}.json')
+                    self.history_tableWidget.removeRow(i)
+                    del self.history_tableWidget_dict[data[i]]
+
+    def download_tableWidget_on_custom_context_menu_requested(self, pos):
         """
         下載清單頁面，右鍵選單功能。
         """
@@ -143,15 +210,15 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             if action == open_directory:
                 os.startfile(f'{self.save_path}/{select[list(select.keys())[0]]["directory"]}')
             elif action == raise_priority_action:
-                self.control_tablewidget(data=select, status=True)
+                self.control_download_tablewidget(data=select, status=True)
             elif action == lower_priority_action:
-                self.control_tablewidget(data=select, status=False)
+                self.control_download_tablewidget(data=select, status=False)
             elif action == list_delete_action:
                 self.download_menu_delete_list(data=select, remove_file=False)
             elif action == list_drive_delete_action:
                 self.download_menu_delete_list(data=select, remove_file=True)
 
-    def control_tablewidget(self, data=None, status=True):
+    def control_download_tablewidget(self, data=None, status=True):
         def move_item(mode):
             for i in data:
                 move_name = self.download_tableWidget.item(i - mode, 0).text()
@@ -231,21 +298,24 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                   QtWidgets.QMessageBox.No)
         if msg == QtWidgets.QMessageBox.Ok:
             for i in data:
-                if data[i]["thread"] in self.download_anime_Thread:
-                    if remove_file:
+                # if data[i]["thread"] in self.download_anime_Thread:
+                if remove_file:
+                    if not self.download_anime_Thread[data[i]["thread"]]['over']:
                         self.download_anime_Thread[data[i]["thread"]]['thread'].remove_file = True
-                        try:
-                            if os.path.isfile(f'{self.save_path}/{data[i]["directory"]}/{data[i]["file_name"]}.mp4'):
-                                os.remove(f'{self.save_path}/{data[i]["directory"]}/{data[i]["file_name"]}.mp4')
-                        except PermissionError:
-                            pass
-                    if data[i]["thread"] in self.now_download_video_mission_list:
-                        self.now_download_video_mission_list.remove(data[i]["thread"])
-                    if data[i]["thread"] in self.wait_download_video_mission_list:
-                        self.wait_download_video_mission_list.remove(data[i]["thread"])
+                        self.download_anime_Thread[data[i]["thread"]]['thread'].exit = True
+                    try:
+                        if os.path.isfile(f'{self.save_path}/{data[i]["directory"]}/{data[i]["file_name"]}.mp4'):
+                            os.remove(f'{self.save_path}/{data[i]["directory"]}/{data[i]["file_name"]}.mp4')
+                    except PermissionError:
+                        pass
+                if data[i]["thread"] in self.now_download_video_mission_list:
+                    self.now_download_video_mission_list.remove(data[i]["thread"])
                     self.now_download_value -= 1
-                    self.download_anime_Thread[data[i]["thread"]]['thread'].exit = True
-                    del self.download_anime_Thread[data[i]["thread"]]
+                if data[i]["thread"] in self.wait_download_video_mission_list:
+                    self.wait_download_video_mission_list.remove(data[i]["thread"])
+                os.remove(f'./Log/undone/{data[i]["thread"]}.json')
+                del self.download_anime_Thread[data[i]["thread"]]
+                del self.tableWidgetItem_download_dict[data[i]["thread"]]
                 self.download_tableWidget.removeRow(i)
 
     def click_on_tablewidget(self, index):
@@ -494,34 +564,17 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         sender = self.sender()
         pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
-        ok = True
-        if pushButton.objectName() == 'customize_pushButton':
-            url = self.customize_lineEdit.text().strip()
-            if re.match(r'^https://myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) \
-                    or re.match(r'^https://myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url):
-                pass
-            else:
-                self.url_error = QtWidgets.QMessageBox.information(self, '錯誤',
-                                                                   f"<font size=5  color=#000000>網址有誤！</font> <br/><font size=4  color=#000000>確認輸入的 <a href={url}>網址 </a><font size=4  color=#000000>是否正確！<",
-                                                                   QtWidgets.QMessageBox.Ok)
-                # QMessageBox {
-                #     background-color: #333333;
-                # }
-                #
-                # QMessageBox QLabel {
-                #     color: #aaa;
-                # }
-                ok = False
-        else:
-            url = pushButton.objectName()
-        if ok:
-            self.load_anime_label.setVisible(True)
-            self.load_anime_label_status = True
-            self.anime_info = Anime_info(url=url)
-            self.anime_info.anime_info_signal.connect(self.anime_info_data)
-            self.anime_info.start()
-            self.anime_info_tabWidget.setCurrentIndex(1)
-            self.anime_page_Visible()
+        url = pushButton.objectName()
+        self.loading_anime(url=url)
+
+    def loading_anime(self, url):
+        self.load_anime_label.setVisible(True)
+        self.load_anime_label_status = True
+        self.anime_info = Anime_info(url=url)
+        self.anime_info.anime_info_signal.connect(self.anime_info_data)
+        self.anime_info.start()
+        self.anime_info_tabWidget.setCurrentIndex(1)
+        self.anime_page_Visible()
 
     def anime_info_data(self, signal):
         """
@@ -554,8 +607,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 {'name': self.badname(signal['name']), 'num': self.badname(m), 'url': signal['total'][m],
                  'name_num': f"{self.badname(signal['name'])}　　{self.badname(m)}", 'schedule': 0,
                  'status': '準備中', 'total_name': self.badname(signal['name']) + self.badname(m),
-                 'video_ts': 0,
-                 })
+                 'video_ts': 0, 'time': None, 'home': signal['home']})
             self.story_checkbox_dict.update({i: QtWidgets.QCheckBox(m)})
             self.story_checkbox_dict[i].setObjectName(data)
             self.story_list_scrollAreaWidgetContents_Layout.addWidget(self.story_checkbox_dict[i])
@@ -565,6 +617,44 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         # self.anime_info.wait()
         # self.anime_info.quit()
         del self.anime_info
+
+    def check_url(self):
+        url = self.customize_lineEdit.text().strip()
+        if re.match(r'^https://myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) \
+                or re.match(r'^https://myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url):
+            self.loading_anime(url=url)
+        else:
+            if url[-1] == '/':
+                url = url[:-1]
+            self.url_error = QtWidgets.QMessageBox.information(self, '錯誤',
+                                                               f"<font size=5  color=#000000>網址有誤！</font> <br/><font size=4  color=#000000>確認輸入的 <a href={url}>網址 </a><font size=4  color=#000000>是否正確！<",
+                                                               QtWidgets.QMessageBox.Ok)
+
+    def load_history(self):
+        for i in os.listdir('./Log/history/'):
+            if i.endswith('.json'):
+                data = json.load(open(f'./Log/history/{i}', 'r', encoding='utf-8'))
+                self.create_history_tablewidteritem(data=data)
+        # self.history_tableWidget.resizeRowsToContents()
+
+    def create_history_tablewidteritem(self, data):
+        rowcount = self.history_tableWidget.rowCount()
+        self.history_tableWidget.setRowCount(rowcount + 1)
+        self.history_tableWidget_dict.update(
+            {data['total_name']: {'name': QtWidgets.QTableWidgetItem(data['name_num']),
+                                  'time': QtWidgets.QTableWidgetItem(data['time']),
+                                  'home': data['home']
+                                  }})
+        self.history_tableWidget_dict[data['total_name']]['time'].setTextAlignment(QtCore.Qt.AlignCenter)
+        self.history_tableWidget_dict[data['total_name']]['name'].setTextAlignment(QtCore.Qt.AlignCenter)
+        self.history_tableWidget.setItem(rowcount, 0,
+                                         self.history_tableWidget_dict[data['total_name']]['name'])
+        self.history_tableWidget.setItem(rowcount, 1,
+                                         self.history_tableWidget_dict[data['total_name']]['time'])
+
+    # def history_button_event(self):
+    #     sender = self.sender()
+    #     pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
 
     def mouseHoverOnTabBar(self):
         """
@@ -629,7 +719,7 @@ class Anime_info(QtCore.QThread):
     def get_anime_data(self):
         res = requests.get(url=self.url, headers=headers).text
         html = BeautifulSoup(res, features='lxml')
-        data = dict()
+        data = {'home': self.url}
         total = dict()
         for i in html.select('ul.main_list'):
             for j in i.find_all('a', href='javascript:;'):
@@ -682,6 +772,7 @@ class Download_Video(QtCore.QThread):
         if self.data['video_ts'] == 0 and os.path.isfile(
                 f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4'):
             os.remove(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4')
+        self.data.update({'time': datetime.datetime.strftime(datetime.datetime.today(), '%Y/%m/%d %H:%M:%S')})
         json.dump(self.data, open(f'./Log/undone/{self.data["total_name"]}.json', 'w', encoding='utf-8'), indent=2)
         json.dump(self.data, open(f'./Log/history/{self.data["total_name"]}.json', 'w', encoding='utf-8'), indent=2)
         self.stop = False
@@ -703,21 +794,17 @@ class Download_Video(QtCore.QThread):
             time.sleep(0.2)
 
     def write_undone(self, index, m3u8_count):
-        while True:
-            if not self.write_undone_status:
-                self.write_undone_status = True
-                if self.data['video_ts'] == m3u8_count - 1:
-                    status = '已完成'
-                else:
-                    status = '下載中'
-                self.data.update({'video_ts': index,
-                                  'schedule': int(self.data['video_ts'] / (m3u8_count - 1) * 100),
-                                  'status': status})
-                json.dump(self.data, open(f'./Log/undone/{self.data["total_name"]}.json', 'w', encoding='utf-8'),
-                          indent=2)
-                self.write_undone_status = False
-                return None
-            time.sleep(0.048763)
+        if self.data['video_ts'] == m3u8_count - 1 or self.data['video_ts'] == m3u8_count:
+            status = '已完成'
+            schedule = 100
+        else:
+            status = '下載中'
+            schedule = int(self.data['video_ts'] / (m3u8_count - 1) * 100)
+        self.data.update({'video_ts': index,
+                          'schedule': schedule,
+                          'status': status})
+        json.dump(self.data, open(f'./Log/undone/{self.data["total_name"]}.json', 'w', encoding='utf-8'),
+                  indent=2)
 
     def del_file_and_json(self):
         try:
@@ -769,16 +856,19 @@ class Download_Video(QtCore.QThread):
         """
         取得 m3u8 資料。
         """
+        index = 0
+        url = res['host'][index]['host'] + res['video']['720p']
         while True:
             try:
                 if not self.stop and not self.exit:
-                    m3u8_data = requests.get(url=res['host'][0]['host'] + res['video']['720p'], headers=headers,
-                                             timeout=5)
+                    m3u8_data = requests.get(url=url, headers=headers, timeout=5)
                     if m3u8_data:
                         return m3u8_data.text
                 elif self.exit:
                     break
             except:
+                index += 1
+                url = res['host'][index]['host'] + res['video']['720p']
                 time.sleep(5)
 
     def run(self):
@@ -832,6 +922,7 @@ class Download_Video(QtCore.QThread):
                                     self.write_undone(index=i, m3u8_count=m3u8_count)
                                     shutil.copyfileobj(data.raw, v)
                                 self.data['video_ts'] += 1
+                                self.write_undone(index=self.data['video_ts'], m3u8_count=m3u8_count)
                                 if self.remove_file:
                                     self.del_download_order = True
                                     self.write_download_order()

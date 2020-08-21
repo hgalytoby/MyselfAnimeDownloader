@@ -17,21 +17,22 @@ class Ui_Anime(object):
         Anime.setWindowModality(QtCore.Qt.NonModal)
         Anime.resize(1021, 460)
         Anime.setStyleSheet("QScrollBar::vertical {\n"
-                            "border:0px solid grey;\n"
-                            "width: 15px;\n"
-                            "}\n"
+                            "       border:0px solid grey;\n"
+                            "       width: 15px;\n"
+                            "       }\n"
                             "\n"
-                            "QScrollBar::handle:vertical {\n"
-                            "background:#dfdfdf;\n"
-                            "border-radius:6px;\n"
-                            "}\n"
+                            "       QScrollBar::handle:vertical {\n"
+                            "       background:#dfdfdf;\n"
+                            "       border-radius:6px;\n"
+                            "       }\n"
                             "\n"
-                            " QMessageBox::QPushButton{\n"
-                            "background-color:#dedede;\n"
-                            "border-radius:6px;\n"
-                            "width: 71px;\n"
-                            "height: 31px;\n"
-                            "}")
+                            "       QMessageBox::QPushButton{\n"
+                            "       background-color:#dedede;\n"
+                            "       border-radius:6px;\n"
+                            "       width: 71px;\n"
+                            "       height: 31px;\n"
+                            "       }\n"
+                            "   ")
         Anime.setIconSize(QtCore.QSize(24, 24))
         Anime.setDocumentMode(False)
         Anime.setDockNestingEnabled(False)
@@ -241,7 +242,7 @@ class Ui_Anime(object):
         self.story_list_scrollAreaWidgetContents_Layout.setObjectName("story_list_scrollAreaWidgetContents_Layout")
         self.story_list_scrollArea.setWidget(self.story_list_scrollAreaWidgetContents)
         self.download_pushbutton = QtWidgets.QPushButton(self.story_list_widget)
-        self.download_pushbutton.setGeometry(QtCore.QRect(110, 320, 101, 30))
+        self.download_pushbutton.setGeometry(QtCore.QRect(120, 320, 101, 30))
         self.download_pushbutton.setMinimumSize(QtCore.QSize(0, 0))
         font = QtGui.QFont()
         font.setPointSize(16)
@@ -278,13 +279,30 @@ class Ui_Anime(object):
         self.download_tableWidget.horizontalHeader().setCascadingSectionResizes(False)
         self.down_list_gridLayout.addWidget(self.download_tableWidget, 0, 0, 1, 1)
         self.anime_info_tabWidget.addTab(self.download_page, "")
+        self.history_page = QtWidgets.QWidget()
+        font = QtGui.QFont()
+        font.setPointSize(9)
+        self.history_page.setFont(font)
+        self.history_page.setObjectName("history_page")
+        self.history_layout = QtWidgets.QVBoxLayout(self.history_page)
+        self.history_layout.setObjectName("history_layout")
+        self.history_tableWidget = QtWidgets.QTableWidget(self.history_page)
+        self.history_tableWidget.setObjectName("history_tableWidget")
+        self.history_tableWidget.setColumnCount(2)
+        self.history_tableWidget.setRowCount(0)
+        item = QtWidgets.QTableWidgetItem()
+        self.history_tableWidget.setHorizontalHeaderItem(0, item)
+        item = QtWidgets.QTableWidgetItem()
+        self.history_tableWidget.setHorizontalHeaderItem(1, item)
+        self.history_layout.addWidget(self.history_tableWidget)
+        self.anime_info_tabWidget.addTab(self.history_page, "")
         self.customize_groupBox = QtWidgets.QGroupBox(self.centralwidget)
         self.customize_groupBox.setGeometry(QtCore.QRect(590, 0, 421, 61))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.customize_groupBox.setFont(font)
         self.customize_groupBox.setStyleSheet("QGroupBox{\n"
-"border:none}")
+                                              "border:none}")
         self.customize_groupBox.setObjectName("customize_groupBox")
         self.customize_label = QtWidgets.QLabel(self.customize_groupBox)
         self.customize_label.setGeometry(QtCore.QRect(10, 25, 71, 16))
@@ -360,7 +378,7 @@ class Ui_Anime(object):
         self.menu_exit.setObjectName("menu_exit")
         self.menu_about = QtWidgets.QAction(Anime)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(".\\UI\\../image/about.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap(".\\UI\\../image/logo.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.menu_about.setIcon(icon2)
         self.menu_about.setObjectName("menu_about")
         self.menu.addAction(self.menu_config)
@@ -399,8 +417,9 @@ class Ui_Anime(object):
 "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:\'PMingLiU\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
-        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.anime_page), _translate("Anime", "動漫資訊"))
+                                                                  "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.anime_page),
+                                             _translate("Anime", "動漫資訊"))
         self.download_page.setWhatsThis(_translate("Anime", "<html><head/><body><p>123</p></body></html>"))
         self.download_tableWidget.setSortingEnabled(False)
         item = self.download_tableWidget.horizontalHeaderItem(0)
@@ -411,6 +430,12 @@ class Ui_Anime(object):
         item.setText(_translate("Anime", "進度"))
         self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.download_page),
                                              _translate("Anime", "下載清單"))
+        item = self.history_tableWidget.horizontalHeaderItem(0)
+        item.setText(_translate("Anime", "名稱"))
+        item = self.history_tableWidget.horizontalHeaderItem(1)
+        item.setText(_translate("Anime", "下載時間"))
+        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.history_page),
+                                             _translate("Anime", "歷史紀錄"))
         self.customize_groupBox.setTitle(_translate("Anime", "每周更新以外的動漫"))
         self.customize_label.setText(_translate("Anime", "網址:"))
         self.customize_pushButton.setText(_translate("Anime", "確定"))

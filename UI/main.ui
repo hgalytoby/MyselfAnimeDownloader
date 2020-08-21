@@ -444,7 +444,7 @@
           <rect>
            <x>10</x>
            <y>10</y>
-              <width>211</width>
+           <width>211</width>
            <height>41</height>
           </rect>
          </property>
@@ -475,25 +475,25 @@ border-radius:6px
           <string> 劇情列表</string>
          </property>
         </widget>
-        <widget class="QPushButton" name="story_list_all_pushButton">
-            <property name="geometry">
-                <rect>
-                    <x>10</x>
-                    <y>320</y>
-                    <width>91</width>
-                    <height>30</height>
-                </rect>
-            </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>16</pointsize>
-          </font>
+           <widget class="QPushButton" name="story_list_all_pushButton">
+               <property name="geometry">
+                   <rect>
+                       <x>10</x>
+                       <y>320</y>
+                       <width>91</width>
+                       <height>30</height>
+                   </rect>
+               </property>
+               <property name="minimumSize">
+                   <size>
+                       <width>0</width>
+                       <height>0</height>
+                   </size>
+               </property>
+               <property name="font">
+                   <font>
+                       <pointsize>16</pointsize>
+                   </font>
          </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
@@ -544,7 +544,7 @@ border-radius:6px
         <widget class="QPushButton" name="download_pushbutton">
          <property name="geometry">
           <rect>
-              <x>110</x>
+              <x>120</x>
            <y>320</y>
               <width>101</width>
            <height>30</height>
@@ -632,15 +632,41 @@ gridline-color:#000000
           <string>狀態</string>
          </property>
         </column>
-        <column>
-         <property name="text">
-          <string>進度</string>
-         </property>
-        </column>
+           <column>
+               <property name="text">
+                   <string>進度</string>
+               </property>
+           </column>
        </widget>
       </item>
      </layout>
     </widget>
+       <widget class="QWidget" name="history_page">
+           <property name="font">
+               <font>
+                   <pointsize>9</pointsize>
+               </font>
+           </property>
+           <attribute name="title">
+               <string>歷史紀錄</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="history_layout">
+               <item>
+                   <widget class="QTableWidget" name="history_tableWidget">
+                       <column>
+                           <property name="text">
+                               <string>名稱</string>
+                           </property>
+                       </column>
+                       <column>
+                           <property name="text">
+                               <string>下載時間</string>
+                           </property>
+                       </column>
+                   </widget>
+               </item>
+           </layout>
+       </widget>
    </widget>
    <widget class="QGroupBox" name="customize_groupBox">
     <property name="geometry">
@@ -691,25 +717,25 @@ border:none}</string>
       </rect>
      </property>
     </widget>
-    <widget class="QPushButton" name="customize_pushButton">
-        <property name="geometry">
-            <rect>
-                <x>360</x>
-                <y>21</y>
-                <width>51</width>
-                <height>26</height>
-            </rect>
-        </property>
-     <property name="font">
-      <font>
-       <pointsize>12</pointsize>
-      </font>
-     </property>
-     <property name="styleSheet">
-         <string notr="true"/>
-     </property>
-     <property name="text">
-      <string>確定</string>
+       <widget class="QPushButton" name="customize_pushButton">
+           <property name="geometry">
+               <rect>
+                   <x>360</x>
+                   <y>21</y>
+                   <width>51</width>
+                   <height>26</height>
+               </rect>
+           </property>
+           <property name="font">
+               <font>
+                   <pointsize>12</pointsize>
+               </font>
+           </property>
+           <property name="styleSheet">
+               <string notr="true"/>
+           </property>
+           <property name="text">
+               <string>確定</string>
      </property>
     </widget>
    </widget>
@@ -869,8 +895,9 @@ background-color: rgba(255, 255, 240, 100)
   </action>
   <action name="menu_about">
    <property name="icon">
-    <iconset>
-     <normaloff>../image/about.ico</normaloff>../image/about.ico</iconset>
+       <iconset>
+           <normaloff>../image/logo.ico</normaloff>../image/logo.ico
+       </iconset>
    </property>
    <property name="text">
     <string>關於</string>
