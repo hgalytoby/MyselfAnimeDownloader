@@ -143,13 +143,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             if mode == 'all':
                 for i in os.listdir('./Log/history/'):
                     os.remove(f'./Log/history/{i}')
-                self.history_tableWidget.clearContents()
                 self.history_tableWidget_dict.clear()
-                self.history_tableWidget.setRowCount(0)
             else:
                 for i in data:
                     os.remove(f'./Log/history/{data[i]}.json')
-                    self.history_tableWidget.removeRow(i)
                     del self.history_tableWidget_dict[data[i]]
 
     def download_tableWidget_on_custom_context_menu_requested(self, pos):
@@ -202,7 +199,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 download_anime_Thread_name = ''.join(download_anime_Thread_name.split('　　'))
                 status = self.download_tableWidget.item(i - 1, 1).text()
                 if status == '已完成':
-                    os.remove(f'./Log/undone/{download_anime_Thread_name}.json')
+                    if os.path.isfile(f'./Log/undone/{download_anime_Thread_name}.json'):
+                        os.remove(f'./Log/undone/{download_anime_Thread_name}.json')
                     self.download_tableWidget.removeRow(i - 1)
                     del self.download_anime_Thread[download_anime_Thread_name]
                     del self.tableWidgetItem_download_dict[download_anime_Thread_name]
@@ -211,6 +209,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 os.startfile(f'{self.save_path}/{select[list(select.keys())[0]]["directory"]}')
             elif action == raise_priority_action:
                 self.control_download_tablewidget(data=select, status=True)
+
             elif action == lower_priority_action:
                 self.control_download_tablewidget(data=select, status=False)
             elif action == list_delete_action:
@@ -256,7 +255,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                         move_index] = \
                         self.wait_download_video_mission_list[move_index], self.wait_download_video_mission_list[
                             select_index]
-                if select_item in self.now_download_video_mission_list and move_item in self.now_download_video_mission_list:
+                elif select_item in self.now_download_video_mission_list and move_item in self.now_download_video_mission_list:
                     move_index = self.now_download_video_mission_list.index(move_item)
                     select_index = self.now_download_video_mission_list.index(select_item)
                     self.now_download_video_mission_list[select_index], self.now_download_video_mission_list[
@@ -284,6 +283,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             if self.download_tableWidget.rowCount() - 1 in data:
                 del data[self.download_tableWidget.rowCount() - 1]
             move_item(mode=-1)
+        json.dump({'wait': self.wait_download_video_mission_list,
+                   'now': self.now_download_video_mission_list},
+                  open('./Log/download_order.json', 'w', encoding='utf-8'), indent=2)
 
     def download_menu_delete_list(self, data=None, remove_file=False):
         """
@@ -299,6 +301,13 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         if msg == QtWidgets.QMessageBox.Ok:
             for i in data:
                 # if data[i]["thread"] in self.download_anime_Thread:
+                if data[i]["thread"] in self.now_download_video_mission_list:
+                    self.now_download_video_mission_list.remove(data[i]["thread"])
+                    self.now_download_value -= 1
+                if data[i]["thread"] in self.wait_download_video_mission_list:
+                    self.wait_download_video_mission_list.remove(data[i]["thread"])
+                if os.path.isfile(f'./Log/undone/{data[i]["thread"]}.json'):
+                    os.remove(f'./Log/undone/{data[i]["thread"]}.json')
                 if remove_file:
                     if not self.download_anime_Thread[data[i]["thread"]]['over']:
                         self.download_anime_Thread[data[i]["thread"]]['thread'].remove_file = True
@@ -308,12 +317,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                             os.remove(f'{self.save_path}/{data[i]["directory"]}/{data[i]["file_name"]}.mp4')
                     except PermissionError:
                         pass
-                if data[i]["thread"] in self.now_download_video_mission_list:
-                    self.now_download_video_mission_list.remove(data[i]["thread"])
-                    self.now_download_value -= 1
-                if data[i]["thread"] in self.wait_download_video_mission_list:
-                    self.wait_download_video_mission_list.remove(data[i]["thread"])
-                os.remove(f'./Log/undone/{data[i]["thread"]}.json')
                 del self.download_anime_Thread[data[i]["thread"]]
                 del self.tableWidgetItem_download_dict[data[i]["thread"]]
                 self.download_tableWidget.removeRow(i)
@@ -333,7 +336,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.load_anime_label.setVisible(True)
 
     def print_row(self, r, c):
-        print(r, c)
+        # print(r, c)
+        pass
 
     def closeEvent(self, event):
         """
@@ -375,14 +379,15 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         menu = self.now_download_video_mission_list + self.wait_download_video_mission_list
         for i in self.now_download_video_mission_list:
             data = json.load(open(f'./Log/undone/{i}.json', 'r', encoding='utf-8'))
-            self.create_tablewidgetitem(data=data, now=True)
-        for i in self.wait_download_video_mission_list:
+            self.create_tablewidgetitem(data=data, now=True, init=True)
+        wait_list = self.wait_download_video_mission_list[:]
+        for i in wait_list:
             data = json.load(open(f'./Log/undone/{i}.json', 'r', encoding='utf-8'))
-            self.create_tablewidgetitem(data=data)
+            self.create_tablewidgetitem(data=data, init=True)
         for i in os.listdir('./Log/undone/'):
             if i.endswith('.json') and i[:-5] not in menu:
                 data = json.load(open(f'./Log/undone/{i}', 'r', encoding='utf-8'))
-                self.create_tablewidgetitem(data=data)
+                self.create_tablewidgetitem(data=data, init=True)
 
     def loading_config_status(self):
         """
@@ -417,7 +422,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 elif data['total_name'] not in self.download_anime_Thread:
                     self.create_tablewidgetitem(data=data)
 
-    def create_tablewidgetitem(self, data=None, now=False):
+    def create_tablewidgetitem(self, data=None, now=False, init=False):
         if not now:
             self.wait_download_video_mission_list.append(data['total_name'])
         rowcount = self.download_tableWidget.rowCount()
@@ -435,11 +440,12 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                           self.tableWidgetItem_download_dict[data['total_name']]['status'])
         self.download_tableWidget.setCellWidget(rowcount, 2,
                                                 self.tableWidgetItem_download_dict[data['total_name']]['schedule'])
+        data.update({'time': datetime.datetime.strftime(datetime.datetime.today(), '%Y/%m/%d %H:%M:%S')})
         if data['schedule'] == 100:
             self.download_anime_Thread.update({data['total_name']: {'thread': None,
                                                                     'over': True}})
         else:
-            self.download_anime_Thread.update({data['total_name']: {'thread': Download_Video(data=data),
+            self.download_anime_Thread.update({data['total_name']: {'thread': Download_Video(data=data, init=init),
                                                                     'over': False}})
             self.download_anime_Thread[data['total_name']]['thread'].download_video.connect(self.download_anime_task)
             self.download_anime_Thread[data['total_name']]['thread'].start()
@@ -631,30 +637,24 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                                QtWidgets.QMessageBox.Ok)
 
     def load_history(self):
-        for i in os.listdir('./Log/history/'):
-            if i.endswith('.json'):
-                data = json.load(open(f'./Log/history/{i}', 'r', encoding='utf-8'))
-                self.create_history_tablewidteritem(data=data)
-        # self.history_tableWidget.resizeRowsToContents()
+        self.history_thread = History()
+        self.history_thread.history_signal.connect(self.create_history_tablewidteritem)
+        self.history_thread.start()
 
-    def create_history_tablewidteritem(self, data):
+    def create_history_tablewidteritem(self, signal):
         rowcount = self.history_tableWidget.rowCount()
         self.history_tableWidget.setRowCount(rowcount + 1)
         self.history_tableWidget_dict.update(
-            {data['total_name']: {'name': QtWidgets.QTableWidgetItem(data['name_num']),
-                                  'time': QtWidgets.QTableWidgetItem(data['time']),
-                                  'home': data['home']
-                                  }})
-        self.history_tableWidget_dict[data['total_name']]['time'].setTextAlignment(QtCore.Qt.AlignCenter)
-        self.history_tableWidget_dict[data['total_name']]['name'].setTextAlignment(QtCore.Qt.AlignCenter)
+            {signal['total_name']: {'name': QtWidgets.QTableWidgetItem(signal['name_num']),
+                                    'time': QtWidgets.QTableWidgetItem(signal['time']),
+                                    'home': signal['home']
+                                    }})
+        self.history_tableWidget_dict[signal['total_name']]['time'].setTextAlignment(QtCore.Qt.AlignCenter)
+        self.history_tableWidget_dict[signal['total_name']]['name'].setTextAlignment(QtCore.Qt.AlignCenter)
         self.history_tableWidget.setItem(rowcount, 0,
-                                         self.history_tableWidget_dict[data['total_name']]['name'])
+                                         self.history_tableWidget_dict[signal['total_name']]['name'])
         self.history_tableWidget.setItem(rowcount, 1,
-                                         self.history_tableWidget_dict[data['total_name']]['time'])
-
-    # def history_button_event(self):
-    #     sender = self.sender()
-    #     pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
+                                         self.history_tableWidget_dict[signal['total_name']]['time'])
 
     def mouseHoverOnTabBar(self):
         """
@@ -755,13 +755,39 @@ class Anime_info(QtCore.QThread):
         self.anime_info_signal.emit(data)
 
 
+class History(QtCore.QThread):
+    history_signal = QtCore.pyqtSignal(dict)
+
+    def __init__(self):
+        super(History, self).__init__()
+        self.data = list()
+
+    def run(self):
+        while True:
+            try:
+                result = list()
+                for i in os.listdir('./Log/history/'):
+                    result.append(i)
+                if self.data != result:
+                    anime.history_tableWidget.clearContents()
+                    anime.history_tableWidget.setRowCount(0)
+                    self.data = result
+                    for i in self.data:
+                        if i.endswith('.json'):
+                            data = json.load(open(f'./Log/history/{i}', 'r', encoding='utf-8'))
+                            self.history_signal.emit(data)
+            except NameError:
+                pass
+            time.sleep(1)
+
+
 class Download_Video(QtCore.QThread):
     """
     下載動漫。
     """
     download_video = QtCore.pyqtSignal(dict)
 
-    def __init__(self, data):
+    def __init__(self, data, init):
         super(Download_Video, self).__init__()
         self.data = data
         self.path = json.load(open('config.json', 'r', encoding='utf-8'))
@@ -772,26 +798,31 @@ class Download_Video(QtCore.QThread):
         if self.data['video_ts'] == 0 and os.path.isfile(
                 f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4'):
             os.remove(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4')
-        self.data.update({'time': datetime.datetime.strftime(datetime.datetime.today(), '%Y/%m/%d %H:%M:%S')})
         json.dump(self.data, open(f'./Log/undone/{self.data["total_name"]}.json', 'w', encoding='utf-8'), indent=2)
         json.dump(self.data, open(f'./Log/history/{self.data["total_name"]}.json', 'w', encoding='utf-8'), indent=2)
         self.stop = False
         self.exit = False
-        self.del_download_order = False
-        self.write_download_order_status = False
-        self.write_undone_status = False
         self.remove_file = False
+        self.del_download_order = False
+        # self.write_undone_status = False
+        self.write_download_order_status = False
+        if not init:
+            self.write_download_order()
 
     def write_download_order(self):
         while True:
-            if not self.write_download_order_status:
-                self.write_download_order_status = True
-                download = {'wait': anime.wait_download_video_mission_list,
-                            'now': anime.now_download_video_mission_list}
-                json.dump(download, open('./Log/download_order.json', 'w', encoding='utf-8'), indent=2)
-                self.write_download_order_status = False
-                return None
-            time.sleep(0.2)
+            try:
+                if not self.write_download_order_status:
+                    self.write_download_order_status = True
+                    download = {'wait': anime.wait_download_video_mission_list,
+                                'now': anime.now_download_video_mission_list}
+                    # print(download)
+                    json.dump(download, open('./Log/download_order.json', 'w', encoding='utf-8'), indent=2)
+                    self.write_download_order_status = False
+                    break
+                time.sleep(0.2)
+            except NameError:
+                time.sleep(0.5)
 
     def write_undone(self, index, m3u8_count):
         if self.data['video_ts'] == m3u8_count - 1 or self.data['video_ts'] == m3u8_count:
@@ -808,13 +839,18 @@ class Download_Video(QtCore.QThread):
 
     def del_file_and_json(self):
         try:
-            os.remove(f'./Log/undone/{self.data["total_name"]}.json')
+            if os.path.isfile(f'./Log/undone/{self.data["total_name"]}.json'):
+                os.remove(f'./Log/undone/{self.data["total_name"]}.json')
         except PermissionError or FileNotFoundError:
             pass
+        except BaseException as error:
+            print(f'del_file_and_json error: {error}')
         try:
             os.remove(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4')
         except PermissionError or FileNotFoundError:
             pass
+        except BaseException as error:
+            print(f'del_file_and_json error: {error}')
 
     def turn_me(self):
         """
@@ -822,16 +858,15 @@ class Download_Video(QtCore.QThread):
         """
         while True:
             try:
-                if self.data["name"] + self.data["num"] in anime.now_download_video_mission_list:
+                if self.exit:
+                    break
+                elif self.data["name"] + self.data["num"] in anime.now_download_video_mission_list:
                     anime.now_download_value += 1
                     break
-                elif anime.wait_download_video_mission_list[0] == self.data["name"] + self.data[
-                    "num"] and anime.simultaneously_value > anime.now_download_value:
+                elif len(anime.wait_download_video_mission_list) > 0 and anime.wait_download_video_mission_list[0] == \
+                        self.data["name"] + self.data["num"] and anime.simultaneously_value > anime.now_download_value:
                     anime.now_download_value += 1
                     anime.now_download_video_mission_list.append(anime.wait_download_video_mission_list.pop(0))
-                    self.write_download_order()
-                    break
-                elif self.exit:
                     break
                 time.sleep(3)
             except NameError:
@@ -848,14 +883,20 @@ class Download_Video(QtCore.QThread):
                     if res:
                         return res.json()
                 elif self.exit:
+                    if not self.del_download_order:
+                        self.del_download_order = True
+                        self.write_download_order()
+                        self.del_file_and_json()
                     break
-            except:
+            except BaseException as error:
                 time.sleep(5)
 
     def get_m3u8_data(self, res):
         """
         取得 m3u8 資料。
         """
+        if self.exit:
+            return None
         index = 0
         url = res['host'][index]['host'] + res['video']['720p']
         while True:
@@ -865,6 +906,10 @@ class Download_Video(QtCore.QThread):
                     if m3u8_data:
                         return m3u8_data.text
                 elif self.exit:
+                    if not self.del_download_order:
+                        self.del_download_order = True
+                        self.write_download_order()
+                        self.del_file_and_json()
                     break
             except:
                 index += 1
