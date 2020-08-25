@@ -4,4 +4,5 @@ pyuic5 -o .\UI\save_ui.py .\UI\save.ui
 pyuic5 -o .\UI\note_ui.py .\UI\note.ui
 pyuic5 -o .\UI\url_ui.py .\UI\url.ui
 pyuic5 -o .\UI\about_ui.py .\UI\about.ui
+pyuic5 -o .\UI\test_ui.py .\UI\test.ui
 pyinstaller -F main.py

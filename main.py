@@ -40,7 +40,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.now_download_value = 0
         self.load_week_label_status = False
         self.load_anime_label_status = False
+        self.load_end_anime_status = False
         self.week_dict = dict()
+        self.end_tab = dict()
+        self.end_qt_object = dict()
         self.week_layout_dict = dict()
         self.story_checkbox_dict = dict()
         self.download_anime_Thread = dict()
@@ -55,10 +58,12 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.load_week_data()
         self.anime_page_Visible()
         self.load_anime_label.setVisible(False)
-        self.mouseHoverOnTabBar()
+        self.load_end_anime_label.setVisible(False)
+        self.tabBar = self.mouseHoverOnTabBar()
         self.loading_config_status()
         self.load_download_menu()
         self.load_history()
+        self.loading_end_anime()
         self.setFixedSize(self.width(), self.height())
         self.week = {0: self.Monday_scrollAreaWidgetContents, 1: self.Tuesday_scrollAreaWidgetContents,
                      2: self.Wednesday_scrollAreaWidgetContents, 3: self.Thursday_scrollAreaWidgetContents,
@@ -83,7 +88,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.history_tableWidget.customContextMenuRequested.connect(
             self.history_tableWidget_on_custom_context_menu_requested)
         self.history_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-
         # self.menu.actions()[0].triggered.connect(config.show)
         self.menu.actions()[2].triggered.connect(self.closeEvent)
         self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
@@ -325,15 +329,19 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         TabWidget切換時，判斷讀取動漫資訊是否顯示。
         """
-
         if index != 0 and not self.load_week_label_status:
             self.load_week_label.setVisible(False)
         elif index == 0 and not self.load_week_label_status:
             self.load_week_label.setVisible(True)
-        if index != 1 and self.load_anime_label_status:
+        if index != 1 and not self.load_end_anime_status:
+            self.load_end_anime_label.setVisible(False)
+        elif index == 1 and not self.load_end_anime_status:
+            self.load_end_anime_label.setVisible(True)
+        if index != 2 and self.load_anime_label_status:
             self.load_anime_label.setVisible(False)
-        elif index == 1 and self.load_anime_label_status:
+        elif index == 2 and self.load_anime_label_status:
             self.load_anime_label.setVisible(True)
+
 
     def print_row(self, r, c):
         # print(r, c)
@@ -547,7 +555,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                               "}"
                                                               "QPushButton:hover{background-color:transparent; color: black;}\n"
                                                               "QPushButton:pressed{\n"
-                                                              "background-color: #ffffff;\n"
+                                                              "background-color: transparent;\n"
                                                               "border-style: inset;\n"
                                                               "color: black;\n"
                                                               " }\n"
@@ -579,7 +587,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.anime_info = Anime_info(url=url)
         self.anime_info.anime_info_signal.connect(self.anime_info_data)
         self.anime_info.start()
-        self.anime_info_tabWidget.setCurrentIndex(1)
+        self.anime_info_tabWidget.setCurrentIndex(2)
         self.anime_page_Visible()
 
     def anime_info_data(self, signal):
@@ -624,6 +632,77 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         # self.anime_info.quit()
         del self.anime_info
 
+    def loading_end_anime(self):
+        self.end_anime = End_anime()
+        self.end_anime.end_anime_signal.connect(self.end_anime_data)
+        self.end_anime.start()
+
+    def end_anime_data(self, signal):
+        for i in signal:
+            self.end_tab.update({i: QtWidgets.QTabWidget()})
+            month_dict = dict()
+            for month, j in enumerate(signal[i]):
+                content_len = len(signal[i][j])
+                if content_len % 3 == 0:
+                    high = content_len // 3
+                else:
+                    high = content_len // 3 + 1
+                if month == 0:
+                    size = high
+                self.end_qt_object.update({j: {'widget': QtWidgets.QWidget(),
+                                               'GridLayout': QtWidgets.QGridLayout(),
+                                               'size': high,
+                                               'index': i}})
+                for index, k in enumerate(signal[i][j]):
+                    r, c = divmod(index, 3)
+                    self.end_qt_object[j].update({k: QtWidgets.QPushButton(k)})
+                    self.end_qt_object[j][k].setObjectName(signal[i][j][k])
+                    self.end_qt_object[j][k].setStyleSheet("QPushButton {\n"
+                                                           "background-color:transparent;\n"
+                                                           "color: #000000;\n"
+                                                           "font-size:12px;\n"
+                                                           "}"
+                                                           "QPushButton:hover{background-color:transparent; color: #00aaff;}\n"
+                                                           "QPushButton:pressed{\n"
+                                                           "background-color: transparent;\n"
+                                                           "border-style: inset;\n"
+                                                           "color: black;\n"
+                                                           " }\n"
+                                                           )
+                    self.end_qt_object[j][k].clicked.connect(self.anime_info_event)
+                    self.end_qt_object[j][k].setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                    self.end_qt_object[j]['GridLayout'].addWidget(self.end_qt_object[j][k], r, c,
+                                                                  QtCore.Qt.AlignHCenter)
+
+                self.end_qt_object[j]['widget'].setLayout(self.end_qt_object[j]['GridLayout'])
+                month_dict.update({month: j})
+                self.end_tab[i].addTab(self.end_qt_object[j]['widget'], j)
+            month_json = json.dumps(month_dict)
+            self.end_tab[i].setObjectName(month_json)
+            if size > 3:
+                self.end_tab[i].setMinimumSize(878, size * 30)
+            else:
+                self.end_tab[i].setMinimumSize(878, size * 40)
+            self.end_tab[i].setCurrentIndex(0)
+            self.end_tab[i].tabBar().setMouseTracking(True)
+            self.end_tab[i].tabBar().installEventFilter(self)
+            self.tabBar.append(self.end_tab[i])
+            self.end_tab[i].currentChanged.connect(self.end_tabwidget_index)
+            self.end_scrollAreaWidgetContents_Layout.addWidget(self.end_tab[i])
+            self.load_end_anime_label.setVisible(False)
+            self.load_end_anime_status = True
+
+    def end_tabwidget_index(self, index):
+        sender = self.sender()
+        pushButton = self.findChild(QtWidgets.QTabWidget, sender.objectName())
+        p = json.loads(pushButton.objectName())
+        size = self.end_qt_object[p[str(index)]]['size']
+        tab_index = self.end_qt_object[p[str(index)]]['index']
+        if size > 3:
+            self.end_tab[tab_index].setMinimumHeight(size * 30)
+        else:
+            self.end_tab[tab_index].setMinimumHeight(size * 40)
+
     def check_url(self):
         url = self.customize_lineEdit.text().strip()
         if re.match(r'^https://myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) \
@@ -660,19 +739,23 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         滑鼠移動。
         """
-        self.tabBar = self.week_tabWidget.tabBar()
-        self.tabBar.setMouseTracking(True)
-        self.tabBar.installEventFilter(self)
+        # self.tabBar = self.week_tabWidget.tabBar().setMouseTracking(True)
+        # self.tabBar.setMouseTracking(True)
+        # self.tabBar.installEventFilter(self)
+        self.week_tabWidget.tabBar().setMouseTracking(True)
+        self.week_tabWidget.tabBar().installEventFilter(self)
+        return [self.week_tabWidget]
 
     def eventFilter(self, obj, event):
         """
         滑鼠移動到 TabWidget 不用點擊就會自動切換頁面。
         """
-        if obj == self.tabBar:
-            if event.type() == QtCore.QEvent.MouseMove:
-                index = self.tabBar.tabAt(event.pos())
-                self.tabBar.setCurrentIndex(index)
-                return True
+        for i in self.tabBar:
+            if obj == i.tabBar():
+                if event.type() == QtCore.QEvent.MouseMove:
+                    index = i.tabBar().tabAt(event.pos())
+                    i.tabBar().setCurrentIndex(index)
+                    return True
         return super().eventFilter(obj, event)
 
 
@@ -704,6 +787,30 @@ class Week_data(QtCore.QThread):
         res, html = None, None
         del res, html
         self.week_data_signal.emit(week_dict)
+
+
+class End_anime(QtCore.QThread):
+    end_anime_signal = QtCore.pyqtSignal(dict)
+
+    def __init__(self):
+        super(End_anime, self).__init__()
+
+    def run(self):
+        url = 'https://myself-bbs.com/portal.php?mod=topic&topicid=8'
+        res = requests.get(url=url, headers=headers).text
+        html = BeautifulSoup(res, features='lxml')
+        data = dict()
+        for index, i in enumerate(html.find_all('div', {'class': 'tab-title title column cl'})):
+            month = dict()
+            for j, m in enumerate(i.find_all('div', {'class': 'block move-span'})):
+                anime = dict()
+                for k in m.find('span', {'class': 'titletext'}):
+                    year = k
+                for k in m.find_all('a'):
+                    anime.update({k['title']: f"https://myself-bbs.com/{k['href']}"})
+                month.update({year: anime})
+            data.update({index: month})
+        self.end_anime_signal.emit(data)
 
 
 class Anime_info(QtCore.QThread):

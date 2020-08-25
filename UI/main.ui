@@ -305,6 +305,34 @@
       </item>
      </layout>
     </widget>
+    <widget class="QWidget" name="end_page">
+     <attribute name="title">
+      <string>完結列表</string>
+     </attribute>
+     <layout class="QGridLayout" name="end_gridLayout">
+      <item row="0" column="0">
+       <widget class="QScrollArea" name="end_scrollArea">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="end_scrollAreaWidgetContents">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>983</width>
+           <height>363</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="end_scrollAreaWidgetContents_Layout"/>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </widget>
     <widget class="QWidget" name="anime_page">
      <property name="styleSheet">
       <string notr="true">QGridLayout {background: transparent; }</string>
@@ -467,39 +495,40 @@
          </property>
          <property name="styleSheet">
           <string notr="true">QLabel{
-background-color:#dedede;
-border-radius:6px
-}</string>
+           background-color:#dedede;
+           border-radius:6px
+           }
+          </string>
          </property>
          <property name="text">
-          <string> 劇情列表</string>
+          <string>劇情列表</string>
          </property>
         </widget>
-           <widget class="QPushButton" name="story_list_all_pushButton">
-               <property name="geometry">
-                   <rect>
-                       <x>10</x>
-                       <y>320</y>
-                       <width>91</width>
-                       <height>30</height>
-                   </rect>
-               </property>
-               <property name="minimumSize">
-                   <size>
-                       <width>0</width>
-                       <height>0</height>
-                   </size>
-               </property>
-               <property name="font">
-                   <font>
-                       <pointsize>16</pointsize>
-                   </font>
+        <widget class="QPushButton" name="story_list_all_pushButton">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>320</y>
+           <width>91</width>
+           <height>30</height>
+          </rect>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>16</pointsize>
+          </font>
          </property>
          <property name="cursor">
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
          <property name="styleSheet">
-             <string notr="true"/>
+          <string notr="true"/>
          </property>
          <property name="text">
           <string>全選</string>
@@ -509,9 +538,9 @@ border-radius:6px
          <property name="geometry">
           <rect>
            <x>10</x>
-              <y>60</y>
+           <y>60</y>
            <width>211</width>
-              <height>251</height>
+           <height>251</height>
           </rect>
          </property>
          <property name="styleSheet">
@@ -535,7 +564,7 @@ border-radius:6px
             <x>0</x>
             <y>0</y>
             <width>211</width>
-               <height>251</height>
+            <height>251</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="story_list_scrollAreaWidgetContents_Layout"/>
@@ -544,9 +573,9 @@ border-radius:6px
         <widget class="QPushButton" name="download_pushbutton">
          <property name="geometry">
           <rect>
-              <x>120</x>
+           <x>120</x>
            <y>320</y>
-              <width>101</width>
+           <width>101</width>
            <height>30</height>
           </rect>
          </property>
@@ -565,7 +594,7 @@ border-radius:6px
           <cursorShape>PointingHandCursor</cursorShape>
          </property>
          <property name="styleSheet">
-             <string notr="true"/>
+          <string notr="true"/>
          </property>
          <property name="text">
           <string>開始下載</string>
@@ -603,7 +632,7 @@ p, li { white-space: pre-wrap; }
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;123&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <attribute name="title">
-         <string>下載清單</string>
+      <string>下載清單</string>
      </attribute>
      <layout class="QGridLayout" name="down_list_gridLayout">
       <item row="0" column="0">
@@ -632,41 +661,41 @@ gridline-color:#000000
           <string>狀態</string>
          </property>
         </column>
-           <column>
-               <property name="text">
-                   <string>進度</string>
-               </property>
-           </column>
+        <column>
+         <property name="text">
+          <string>進度</string>
+         </property>
+        </column>
        </widget>
       </item>
      </layout>
     </widget>
-       <widget class="QWidget" name="history_page">
-           <property name="font">
-               <font>
-                   <pointsize>9</pointsize>
-               </font>
-           </property>
-           <attribute name="title">
-               <string>歷史紀錄</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="history_layout">
-               <item>
-                   <widget class="QTableWidget" name="history_tableWidget">
-                       <column>
-                           <property name="text">
-                               <string>名稱</string>
-                           </property>
-                       </column>
-                       <column>
-                           <property name="text">
-                               <string>下載時間</string>
-                           </property>
-                       </column>
-                   </widget>
-               </item>
-           </layout>
+    <widget class="QWidget" name="history_page">
+     <property name="font">
+      <font>
+       <pointsize>9</pointsize>
+      </font>
+     </property>
+     <attribute name="title">
+      <string>歷史紀錄</string>
+     </attribute>
+     <layout class="QVBoxLayout" name="history_layout">
+      <item>
+       <widget class="QTableWidget" name="history_tableWidget">
+        <column>
+         <property name="text">
+          <string>名稱</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>下載時間</string>
+         </property>
+        </column>
        </widget>
+      </item>
+     </layout>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="customize_groupBox">
     <property name="geometry">
@@ -712,30 +741,30 @@ border:none}</string>
       <rect>
        <x>60</x>
        <y>23</y>
-          <width>291</width>
+       <width>291</width>
        <height>21</height>
       </rect>
      </property>
     </widget>
-       <widget class="QPushButton" name="customize_pushButton">
-           <property name="geometry">
-               <rect>
-                   <x>360</x>
-                   <y>21</y>
-                   <width>51</width>
-                   <height>26</height>
-               </rect>
-           </property>
-           <property name="font">
-               <font>
-                   <pointsize>12</pointsize>
-               </font>
-           </property>
-           <property name="styleSheet">
-               <string notr="true"/>
-           </property>
-           <property name="text">
-               <string>確定</string>
+    <widget class="QPushButton" name="customize_pushButton">
+     <property name="geometry">
+      <rect>
+       <x>360</x>
+       <y>21</y>
+       <width>51</width>
+       <height>26</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>確定</string>
      </property>
     </widget>
    </widget>
@@ -828,6 +857,24 @@ background-color: rgba(255, 255, 240, 100)
      </property>
     </widget>
    </widget>
+   <widget class="QLabel" name="load_end_anime_label">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>155</y>
+      <width>171</width>
+      <height>61</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>18</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>完結動漫讀取中</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -895,9 +942,9 @@ background-color: rgba(255, 255, 240, 100)
   </action>
   <action name="menu_about">
    <property name="icon">
-       <iconset>
-           <normaloff>../image/logo.ico</normaloff>../image/logo.ico
-       </iconset>
+    <iconset>
+     <normaloff>../image/logo.ico</normaloff>../image/logo.ico
+    </iconset>
    </property>
    <property name="text">
     <string>關於</string>

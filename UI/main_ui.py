@@ -164,6 +164,22 @@ class Ui_Anime(object):
         self.week_tabWidget.addTab(self.Sunday, "")
         self.week_page_gridLayout.addWidget(self.week_tabWidget, 0, 0, 1, 1)
         self.anime_info_tabWidget.addTab(self.week_page, "")
+        self.end_page = QtWidgets.QWidget()
+        self.end_page.setObjectName("end_page")
+        self.end_gridLayout = QtWidgets.QGridLayout(self.end_page)
+        self.end_gridLayout.setObjectName("end_gridLayout")
+        self.end_scrollArea = QtWidgets.QScrollArea(self.end_page)
+        self.end_scrollArea.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.end_scrollArea.setWidgetResizable(True)
+        self.end_scrollArea.setObjectName("end_scrollArea")
+        self.end_scrollAreaWidgetContents = QtWidgets.QWidget()
+        self.end_scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 983, 363))
+        self.end_scrollAreaWidgetContents.setObjectName("end_scrollAreaWidgetContents")
+        self.end_scrollAreaWidgetContents_Layout = QtWidgets.QVBoxLayout(self.end_scrollAreaWidgetContents)
+        self.end_scrollAreaWidgetContents_Layout.setObjectName("end_scrollAreaWidgetContents_Layout")
+        self.end_scrollArea.setWidget(self.end_scrollAreaWidgetContents)
+        self.end_gridLayout.addWidget(self.end_scrollArea, 0, 0, 1, 1)
+        self.anime_info_tabWidget.addTab(self.end_page, "")
         self.anime_page = QtWidgets.QWidget()
         self.anime_page.setStyleSheet("QGridLayout {background: transparent; }")
         self.anime_page.setObjectName("anime_page")
@@ -338,16 +354,22 @@ class Ui_Anime(object):
         self.status_widget = QtWidgets.QWidget(self.centralwidget)
         self.status_widget.setGeometry(QtCore.QRect(0, 415, 1011, 21))
         self.status_widget.setStyleSheet("QWidget{\n"
-"background-color: rgba(255, 255, 240, 100)\n"
-"}")
+                                         "background-color: rgba(255, 255, 240, 100)\n"
+                                         "}")
         self.status_widget.setObjectName("status_widget")
         self.left_status_label = QtWidgets.QLabel(self.status_widget)
         self.left_status_label.setGeometry(QtCore.QRect(20, 0, 211, 20))
         self.left_status_label.setObjectName("left_status_label")
         self.right_ststus_label = QtWidgets.QLabel(self.status_widget)
         self.right_ststus_label.setGeometry(QtCore.QRect(780, 0, 211, 20))
-        self.right_ststus_label.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.right_ststus_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
         self.right_ststus_label.setObjectName("right_ststus_label")
+        self.load_end_anime_label = QtWidgets.QLabel(self.centralwidget)
+        self.load_end_anime_label.setGeometry(QtCore.QRect(400, 155, 171, 61))
+        font = QtGui.QFont()
+        font.setPointSize(18)
+        self.load_end_anime_label.setFont(font)
+        self.load_end_anime_label.setObjectName("load_end_anime_label")
         Anime.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(Anime)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1021, 26))
@@ -402,7 +424,10 @@ class Ui_Anime(object):
         self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Friday), _translate("Anime", "五"))
         self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Staurday), _translate("Anime", "六"))
         self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Sunday), _translate("Anime", "日"))
-        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.week_page), _translate("Anime", "每周更新"))
+        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.week_page),
+                                             _translate("Anime", "每周更新"))
+        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.end_page),
+                                             _translate("Anime", "完結列表"))
         self.image_label.setText(_translate("Anime", "anime_image"))
         self.type_label.setText(_translate("Anime", "TextLabel"))
         self.total_set_label.setText(_translate("Anime", "TextLabel"))
@@ -413,11 +438,12 @@ class Ui_Anime(object):
         self.story_list_label.setText(_translate("Anime", " 劇情列表"))
         self.story_list_all_pushButton.setText(_translate("Anime", "全選"))
         self.download_pushbutton.setText(_translate("Anime", "開始下載"))
-        self.introduction_textBrowser.setHtml(_translate("Anime", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'PMingLiU\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-                                                                  "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+        self.introduction_textBrowser.setHtml(_translate("Anime",
+                                                         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                                         "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                                         "p, li { white-space: pre-wrap; }\n"
+                                                         "</style></head><body style=\" font-family:\'PMingLiU\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+                                                         "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
         self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.anime_page),
                                              _translate("Anime", "動漫資訊"))
         self.download_page.setWhatsThis(_translate("Anime", "<html><head/><body><p>123</p></body></html>"))
@@ -443,6 +469,7 @@ class Ui_Anime(object):
         self.load_anime_label.setText(_translate("Anime", "動漫資訊讀取中"))
         self.left_status_label.setText(_translate("Anime", "狀態: 0 個下載中　　連接設定: 0/20"))
         self.right_ststus_label.setText(_translate("Anime", "記憶體用量: 10.10MB / 程序: 3.50%"))
+        self.load_end_anime_label.setText(_translate("Anime", "完結動漫讀取中"))
         self.menu.setTitle(_translate("Anime", "設定"))
         self.menu_config.setText(_translate("Anime", "設定"))
         self.menu_config.setStatusTip(_translate("Anime", "設定"))
