@@ -553,11 +553,11 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                               "color: #339900;\n"
                                                               "font-size:22px;\n"
                                                               "}"
-                                                              "QPushButton:hover{background-color:transparent; color: black;}\n"
+                                                              "QPushButton:hover{background-color:transparent; color: #000000;}\n"
                                                               "QPushButton:pressed{\n"
                                                               "background-color: transparent;\n"
                                                               "border-style: inset;\n"
-                                                              "color: black;\n"
+                                                              "color: #339900;\n"
                                                               " }\n"
                                                               )
                 self.week_dict[m]['pushbutton'].setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -594,43 +594,50 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         接收動漫資訊 Thread。
         """
-        self.customize_lineEdit.clear()
-        self.story_list_all_pushButton.setText('全選')
-        self.introduction_textBrowser.clear()
-        self.story_checkbox_dict.clear()
-        self.pix = QtGui.QPixmap()
-        self.pix.loadFromData(signal['image'])
-        self.image_label.clear()
-        self.image_label.setPixmap(self.pix)
-        self.type_label.setText(signal[0])
-        self.premiere_label.setText(signal[1])
-        self.total_set_label.setText(signal[2])
-        self.author_label.setText(signal[3])
-        self.web_label.setText(signal[4])
-        self.remarks_label.setText(signal[5])
-        self.introduction_textBrowser.setHtml(
-            '<p style=\" color: #000000;\"font-size:16pt;>劇情介紹</p>\n' + signal['info'])
-        for i in range(self.story_list_scrollAreaWidgetContents_Layout.count()):
-            self.story_list_scrollAreaWidgetContents_Layout.itemAt(i).widget().deleteLater()
-        if 60 + len(signal['total']) * 20 > 240:
-            self.story_list_scrollArea.setGeometry(QtCore.QRect(10, 60, 211, 251))
+        if len(signal['total']) == 0:
+            self.load_anime_label.setVisible(False)
+            self.load_anime_label_status = False
+            QtWidgets.QMessageBox().information(self, "確定",
+                                                f"<font size=5  color=#000000>網址有誤！</font> <br/><font size=4  color=#000000>請確認輸入的 <a href={signal['home']}>網址 </a>",
+                                                QtWidgets.QMessageBox.Ok)
         else:
-            self.story_list_scrollArea.setGeometry(QtCore.QRect(10, 60, 211, 40 + len(signal['total']) * 20))
-        for i, m in enumerate(signal['total']):
-            data = json.dumps(
-                {'name': self.badname(signal['name']), 'num': self.badname(m), 'url': signal['total'][m],
-                 'name_num': f"{self.badname(signal['name'])}　　{self.badname(m)}", 'schedule': 0,
-                 'status': '準備中', 'total_name': self.badname(signal['name']) + self.badname(m),
-                 'video_ts': 0, 'time': None, 'home': signal['home']})
-            self.story_checkbox_dict.update({i: QtWidgets.QCheckBox(m)})
-            self.story_checkbox_dict[i].setObjectName(data)
-            self.story_list_scrollAreaWidgetContents_Layout.addWidget(self.story_checkbox_dict[i])
-        self.anime_page_Visible(status=True)
-        self.load_anime_label_status = False
-        # self.anime_info.terminate()
-        # self.anime_info.wait()
-        # self.anime_info.quit()
-        del self.anime_info
+            self.customize_lineEdit.clear()
+            self.story_list_all_pushButton.setText('全選')
+            self.introduction_textBrowser.clear()
+            self.story_checkbox_dict.clear()
+            self.pix = QtGui.QPixmap()
+            self.pix.loadFromData(signal['image'])
+            self.image_label.clear()
+            self.image_label.setPixmap(self.pix)
+            self.type_label.setText(signal[0])
+            self.premiere_label.setText(signal[1])
+            self.total_set_label.setText(signal[2])
+            self.author_label.setText(signal[3])
+            self.web_label.setText(signal[4])
+            self.remarks_label.setText(signal[5])
+            self.introduction_textBrowser.setHtml(
+                '<p style=\" color: #000000;\"font-size:16pt;>劇情介紹</p>\n' + signal['info'])
+            for i in range(self.story_list_scrollAreaWidgetContents_Layout.count()):
+                self.story_list_scrollAreaWidgetContents_Layout.itemAt(i).widget().deleteLater()
+            if 60 + len(signal['total']) * 20 > 240:
+                self.story_list_scrollArea.setGeometry(QtCore.QRect(10, 60, 211, 251))
+            else:
+                self.story_list_scrollArea.setGeometry(QtCore.QRect(10, 60, 211, 40 + len(signal['total']) * 20))
+            for i, m in enumerate(signal['total']):
+                data = json.dumps(
+                    {'name': self.badname(signal['name']), 'num': self.badname(m), 'url': signal['total'][m],
+                     'name_num': f"{self.badname(signal['name'])}　　{self.badname(m)}", 'schedule': 0,
+                     'status': '準備中', 'total_name': self.badname(signal['name']) + self.badname(m),
+                     'video_ts': 0, 'time': None, 'home': signal['home']})
+                self.story_checkbox_dict.update({i: QtWidgets.QCheckBox(m)})
+                self.story_checkbox_dict[i].setObjectName(data)
+                self.story_list_scrollAreaWidgetContents_Layout.addWidget(self.story_checkbox_dict[i])
+            self.anime_page_Visible(status=True)
+            self.load_anime_label_status = False
+            # self.anime_info.terminate()
+            # self.anime_info.wait()
+            # self.anime_info.quit()
+            del self.anime_info
 
     def loading_end_anime(self):
         self.end_anime = End_anime()
@@ -855,6 +862,7 @@ class Anime_info(QtCore.QThread):
                     data.update({'name': m.text.split('【')[0]})
         res, html = None, None
         del res, html
+        print('data', data)
         return data
 
     def run(self):
