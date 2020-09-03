@@ -1,8 +1,7 @@
 # MyselfAnimeDownloader
 ## 預覽
 圖(最後更新9/3)。<br><br>
-![image](https://i.imgur.com/xNC3DpX.gif)
-![image](https://i.imgur.com/vGoGYlQ.gif)
+![image](https://i.imgur.com/YfVrMiG.gif)
 
 ## 運行
 安裝 requirements.txt <br>
