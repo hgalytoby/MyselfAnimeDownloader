@@ -776,8 +776,8 @@ class Week_data(QtCore.QThread):
         super(Week_data, self).__init__()
 
     def run(self):
-        res = requests.get(url='https://myself-bbs.com/portal.php', headers=headers).text
-        html = BeautifulSoup(res, features='lxml')
+        res = requests.get(url='https://myself-bbs.com/portal.php', headers=headers)
+        html = BeautifulSoup(res.text, features='lxml')
         week_dict = dict()
         for i in html.find_all('div', id='tabSuCvYn'):
             for index, j in enumerate(i.find_all('div', class_='module cl xl xl1')):
@@ -791,6 +791,7 @@ class Week_data(QtCore.QThread):
                     anime_data.update({num[k]['title']: {'update': num[k + len(num) // 2].text, 'color': color[k],
                                                          'url': f'https://myself-bbs.com/{num[k]["href"]}'}})
                 week_dict.update({index: anime_data})
+        res.close()
         res, html = None, None
         del res, html
         self.week_data_signal.emit(week_dict)
@@ -804,8 +805,8 @@ class End_anime(QtCore.QThread):
 
     def run(self):
         url = 'https://myself-bbs.com/portal.php?mod=topic&topicid=8'
-        res = requests.get(url=url, headers=headers).text
-        html = BeautifulSoup(res, features='lxml')
+        res = requests.get(url=url, headers=headers)
+        html = BeautifulSoup(res.text, features='lxml')
         data = dict()
         for index, i in enumerate(html.find_all('div', {'class': 'tab-title title column cl'})):
             month = dict()
@@ -817,6 +818,7 @@ class End_anime(QtCore.QThread):
                     anime.update({k['title']: f"https://myself-bbs.com/{k['href']}"})
                 month.update({year: anime})
             data.update({index: month})
+        res.close()
         self.end_anime_signal.emit(data)
 
 
@@ -831,8 +833,8 @@ class Anime_info(QtCore.QThread):
         self.url = url
 
     def get_anime_data(self):
-        res = requests.get(url=self.url, headers=headers).text
-        html = BeautifulSoup(res, features='lxml')
+        res = requests.get(url=self.url, headers=headers)
+        html = BeautifulSoup(res.text, features='lxml')
         data = {'home': self.url}
         total = dict()
         for i in html.select('ul.main_list'):
@@ -860,9 +862,9 @@ class Anime_info(QtCore.QThread):
             for j, m in enumerate(i.find_all('a')):
                 if j == 4:
                     data.update({'name': m.text.split('【')[0]})
+        res.close()
         res, html = None, None
         del res, html
-        print('data', data)
         return data
 
     def run(self):
@@ -996,7 +998,9 @@ class Download_Video(QtCore.QThread):
                 if not self.stop and not self.exit:
                     res = requests.get(url=self.data['url'], headers=headers, timeout=5)
                     if res:
-                        return res.json()
+                        data = res.json()
+                        res.close()
+                        return data
                 elif self.exit:
                     if not self.del_download_order:
                         self.del_download_order = True
@@ -1019,7 +1023,9 @@ class Download_Video(QtCore.QThread):
                 if not self.stop and not self.exit:
                     m3u8_data = requests.get(url=url, headers=headers, timeout=5)
                     if m3u8_data:
-                        return m3u8_data.text
+                        data = m3u8_data.text
+                        m3u8_data.close()
+                        return data
                 elif self.exit:
                     if not self.del_download_order:
                         self.del_download_order = True
@@ -1088,10 +1094,12 @@ class Download_Video(QtCore.QThread):
                                     self.write_download_order()
                                     self.del_file_and_json()
                                 ok = True
+                                data.close()
                                 data = None
                                 del data
                                 break
                             elif self.stop or self.exit:
+                                data.close()
                                 data = None
                                 del data
                                 break
@@ -1296,3 +1304,4 @@ if __name__ == '__main__':
     anime.menu.actions()[1].triggered.connect(about.show)
     anime.show()
     app.exec_()
+
