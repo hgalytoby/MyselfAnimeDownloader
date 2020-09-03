@@ -1,6 +1,6 @@
 # MyselfAnimeDownloader
 ## 預覽
-圖(最後更新8/15)。<br><br>
+圖(最後更新9/3)。<br><br>
 ![image](https://i.imgur.com/hVrtSvt.gif)
 
 ## 運行
