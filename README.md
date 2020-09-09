@@ -11,6 +11,8 @@ pip install -r -requirements.txt
 <br>
 執行 main.py <br>
 
+# 作者去學Django了。<br>
+
 ## 已解決功能
 1.設定內的功能都已實現。<br>
 2.查看每周動漫更新進度。<br>
@@ -27,7 +29,6 @@ pip install -r -requirements.txt
 2.程式美觀。<br>
 3.減少記憶體占用量。<br>
 4.尚未發現的 BUG。<br>
-5.作者去學Django了。<br>
 
 ## 問題 1 (尚未解決)<br>
 每下載一個影片  下載前與下載後增加大概 5~10MB 記憶體，下載越多記憶體佔用量就越多，目前還不知道記憶體如何釋放。<br>
