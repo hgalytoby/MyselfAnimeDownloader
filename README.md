@@ -11,6 +11,8 @@ pip install -r -requirements.txt
 <br>
 執行 main.py <br>
 
+# 作者去學Django了。<br>
+
 ## 已解決功能
 1.設定內的功能都已實現。<br>
 2.查看每周動漫更新進度。<br>
