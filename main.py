@@ -342,7 +342,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         elif index == 2 and self.load_anime_label_status:
             self.load_anime_label.setVisible(True)
 
-
     def print_row(self, r, c):
         # print(r, c)
         pass
@@ -958,13 +957,13 @@ class Download_Video(QtCore.QThread):
         try:
             if os.path.isfile(f'./Log/undone/{self.data["total_name"]}.json'):
                 os.remove(f'./Log/undone/{self.data["total_name"]}.json')
-        except PermissionError or FileNotFoundError:
+        except (PermissionError, FileNotFoundError):
             pass
         except BaseException as error:
             print(f'del_file_and_json error: {error}')
         try:
             os.remove(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4')
-        except PermissionError or FileNotFoundError:
+        except (PermissionError, FileNotFoundError):
             pass
         except BaseException as error:
             print(f'del_file_and_json error: {error}')
@@ -1113,7 +1112,8 @@ class Download_Video(QtCore.QThread):
                         self.del_file_and_json()
                     break
                 time.sleep(5)
-            except requests.exceptions.RequestException or requests.ConnectionError or requests.exceptions.ChunkedEncodingError or ConnectionResetError:
+            except (requests.exceptions.RequestException, requests.ConnectionError,
+                    requests.exceptions.ChunkedEncodingError, ConnectionResetError):
                 if host_value - 1 > len(host):
                     host_value = 0
                 else:
@@ -1304,4 +1304,3 @@ if __name__ == '__main__':
     anime.menu.actions()[1].triggered.connect(about.show)
     anime.show()
     app.exec_()
-
