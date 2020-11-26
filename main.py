@@ -930,7 +930,6 @@ class Download_Video(QtCore.QThread):
     def write_download_order(self):
         while True:
             try:
-                print(anime.wait_download_video_mission_list)
                 if not anime.thread_write_download_order_status:
                     anime.thread_write_download_order_status = True
                     download = {'wait': anime.wait_download_video_mission_list,

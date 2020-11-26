@@ -12,6 +12,7 @@ pip install -r -requirements.txt
 執行 main.py <br>
 
 # 作者去學Django了。<br>
+當初寫 py 工具沒分開寫，如果看得懂在寫什麼想修程式碼就修吧!<br>
 
 ## 已解決功能
 1.設定內的功能都已實現。<br>
