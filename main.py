@@ -41,6 +41,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.load_week_label_status = False
         self.load_anime_label_status = False
         self.load_end_anime_status = False
+        self.thread_write_download_order_status = False
         self.week_dict = dict()
         self.end_tab = dict()
         self.end_qt_object = dict()
@@ -921,20 +922,21 @@ class Download_Video(QtCore.QThread):
         self.remove_file = False
         self.del_download_order = False
         # self.write_undone_status = False
-        self.write_download_order_status = False
+        # self.write_download_order_status = False
         if not init:
             self.write_download_order()
+
 
     def write_download_order(self):
         while True:
             try:
-                if not self.write_download_order_status:
-                    self.write_download_order_status = True
+                print(anime.wait_download_video_mission_list)
+                if not anime.thread_write_download_order_status:
+                    anime.thread_write_download_order_status = True
                     download = {'wait': anime.wait_download_video_mission_list,
                                 'now': anime.now_download_video_mission_list}
-                    # print(download)
                     json.dump(download, open('./Log/download_order.json', 'w', encoding='utf-8'), indent=2)
-                    self.write_download_order_status = False
+                    anime.thread_write_download_order_status = False
                     break
                 time.sleep(0.2)
             except NameError:
@@ -983,6 +985,7 @@ class Download_Video(QtCore.QThread):
                         self.data["name"] + self.data["num"] and anime.simultaneously_value > anime.now_download_value:
                     anime.now_download_value += 1
                     anime.now_download_video_mission_list.append(anime.wait_download_video_mission_list.pop(0))
+                    self.write_download_order()
                     break
                 time.sleep(3)
             except NameError:
@@ -1038,6 +1041,7 @@ class Download_Video(QtCore.QThread):
 
     def run(self):
         self.turn_me()
+
         res = self.get_host_video_data()
         m3u8_data = self.get_m3u8_data(res)
         if self.exit:
@@ -1054,7 +1058,6 @@ class Download_Video(QtCore.QThread):
                     # self.data.update({'status': '已完成'})
                     anime.now_download_video_mission_list.remove(self.data['total_name'])
                     self.write_download_order()
-                    self.download_video.emit(self.data)
                     anime.now_download_value -= 1
                     break
                 if self.exit:
@@ -1064,6 +1067,7 @@ class Download_Video(QtCore.QThread):
                                   })
                 self.download_video.emit(self.data)
                 time.sleep(1)
+            self.download_video.emit(self.data)
             self.quit()
             self.wait()
 
