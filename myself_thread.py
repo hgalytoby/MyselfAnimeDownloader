@@ -78,14 +78,14 @@ class History(QtCore.QThread):
             time.sleep(1)
 
 
-class Loading_config_status(QtCore.QThread):
+class LoadingConfigStatus(QtCore.QThread):
     """
     抓記憶體與CPU。
     """
     loading_config_status_signal = QtCore.pyqtSignal(dict)
 
     def __init__(self, pid):
-        super(Loading_config_status, self).__init__()
+        super(LoadingConfigStatus, self).__init__()
         self.info = psutil.Process(pid)
         self.config = dict()
 
@@ -100,14 +100,14 @@ class Loading_config_status(QtCore.QThread):
             time.sleep(1)
 
 
-class Download_Video(QtCore.QThread):
+class DownloadVideo(QtCore.QThread):
     """
     下載動漫。
     """
     download_video = QtCore.pyqtSignal(dict)
 
     def __init__(self, data, init, anime):
-        super(Download_Video, self).__init__()
+        super(DownloadVideo, self).__init__()
         self.data = data
         self.path = json.load(open('config.json', 'r', encoding='utf-8'))
         self.folder_name = self.data['name']

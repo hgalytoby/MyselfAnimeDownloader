@@ -12,7 +12,7 @@ from ConfigUI import Config
 from UI.main_ui import Ui_Anime
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, Loading_config_status, Download_Video
+from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingConfigStatus, DownloadVideo
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36'}
@@ -398,7 +398,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         創讀取狀態列的 Thread。
         """
-        self.config_status = Loading_config_status(pid=os.getpid())
+        self.config_status = LoadingConfigStatus(pid=os.getpid())
         self.config_status.loading_config_status_signal.connect(self.loading_config_status_mission)
         self.config_status.start()
 
@@ -451,7 +451,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                                     'over': True}})
         else:
             self.download_anime_Thread.update(
-                {data['total_name']: {'thread': Download_Video(data=data, init=init, anime=self),
+                {data['total_name']: {'thread': DownloadVideo(data=data, init=init, anime=self),
                                       'over': False}})
             self.download_anime_Thread[data['total_name']]['thread'].download_video.connect(self.download_anime_task)
             self.download_anime_Thread[data['total_name']]['thread'].start()
