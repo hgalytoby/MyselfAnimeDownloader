@@ -2,20 +2,17 @@ import os
 import re
 import sys
 import json
-import time
 # import gc
-import shutil
-import psutil
 import datetime
-import requests
 import webbrowser
 # from concurrent.futures import ProcessPoolExecutor
-from concurrent.futures import ThreadPoolExecutor
+
+from AboutUI import About
+from ConfigUI import Config
 from UI.main_ui import Ui_Anime
-from UI.config_ui import Ui_Config
-from UI.about_ui import Ui_About
-from bs4 import BeautifulSoup
 from PyQt5 import QtCore, QtWidgets, QtGui
+
+from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, Loading_config_status, Download_Video
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36'}
@@ -89,7 +86,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.history_tableWidget.customContextMenuRequested.connect(
             self.history_tableWidget_on_custom_context_menu_requested)
         self.history_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        # self.menu.actions()[0].triggered.connect(config.show)
+        self.menu.actions()[0].triggered.connect(self.config)
         self.menu.actions()[2].triggered.connect(self.closeEvent)
         self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
         self.download_pushbutton.clicked.connect(self.download_anime)
@@ -453,8 +450,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.download_anime_Thread.update({data['total_name']: {'thread': None,
                                                                     'over': True}})
         else:
-            self.download_anime_Thread.update({data['total_name']: {'thread': Download_Video(data=data, init=init),
-                                                                    'over': False}})
+            self.download_anime_Thread.update(
+                {data['total_name']: {'thread': Download_Video(data=data, init=init, anime=self),
+                                      'over': False}})
             self.download_anime_Thread[data['total_name']]['thread'].download_video.connect(self.download_anime_task)
             self.download_anime_Thread[data['total_name']]['thread'].start()
 
@@ -480,7 +478,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         開啟設定介面。
         """
-        self.config_windows = Config()
+        self.config_windows = Config(anime=self)
         self.config_windows.show()
 
     def check_checkbox(self):
@@ -533,7 +531,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         創每周動漫更新表 Thread。
         """
-        self.week_data = Week_data()
+        self.week_data = WeeklyUpdate()
         self.week_data.week_data_signal.connect(self.week_data_task)
         self.week_data.start()
 
@@ -584,9 +582,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
     def loading_anime(self, url):
         self.load_anime_label.setVisible(True)
         self.load_anime_label_status = True
-        self.anime_info = Anime_info(url=url)
-        self.anime_info.anime_info_signal.connect(self.anime_info_data)
-        self.anime_info.start()
+        self.anime_data = AnimeData(url=url)
+        self.anime_data.anime_info_signal.connect(self.anime_info_data)
+        self.anime_data.start()
         self.anime_info_tabWidget.setCurrentIndex(2)
         self.anime_page_Visible()
 
@@ -637,10 +635,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             # self.anime_info.terminate()
             # self.anime_info.wait()
             # self.anime_info.quit()
-            del self.anime_info
+            del self.anime_data
 
     def loading_end_anime(self):
-        self.end_anime = End_anime()
+        self.end_anime = EndAnime()
         self.end_anime.end_anime_signal.connect(self.end_anime_data)
         self.end_anime.start()
 
@@ -723,7 +721,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                                QtWidgets.QMessageBox.Ok)
 
     def load_history(self):
-        self.history_thread = History()
+        self.history_thread = History(anime=self)
         self.history_thread.history_signal.connect(self.create_history_tablewidteritem)
         self.history_thread.start()
 
@@ -764,477 +762,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                     i.tabBar().setCurrentIndex(index)
                     return True
         return super().eventFilter(obj, event)
-
-
-class Week_data(QtCore.QThread):
-    """
-    爬每周動漫資訊。
-    """
-    week_data_signal = QtCore.pyqtSignal(dict)
-
-    def __init__(self):
-        super(Week_data, self).__init__()
-
-    def run(self):
-        res = requests.get(url='https://myself-bbs.com/portal.php', headers=headers)
-        html = BeautifulSoup(res.text, features='lxml')
-        week_dict = dict()
-        for i in html.find_all('div', id='tabSuCvYn'):
-            for index, j in enumerate(i.find_all('div', class_='module cl xl xl1')):
-                num = j.find_all('a') + j.find_all('span')
-                color = list()
-                anime_data = dict()
-                for k, v in enumerate(j.find_all('font')):
-                    if k % 3 == 2:
-                        color.append(v.attrs['style'])
-                for k in range(len(num) // 2):
-                    anime_data.update({num[k]['title']: {'update': num[k + len(num) // 2].text, 'color': color[k],
-                                                         'url': f'https://myself-bbs.com/{num[k]["href"]}'}})
-                week_dict.update({index: anime_data})
-        res.close()
-        res, html = None, None
-        del res, html
-        self.week_data_signal.emit(week_dict)
-
-
-class End_anime(QtCore.QThread):
-    end_anime_signal = QtCore.pyqtSignal(dict)
-
-    def __init__(self):
-        super(End_anime, self).__init__()
-
-    def run(self):
-        url = 'https://myself-bbs.com/portal.php?mod=topic&topicid=8'
-        res = requests.get(url=url, headers=headers)
-        html = BeautifulSoup(res.text, features='lxml')
-        data = dict()
-        for index, i in enumerate(html.find_all('div', {'class': 'tab-title title column cl'})):
-            month = dict()
-            for j, m in enumerate(i.find_all('div', {'class': 'block move-span'})):
-                anime = dict()
-                for k in m.find('span', {'class': 'titletext'}):
-                    year = k
-                for k in m.find_all('a'):
-                    anime.update({k['title']: f"https://myself-bbs.com/{k['href']}"})
-                month.update({year: anime})
-            data.update({index: month})
-        res.close()
-        self.end_anime_signal.emit(data)
-
-
-class Anime_info(QtCore.QThread):
-    """
-    爬動漫資訊。
-    """
-    anime_info_signal = QtCore.pyqtSignal(dict)
-
-    def __init__(self, url):
-        super(Anime_info, self).__init__()
-        self.url = url
-
-    def get_anime_data(self):
-        res = requests.get(url=self.url, headers=headers)
-        html = BeautifulSoup(res.text, features='lxml')
-        data = {'home': self.url}
-        total = dict()
-        for i in html.select('ul.main_list'):
-            for j in i.find_all('a', href='javascript:;'):
-                title = j.text
-                for k in j.parent.select("ul.display_none li"):
-                    a = k.select_one("a[data-href*='v.myself-bbs.com']")
-                    if k.select_one("a").text == '站內':
-                        url = a["data-href"].replace('player/play', 'vpx').replace("\r", "").replace("\n", "")
-                        total.update({title: url})
-        data.update({'total': total})
-        for i in html.find_all('div', class_='info_info'):
-            for j, m in enumerate(i.find_all('li')):
-                data.update({j: m.text})
-        for i in html.find_all('div', class_='info_introduction'):
-            for j in i.find_all('p'):
-                data.update({'info': j.text})
-        for i in html.find_all('div', class_='info_img_box fl'):
-            for j in i.find_all('img'):
-                image = requests.get(url=j['src'], headers=headers).content
-                data.update({'image': image})
-                image = None
-                del image
-        for i in html.find_all('div', class_='z'):
-            for j, m in enumerate(i.find_all('a')):
-                if j == 4:
-                    data.update({'name': m.text.split('【')[0]})
-        res.close()
-        res, html = None, None
-        del res, html
-        return data
-
-    def run(self):
-        data = self.get_anime_data()
-        self.anime_info_signal.emit(data)
-
-
-class History(QtCore.QThread):
-    history_signal = QtCore.pyqtSignal(dict)
-
-    def __init__(self):
-        super(History, self).__init__()
-        self.data = list()
-
-    def run(self):
-        while True:
-            try:
-                result = list()
-                for i in os.listdir('./Log/history/'):
-                    result.append(i)
-                if self.data != result:
-                    anime.history_tableWidget.clearContents()
-                    anime.history_tableWidget.setRowCount(0)
-                    self.data = result
-                    for i in self.data:
-                        if i.endswith('.json'):
-                            data = json.load(open(f'./Log/history/{i}', 'r', encoding='utf-8'))
-                            self.history_signal.emit(data)
-            except NameError:
-                pass
-            time.sleep(1)
-
-
-class Download_Video(QtCore.QThread):
-    """
-    下載動漫。
-    """
-    download_video = QtCore.pyqtSignal(dict)
-
-    def __init__(self, data, init):
-        super(Download_Video, self).__init__()
-        self.data = data
-        self.path = json.load(open('config.json', 'r', encoding='utf-8'))
-        self.folder_name = self.data['name']
-        self.file_name = self.data['num']
-        if not os.path.isdir(f'{self.path["path"]}/{self.folder_name}'):
-            os.mkdir(f'{self.path["path"]}/{self.folder_name}')
-        if self.data['video_ts'] == 0 and os.path.isfile(
-                f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4'):
-            os.remove(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4')
-        json.dump(self.data, open(f'./Log/undone/{self.data["total_name"]}.json', 'w', encoding='utf-8'), indent=2)
-        json.dump(self.data, open(f'./Log/history/{self.data["total_name"]}.json', 'w', encoding='utf-8'), indent=2)
-        self.stop = False
-        self.exit = False
-        self.remove_file = False
-        self.del_download_order = False
-        # self.write_undone_status = False
-        # self.write_download_order_status = False
-        if not init:
-            self.write_download_order()
-
-
-    def write_download_order(self):
-        while True:
-            try:
-                if not anime.thread_write_download_order_status:
-                    anime.thread_write_download_order_status = True
-                    download = {'wait': anime.wait_download_video_mission_list,
-                                'now': anime.now_download_video_mission_list}
-                    json.dump(download, open('./Log/download_order.json', 'w', encoding='utf-8'), indent=2)
-                    anime.thread_write_download_order_status = False
-                    break
-                time.sleep(0.2)
-            except NameError:
-                time.sleep(0.5)
-
-    def write_undone(self, index, m3u8_count):
-        if self.data['video_ts'] == m3u8_count - 1 or self.data['video_ts'] == m3u8_count:
-            status = '已完成'
-            schedule = 100
-        else:
-            status = '下載中'
-            schedule = int(self.data['video_ts'] / (m3u8_count - 1) * 100)
-        self.data.update({'video_ts': index,
-                          'schedule': schedule,
-                          'status': status})
-        json.dump(self.data, open(f'./Log/undone/{self.data["total_name"]}.json', 'w', encoding='utf-8'),
-                  indent=2)
-
-    def del_file_and_json(self):
-        try:
-            if os.path.isfile(f'./Log/undone/{self.data["total_name"]}.json'):
-                os.remove(f'./Log/undone/{self.data["total_name"]}.json')
-        except (PermissionError, FileNotFoundError):
-            pass
-        except BaseException as error:
-            print(f'del_file_and_json error: {error}')
-        try:
-            os.remove(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4')
-        except (PermissionError, FileNotFoundError):
-            pass
-        except BaseException as error:
-            print(f'del_file_and_json error: {error}')
-
-    def turn_me(self):
-        """
-        判斷下載列表順序使否輪到自己。
-        """
-        while True:
-            try:
-                if self.exit:
-                    break
-                elif self.data["name"] + self.data["num"] in anime.now_download_video_mission_list:
-                    anime.now_download_value += 1
-                    break
-                elif len(anime.wait_download_video_mission_list) > 0 and anime.wait_download_video_mission_list[0] == \
-                        self.data["name"] + self.data["num"] and anime.simultaneously_value > anime.now_download_value:
-                    anime.now_download_value += 1
-                    anime.now_download_video_mission_list.append(anime.wait_download_video_mission_list.pop(0))
-                    self.write_download_order()
-                    break
-                time.sleep(3)
-            except NameError:
-                time.sleep(0.5)
-
-    def get_host_video_data(self):
-        """
-        取得 Host資料。
-        """
-        while True:
-            try:
-                if not self.stop and not self.exit:
-                    res = requests.get(url=self.data['url'], headers=headers, timeout=5)
-                    if res:
-                        data = res.json()
-                        res.close()
-                        return data
-                elif self.exit:
-                    if not self.del_download_order:
-                        self.del_download_order = True
-                        self.write_download_order()
-                        self.del_file_and_json()
-                    break
-            except BaseException as error:
-                time.sleep(5)
-
-    def get_m3u8_data(self, res):
-        """
-        取得 m3u8 資料。
-        """
-        if self.exit:
-            return None
-        index = 0
-        url = res['host'][index]['host'] + res['video']['720p']
-        while True:
-            try:
-                if not self.stop and not self.exit:
-                    m3u8_data = requests.get(url=url, headers=headers, timeout=5)
-                    if m3u8_data:
-                        data = m3u8_data.text
-                        m3u8_data.close()
-                        return data
-                elif self.exit:
-                    if not self.del_download_order:
-                        self.del_download_order = True
-                        self.write_download_order()
-                        self.del_file_and_json()
-                    break
-            except:
-                index += 1
-                url = res['host'][index]['host'] + res['video']['720p']
-                time.sleep(5)
-
-    def run(self):
-        self.turn_me()
-
-        res = self.get_host_video_data()
-        m3u8_data = self.get_m3u8_data(res)
-        if self.exit:
-            self.quit()
-            self.wait()
-        else:
-            m3u8_count = m3u8_data.count('EXTINF')
-            host = sorted(res['host'], key=lambda i: i.get('weight'), reverse=True)
-            executor = ThreadPoolExecutor(max_workers=anime.speed_value)
-            for i in range(self.data['video_ts'], m3u8_count):
-                executor.submit(self.video, i, res, host, m3u8_count)
-            while True:
-                if self.data['video_ts'] == m3u8_count:
-                    # self.data.update({'status': '已完成'})
-                    anime.now_download_video_mission_list.remove(self.data['total_name'])
-                    self.write_download_order()
-                    anime.now_download_value -= 1
-                    break
-                if self.exit:
-                    break
-                self.data.update({'schedule': int(self.data['video_ts'] / (m3u8_count - 1) * 100),
-                                  'status': '下載中',
-                                  })
-                self.download_video.emit(self.data)
-                time.sleep(1)
-            self.download_video.emit(self.data)
-            self.quit()
-            self.wait()
-
-    def video(self, i, res, host, m3u8_count):
-        """
-        請求 URL 下載影片。
-        """
-        host_value = 0
-        url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
-        ok = False
-        while True:
-            # self.data['video_ts'] += 1
-            # break
-            try:
-                if not self.stop and not self.exit:
-                    data = requests.get(url=url, headers=headers, stream=True, timeout=3)
-                    if data:
-                        while True:
-                            if self.data['video_ts'] == i:
-                                with open(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4', 'ab') as v:
-                                    self.write_undone(index=i, m3u8_count=m3u8_count)
-                                    shutil.copyfileobj(data.raw, v)
-                                self.data['video_ts'] += 1
-                                self.write_undone(index=self.data['video_ts'], m3u8_count=m3u8_count)
-                                if self.remove_file:
-                                    self.del_download_order = True
-                                    self.write_download_order()
-                                    self.del_file_and_json()
-                                ok = True
-                                data.close()
-                                data = None
-                                del data
-                                break
-                            elif self.stop or self.exit:
-                                data.close()
-                                data = None
-                                del data
-                                break
-                            time.sleep(1)
-                    if ok:
-                        break
-                if self.exit:
-                    if not self.del_download_order:
-                        self.del_download_order = True
-                        self.write_download_order()
-                        self.del_file_and_json()
-                    break
-                time.sleep(5)
-            except (requests.exceptions.RequestException, requests.ConnectionError,
-                    requests.exceptions.ChunkedEncodingError, ConnectionResetError):
-                if host_value - 1 > len(host):
-                    host_value = 0
-                else:
-                    host_value += 1
-                url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
-                print(url)
-                time.sleep(1)
-            except BaseException as error:
-                print('基礎錯誤', error)
-
-
-class Loading_config_status(QtCore.QThread):
-    """
-    抓記憶體與CPU。
-    """
-    loading_config_status_signal = QtCore.pyqtSignal(dict)
-
-    def __init__(self, pid):
-        super(Loading_config_status, self).__init__()
-        self.info = psutil.Process(pid)
-        self.config = dict()
-
-    def run(self):
-        while True:
-            cpu = '%.2f' % (self.info.cpu_percent() / psutil.cpu_count())
-            memory = '%.2f' % (self.info.memory_full_info().rss / 1024 / 1024)
-            # memory = '%.2f' % (psutil.virtual_memory().percent)
-            # memory = '%.2f' % (self.info.memory_full_info().uss / 1024 / 1024)
-            self.config.update({'cpu': cpu, 'memory': memory})
-            self.loading_config_status_signal.emit(self.config)
-            time.sleep(1)
-
-
-class Config(QtWidgets.QMainWindow, Ui_Config):
-    """
-    設定視窗。
-    """
-
-    def __init__(self):
-        super(Config, self).__init__()
-        self.setupUi(self)
-        self.config()
-        self.setWindowIcon(QtGui.QIcon('image/logo.ico'))
-        self.setFixedSize(self.width(), self.height())
-        self.browse_pushButton.clicked.connect(self.download_path)
-        self.save_pushButton.clicked.connect(self.save_config)
-        self.cancel_pushButton.clicked.connect(self.close)
-        self.simultaneous_download_lineEdit.setValidator(QtGui.QIntValidator())
-        self.note_pushButton.clicked.connect(self.note_message_box)
-        self.speed_radioButton_dict = {self.slow_radioButton: {'type': 'slow', 'value': 1},
-                                       self.genera_radioButton: {'type': 'genera', 'value': 3},
-                                       self.high_radioButton: {'type': 'high', 'value': 8},
-                                       self.starburst_radioButton: {'type': 'starburst', 'value': 16}}
-
-    def note_message_box(self):
-        """
-        注意事項視窗。
-        """
-        QtWidgets.QMessageBox().information(self, "注意事項",
-                                            '慢速: 1 次 1 個連接<br/>一般: 1 次 3 個連接<br/>高速: 1 次 8 個連接<br/>星爆: 1 次 16 個連接<br/><br/>連接值:1次取得多少影片來源。<br/>連接值越高吃的網速就越多。<br/>同時下載數量越高，記憶體與網速就吃越多。',
-                                            QtWidgets.QMessageBox.Ok)
-
-    def config(self):
-        """
-        設定視窗介面讀取個個物件設定值。
-        """
-        config = json.load(open('config.json', 'r', encoding='utf-8'))
-        self.download_path_lineEdit.setText(config['path'])
-        if config['speed']['type'] == 'genera':
-            self.genera_radioButton.setChecked(True)
-        elif config['speed']['type'] == 'high':
-            self.high_radioButton.setChecked(True)
-        elif config['speed']['type'] == 'starburst':
-            self.starburst_radioButton.setChecked(True)
-        else:
-            self.slow_radioButton.setChecked(True)
-        self.simultaneous_download_lineEdit.setText(str(config['simultaneous']))
-
-    def save_config(self):
-        """
-        儲存按鈕事件。
-        """
-        path = self.download_path_lineEdit.text()
-        simultaneous = self.simultaneous_download_lineEdit.text()
-        for i in self.speed_radioButton_dict:
-            if i.isChecked():
-                speed = self.speed_radioButton_dict[i]
-                break
-        data = {'path': path, 'speed': speed, 'simultaneous': int(simultaneous)}
-        json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
-        anime.save_path = data['path']
-        anime.simultaneously_value = data['simultaneous']
-        anime.speed_value = data['speed']['value']
-        QtWidgets.QMessageBox().information(self, '儲存', "<font size='6'>資料已成功地儲存。</font>", QtWidgets.QMessageBox.Ok)
-        self.close()
-
-    def download_path(self):
-        """
-        瀏覽資料夾按鈕。
-        """
-        download_path = QtWidgets.QFileDialog.getExistingDirectory(self, "選取資料夾", self.download_path_lineEdit.text())
-        self.download_path_lineEdit.setText(download_path)
-
-
-class About(QtWidgets.QMainWindow, Ui_About):
-    """
-    關於視窗。
-    """
-
-    def __init__(self):
-        super(About, self, ).__init__()
-        self.setupUi(self)
-        self.setWindowIcon(QtGui.QIcon('image/logo.ico'))
-        self.setFixedSize(self.width(), self.height())
-        self.pixmap = QtGui.QPixmap("./image/logo.ico")
-        self.image_label.setPixmap(self.pixmap)
-        self.image_label.setScaledContents(True)
-        self.close_pushButton.clicked.connect(self.close)
 
 
 # def html(get_html=None, result_html=None, choose='one'):
@@ -1301,9 +828,9 @@ if __name__ == '__main__':
     # myStyle = MyProxyStyle()
     # app.setStyle(myStyle)
     anime = Anime()
-    config = Config()
+    # config = Config(anime=anime)
     about = About()
-    anime.menu.actions()[0].triggered.connect(config.show)
+    # anime.menu.actions()[0].triggered.connect(config.show)
     anime.menu.actions()[1].triggered.connect(about.show)
     anime.show()
     app.exec_()
