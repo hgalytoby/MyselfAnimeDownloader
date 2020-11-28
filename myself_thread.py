@@ -7,8 +7,8 @@ from concurrent.futures.thread import ThreadPoolExecutor
 import psutil
 from PyQt5 import QtCore
 
-from myself_tools import get_weekly_update, get_end_anine_data, get_anime_data, requests_RequestException, \
-    requests_ChunkedEncodingError, requests_ConnectionError, download_request
+from myself_tools import get_weekly_update, get_end_anime_list, get_anime_data, requests_RequestException, \
+    requests_ChunkedEncodingError, requests_ConnectionError, download_request, get_end_anime_data
 
 
 class WeeklyUpdate(QtCore.QThread):
@@ -32,7 +32,7 @@ class EndAnime(QtCore.QThread):
         super(EndAnime, self).__init__()
 
     def run(self):
-        data = get_end_anine_data()
+        data = get_end_anime_list()
         self.end_anime_signal.emit(data)
 
 
@@ -329,3 +329,19 @@ class DownloadVideo(QtCore.QThread):
                 time.sleep(1)
             except BaseException as error:
                 print('基礎錯誤', error)
+
+
+class EndAnimeData(QtCore.QThread):
+    end_anime_data_signal = QtCore.pyqtSignal(dict)
+
+    def __init__(self):
+        super(EndAnimeData, self).__init__()
+
+    def run(self):
+        end_anime_data = {}
+        if not os.path.isdir('EndAnimeData'):
+            os.mkdir('EndAnimeData')
+        if os.path.isfile('./EndAnimeData/EndAnimeData.json'):
+            end_anime_data = json.load(open('./EndAnimeData/EndAnimeData.json', 'r', encoding='utf-8'))
+        data = get_end_anime_data(end_anime_data)
+        self.end_anime_data_signal.emit(data)

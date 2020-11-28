@@ -3,6 +3,7 @@
 /build
 /venv
 /Log
+/EndAnimeData
 config.json
 main.spec
 test.py
