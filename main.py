@@ -102,6 +102,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         return name.strip()
 
     def history_tableWidget_on_custom_context_menu_requested(self, pos):
+        """
+        歷史紀錄頁面的右鍵功能。
+        """
         item = self.history_tableWidget.itemAt(pos)
         menu = QtWidgets.QMenu()
         go_home_action = menu.addAction('前往官網')
@@ -134,6 +137,11 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.history_delete_list(data=select, mode='all')
 
     def history_delete_list(self, data=None, mode=None):
+        """
+        刪除歷史紀錄
+        :param data: 要刪除的資料。
+        :param mode: 是刪除單個還是刪除全部。
+        """
         data = dict(sorted(data.items(), reverse=True))
         if mode == 'all':
             text = '確定刪除所有歷史紀錄？'
@@ -211,7 +219,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 os.startfile(f'{self.save_path}/{select[list(select.keys())[0]]["directory"]}')
             elif action == raise_priority_action:
                 self.control_download_tablewidget(data=select, status=True)
-
             elif action == lower_priority_action:
                 self.control_download_tablewidget(data=select, status=False)
             elif action == list_delete_action:
@@ -220,6 +227,12 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 self.download_menu_delete_list(data=select, remove_file=True)
 
     def control_download_tablewidget(self, data=None, status=True):
+        """
+        控制下載清單的順序。
+        :param data: 選取的動漫欄位資料。
+        :param status: 忘了..好像是判斷 下載的最後一個 跟 等待下載的第一個 要互換位置用的?
+        """
+
         def move_item(mode):
             for i in data:
                 move_name = self.download_tableWidget.item(i - mode, 0).text()
@@ -381,6 +394,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         return data['path'], data['simultaneous'], data['speed']['value'], wait, now
 
     def load_download_menu(self):
+        """
+        讀取下載動漫任務列表並在下載清淡創建Item。
+        """
         menu = self.now_download_video_mission_list + self.wait_download_video_mission_list
         for i in self.now_download_video_mission_list:
             data = json.load(open(f'./Log/undone/{i}.json', 'r', encoding='utf-8'))
@@ -428,6 +444,12 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                     self.create_tablewidgetitem(data=data)
 
     def create_tablewidgetitem(self, data=None, now=False, init=False):
+        """
+        創下載任務表，以及開 Thread 爬動漫。
+        :param data: 指定動漫的資料。
+        :param now: 縣在下載任務的列表。
+        :param init: 判斷是不是剛打開程式時的判斷。
+        """
         if not now:
             self.wait_download_video_mission_list.append(data['total_name'])
         rowcount = self.download_tableWidget.rowCount()
@@ -458,7 +480,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def download_anime_task(self, signal):
         """
-        接收下載動漫 Thread。
+        不斷的更新下載進度表。
+        :param signal: 接收下載動漫的資料。
         """
         if int(signal['schedule']) == 100:
             self.download_anime_Thread[signal['total_name']]['over'] = True
@@ -529,7 +552,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def load_week_data(self):
         """
-        創每周動漫更新表 Thread。
+        開 Thread 爬每周動漫更新表。
         """
         self.week_data = WeeklyUpdate()
         self.week_data.week_data_signal.connect(self.week_data_task)
@@ -537,7 +560,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def week_data_task(self, signal):
         """
-        接收每周動漫更新表 Thread。
+        創建每周動漫。
+        :param signal: 每周動漫更新表的資料。
         """
         for i in signal:
             self.week_layout_dict.update({i: QtWidgets.QFormLayout()})
@@ -580,6 +604,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.loading_anime(url=url)
 
     def loading_anime(self, url):
+        """
+        開 Thread 爬指定動漫資料。
+        :param url: 指定動漫頁面的 URL。
+        """
         self.load_anime_label.setVisible(True)
         self.load_anime_label_status = True
         self.anime_data = AnimeData(url=url)
@@ -590,7 +618,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def anime_info_data(self, signal):
         """
-        接收動漫資訊 Thread。
+        創建指定動漫資訊。
+        :param signal: 指定動漫的資料。
         """
         if len(signal['total']) == 0:
             self.load_anime_label.setVisible(False)
@@ -638,11 +667,18 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             del self.anime_data
 
     def loading_end_anime(self):
+        """
+        開 Thread 爬完結列表。
+        """
         self.end_anime = EndAnime()
         self.end_anime.end_anime_signal.connect(self.end_anime_data)
         self.end_anime.start()
 
     def end_anime_data(self, signal):
+        """
+        創建完界列表頁面的 Item。
+        :param signal: 完界列表的所有資料。
+        """
         for i in signal:
             self.end_tab.update({i: QtWidgets.QTabWidget()})
             month_dict = dict()
@@ -698,6 +734,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.load_end_anime_status = True
 
     def end_tabwidget_index(self, index):
+        """
+        主要是設定 TabWidget 的高度，讓版面看起來比較好看。
+        :param index: 內建的信號判斷是哪一頁。
+        """
         sender = self.sender()
         pushButton = self.findChild(QtWidgets.QTabWidget, sender.objectName())
         p = json.loads(pushButton.objectName())
@@ -709,6 +749,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.end_tab[tab_index].setMinimumHeight(size * 40)
 
     def check_url(self):
+        """
+        判斷 Myself 網的的指定動漫頁面。
+        """
         url = self.customize_lineEdit.text().strip()
         if re.match(r'^https://myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) \
                 or re.match(r'^https://myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url):
@@ -721,11 +764,18 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                                QtWidgets.QMessageBox.Ok)
 
     def load_history(self):
+        """
+        開 Thread 不斷讀取歷史紀錄資料匣的Json。
+        """
         self.history_thread = History(anime=self)
-        self.history_thread.history_signal.connect(self.create_history_tablewidteritem)
+        self.history_thread.history_signal.connect(self.create_history_tablewidget_item)
         self.history_thread.start()
 
-    def create_history_tablewidteritem(self, signal):
+    def create_history_tablewidget_item(self, signal):
+        """
+        新的歷史紀錄，創建新的 TableWidgetItem。
+        :param signal: 新的歷史紀錄資料。
+        """
         rowcount = self.history_tableWidget.rowCount()
         self.history_tableWidget.setRowCount(rowcount + 1)
         self.history_tableWidget_dict.update(
@@ -742,7 +792,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def mouseHoverOnTabBar(self):
         """
-        滑鼠移動。
+        滑鼠移動到 TabWidget 不用點擊就能切換Tab新增到一個 List 裡面。
         """
         # self.tabBar = self.week_tabWidget.tabBar().setMouseTracking(True)
         # self.tabBar.setMouseTracking(True)

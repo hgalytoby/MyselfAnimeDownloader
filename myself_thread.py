@@ -8,7 +8,7 @@ import psutil
 from PyQt5 import QtCore
 
 from myself_tools import get_weekly_update, get_end_anime_list, get_anime_data, requests_RequestException, \
-    requests_ChunkedEncodingError, requests_ConnectionError, download_request, get_end_anime_data
+    requests_ChunkedEncodingError, requests_ConnectionError, download_request, get_total_page, get_now_page_anime_data
 
 
 class WeeklyUpdate(QtCore.QThread):
@@ -26,6 +26,9 @@ class WeeklyUpdate(QtCore.QThread):
 
 
 class EndAnime(QtCore.QThread):
+    """
+    爬完結列表的動漫。
+    """
     end_anime_signal = QtCore.pyqtSignal(dict)
 
     def __init__(self):
@@ -38,7 +41,7 @@ class EndAnime(QtCore.QThread):
 
 class AnimeData(QtCore.QThread):
     """
-    爬動漫資訊。
+    爬指定動漫的資訊。
     """
     anime_info_signal = QtCore.pyqtSignal(dict)
 
@@ -52,6 +55,9 @@ class AnimeData(QtCore.QThread):
 
 
 class History(QtCore.QThread):
+    """
+    檢查歷史列表。
+    """
     history_signal = QtCore.pyqtSignal(dict)
 
     def __init__(self, anime):
@@ -60,11 +66,14 @@ class History(QtCore.QThread):
         self.anime = anime
 
     def run(self):
+        # 不斷的檢查歷史紀錄資料夾下的動漫資料，加到 Qt內。
         while True:
             try:
+                # 歷史紀錄資料夾下的動漫資料加到List。
                 result = list()
                 for i in os.listdir('./Log/history/'):
                     result.append(i)
+                # 發現不等於就是有新的歷史紀錄了。
                 if self.data != result:
                     self.anime.history_tableWidget.clearContents()
                     self.anime.history_tableWidget.setRowCount(0)
@@ -73,6 +82,7 @@ class History(QtCore.QThread):
                         if i.endswith('.json'):
                             data = json.load(open(f'./Log/history/{i}', 'r', encoding='utf-8'))
                             self.history_signal.emit(data)
+            # I/O好像會起衝突?
             except (NameError, FileNotFoundError):
                 print('History Thread Error')
             time.sleep(1)
@@ -81,6 +91,8 @@ class History(QtCore.QThread):
 class LoadingConfigStatus(QtCore.QThread):
     """
     抓記憶體與CPU。
+    Windows 工作管理員的記憶體與CPU會不同。
+    Linux 好像差不多?
     """
     loading_config_status_signal = QtCore.pyqtSignal(dict)
 
@@ -107,6 +119,11 @@ class DownloadVideo(QtCore.QThread):
     download_video = QtCore.pyqtSignal(dict)
 
     def __init__(self, data, init, anime):
+        """
+        :param data:
+        :param init: 判斷是不是一開始打開程式，就不寫入正在下載與等待下載到 Json了。
+        :param anime: QT主頁面的東西。
+        """
         super(DownloadVideo, self).__init__()
         self.data = data
         self.path = json.load(open('config.json', 'r', encoding='utf-8'))
@@ -126,6 +143,16 @@ class DownloadVideo(QtCore.QThread):
         self.anime = anime
         if not init:
             self.write_download_order()
+
+    def repeating_work(self):
+        """
+        刪除檔案要執行這三行，更新正在下載與等待下載列表與刪除檔案和動漫資料Json。
+        :return:
+        """
+        if not self.del_download_order:
+            self.del_download_order = True
+            self.write_download_order()
+            self.del_file_and_json()
 
     def write_download_order(self):
         while True:
@@ -206,10 +233,7 @@ class DownloadVideo(QtCore.QThread):
                         res.close()
                         return data
                 elif self.exit:
-                    if not self.del_download_order:
-                        self.del_download_order = True
-                        self.write_download_order()
-                        self.del_file_and_json()
+                    self.repeating_work()
                     break
             except BaseException as error:
                 time.sleep(5)
@@ -231,10 +255,7 @@ class DownloadVideo(QtCore.QThread):
                         m3u8_data.close()
                         return data
                 elif self.exit:
-                    if not self.del_download_order:
-                        self.del_download_order = True
-                        self.write_download_order()
-                        self.del_file_and_json()
+                    self.repeating_work()
                     break
             except:
                 index += 1
@@ -243,7 +264,6 @@ class DownloadVideo(QtCore.QThread):
 
     def run(self):
         self.turn_me()
-
         res = self.get_host_video_data()
         m3u8_data = self.get_m3u8_data(res)
         if self.exit:
@@ -312,10 +332,7 @@ class DownloadVideo(QtCore.QThread):
                     if ok:
                         break
                 if self.exit:
-                    if not self.del_download_order:
-                        self.del_download_order = True
-                        self.write_download_order()
-                        self.del_file_and_json()
+                    self.repeating_work()
                     break
                 time.sleep(5)
             except (requests_RequestException, requests_ConnectionError,
@@ -332,16 +349,47 @@ class DownloadVideo(QtCore.QThread):
 
 
 class EndAnimeData(QtCore.QThread):
+    """
+    爬完結動畫。
+    """
     end_anime_data_signal = QtCore.pyqtSignal(dict)
 
-    def __init__(self):
+    def __init__(self, cautious):
+        """
+        :param cautious:
+            謹慎檢查，如果等於 True 就是從第一頁爬到最尾頁，如果是 False 就是遇到資料已存在就不爬了。
+            主要是避免還沒爬完就被關閉程式，導致沒爬到最尾頁的資料，下次爬的時候一開始就會止步了。
+        """
         super(EndAnimeData, self).__init__()
+        self.cautious = cautious
 
     def run(self):
-        end_anime_data = {}
+        data = {}
+        # 創資料夾
         if not os.path.isdir('EndAnimeData'):
             os.mkdir('EndAnimeData')
+        # 讀取上次爬到的完結動漫 json 資料。
         if os.path.isfile('./EndAnimeData/EndAnimeData.json'):
-            end_anime_data = json.load(open('./EndAnimeData/EndAnimeData.json', 'r', encoding='utf-8'))
-        data = get_end_anime_data(end_anime_data)
+            data = json.load(open('./EndAnimeData/EndAnimeData.json', 'r', encoding='utf-8'))
+        # 取得最後一頁，get_html=True 是指 拿回 html，False就是不拿取，因為是到第一頁的頁面取得總頁數，所以等等第一頁可以不要爬了。
+        total_page = get_total_page(get_html=True)
+        # 簡易爬的鎖，對應 cautious = False。
+        over = False
+        for page in range(1, total_page['total_page'] + 1):
+            if page == 1 and 'html' in total_page:
+                # 因為有html，所以就不用爬了。
+                page_data = get_now_page_anime_data(page=page, res=total_page['page1'])
+            else:
+                page_data = get_now_page_anime_data(page=page)
+
+            for anime_name in page_data:
+                # 如果是簡單檢查，遇到資料已經在 data 裡，就跳出迴圈不爬了。
+                if not self.cautious and anime_name in data:
+                    over = True
+                    break
+                new_anime_data = {anime_name: page_data[anime_name]}
+                data.update(new_anime_data)
+                json.dump(data, open('./EndAnimeData/EndAnimeData.json', 'w', encoding='utf-8'), indent=2)
+            if over:
+                break
         self.end_anime_data_signal.emit(data)

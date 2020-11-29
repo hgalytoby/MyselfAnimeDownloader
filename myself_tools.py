@@ -1,5 +1,3 @@
-import json
-
 import requests
 from bs4 import BeautifulSoup
 
@@ -12,6 +10,10 @@ requests_ChunkedEncodingError = requests.exceptions.ChunkedEncodingError
 
 
 def get_weekly_update():
+    """
+    爬首頁的每周更新表。
+    :return: Dict。
+    """
     res = requests.get(url='https://myself-bbs.com/portal.php', headers=headers)
     html = BeautifulSoup(res.text, features='lxml')
     week_dict = dict()
@@ -34,6 +36,10 @@ def get_weekly_update():
 
 
 def get_end_anime_list():
+    """
+    爬完結列表頁面的動漫資訊
+    :return: Dict。
+    """
     url = 'https://myself-bbs.com/portal.php?mod=topic&topicid=8'
     res = requests.get(url=url, headers=headers)
     html = BeautifulSoup(res.text, features='lxml')
@@ -53,6 +59,11 @@ def get_end_anime_list():
 
 
 def get_anime_data(anime_url):
+    """
+    爬指定動漫頁面的資料
+    :param anime_url: 給網址。
+    :return: Dict。
+    """
     res = requests.get(url=anime_url, headers=headers)
     html = BeautifulSoup(res.text, features='lxml')
     data = {'home': anime_url}
@@ -89,47 +100,51 @@ def get_anime_data(anime_url):
 
 
 def download_request(url=None, stream=False, timeout=None):
+    """
+    給 QT Thread 下載動漫用的。
+    :param url:
+    :param stream:
+    :param timeout:
+    :return:
+    """
     return requests.get(url=url, headers=headers, stream=stream, timeout=timeout)
 
 
-def get_total_page(res):
+def get_total_page(get_html=False):
+    """
+    爬完結動漫總頁數多少。
+    :param get_html: True = 將 requests.text 返回。
+    :return: Dict。
+    """
+    res = requests.get(url='https://myself-bbs.com/forum-113-1.html', headers=headers).text
     html = BeautifulSoup(res, 'lxml')
     for i in html.find_all('div', class_='pg'):
         total_page = int(i.find('span')['title'].split(' ')[1])
-        return total_page
+        if get_html:
+            return {'total_page': total_page, 'html': res}
+        return {'total_page': total_page}
 
 
-def get_now_page_anime_data(res, data):
+def get_now_page_anime_data(page, res=None):
+    """
+    完結動漫頁面的動漫資料。
+    :param page:要爬第幾頁。
+    :param res:給完結動漫某頁的HTML，就不用requests了
+    :return: Dict。
+    """
+    url = f'https://myself-bbs.com/forum-113-{page}.html'
+    if not res:
+        res = requests.get(url=url, headers=headers).text
     html = BeautifulSoup(res, 'lxml')
-    if not data:
-        data = dict()
+    data = dict()
     for i in html.find_all('div', class_='c cl'):
         anime_url = f"https://myself-bbs.com/{i.find('a')['href']}"
         anime_name = i.find('a')['title']
         # anime_img = f"https://myself-bbs.com/{i.find('a').find('img')['src']}"
         # print(anime_url, anime_name)
-        if anime_name in data:
-            return None
         data.update({anime_name: anime_url})
     return data
 
 
-def get_end_anime_data(end_anime_data):
-    res = requests.get(url='https://myself-bbs.com/forum-113-1.html', headers=headers).text
-    total_page = get_total_page(res=res)
-    for page in range(1, total_page + 1):
-        if page != 1:
-            url = f'https://myself-bbs.com/forum-113-{page}.html'
-            res = requests.get(url=url, headers=headers).text
-        page_data = get_now_page_anime_data(res=res, data=end_anime_data)
-        if not page_data:
-            json.dump(end_anime_data, open('./EndAnimeData/EndAnimeData.json', 'w', encoding='utf-8'), indent=2)
-            return end_anime_data
-        end_anime_data.update(page_data)
-        json.dump(end_anime_data, open('./EndAnimeData/EndAnimeData.json', 'w', encoding='utf-8'), indent=2)
-    return end_anime_data
-
-
 if __name__ == '__main__':
-    end_anime_data = json.load(open('./EndAnimeData/EndAnimeData.json', 'r', encoding='utf-8'))
-    get_end_anime_data(end_anime_data)
+    pass
