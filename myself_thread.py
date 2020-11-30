@@ -8,7 +8,8 @@ import psutil
 from PyQt5 import QtCore
 
 from myself_tools import get_weekly_update, get_end_anime_list, get_anime_data, requests_RequestException, \
-    requests_ChunkedEncodingError, requests_ConnectionError, download_request, get_total_page, get_now_page_anime_data
+    requests_ChunkedEncodingError, requests_ConnectionError, download_request, get_total_page, get_now_page_anime_data, \
+    download_end_anime_preview
 
 
 class WeeklyUpdate(QtCore.QThread):
@@ -354,42 +355,65 @@ class EndAnimeData(QtCore.QThread):
     """
     end_anime_data_signal = QtCore.pyqtSignal(dict)
 
-    def __init__(self, cautious):
+    def __init__(self, reset):
         """
-        :param cautious:
+        :param reset:
             謹慎檢查，如果等於 True 就是從第一頁爬到最尾頁，如果是 False 就是遇到資料已存在就不爬了。
             主要是避免還沒爬完就被關閉程式，導致沒爬到最尾頁的資料，下次爬的時候一開始就會止步了。
         """
         super(EndAnimeData, self).__init__()
-        self.cautious = cautious
+        self.reset = reset
+        self.data = dict()
+        self.page_count = 1
+        self.preview_count = 0
+
+    def get_now_page_anime_data(self, page):
+        page_data = get_now_page_anime_data(page=page)
+        self.data.update({page_data})
+        self.page_count += 1
+
+    def download_end_anime_preview(self, name, img_url):
+        img_content = download_end_anime_preview(img_url)
+        with open(f'./EndAnimeData/preview/{name}.jpg', 'wb') as img:
+            shutil.copyfileobj(img_content.raw, img)
+        self.preview_count += 1
 
     def run(self):
-        data = {}
         # 創資料夾
-        if not os.path.isdir('EndAnimeData'):
+        if not os.path.isdir('./EndAnimeData'):
             os.mkdir('EndAnimeData')
+        if not os.path.isdir('./EndAnimeData/preview'):
+            os.mkdir('./EndAnimeData/preview')
         # 讀取上次爬到的完結動漫 json 資料。
-        if os.path.isfile('./EndAnimeData/EndAnimeData.json'):
-            data = json.load(open('./EndAnimeData/EndAnimeData.json', 'r', encoding='utf-8'))
+        if self.reset and os.path.isfile('./EndAnimeData/EndAnimeData.json'):
+            self.data = json.load(open('./EndAnimeData/EndAnimeData.json', 'r', encoding='utf-8'))
         # 取得最後一頁，get_html=True 是指 拿回 html，False就是不拿取，因為是到第一頁的頁面取得總頁數，所以等等第一頁可以不要爬了。
         total_page = get_total_page(get_html=True)
-        # 簡易爬的鎖，對應 cautious = False。
-        over = False
+        # 開執行續池爬快一點最多一次看16頁。
+        executor = ThreadPoolExecutor(max_workers=16)
         for page in range(1, total_page['total_page'] + 1):
             if page == 1 and 'html' in total_page:
                 # 因為有html，所以就不用爬了。
                 page_data = get_now_page_anime_data(page=page, res=total_page['page1'])
+                self.data.update({page_data})
             else:
-                page_data = get_now_page_anime_data(page=page)
-
-            for anime_name in page_data:
-                # 如果是簡單檢查，遇到資料已經在 data 裡，就跳出迴圈不爬了。
-                if not self.cautious and anime_name in data:
-                    over = True
-                    break
-                new_anime_data = {anime_name: page_data[anime_name]}
-                data.update(new_anime_data)
-                json.dump(data, open('./EndAnimeData/EndAnimeData.json', 'w', encoding='utf-8'), indent=2)
-            if over:
+                executor.submit(self.get_now_page_anime_data, page)
+        # 確認全部爬完了再進離開。
+        while True:
+            if self.page_count == total_page:
                 break
-        self.end_anime_data_signal.emit(data)
+            time.sleep(0.5)
+        # 寫入資料
+        json.dump(self.data, open('./EndAnimeData/EndAnimeData.json', 'w', encoding='utf-8'), indent=2)
+        # 總動漫數量
+        total_preview_count = len(self.data)
+        # 開執行續池爬圖片最多一次爬16個圖片。
+        preview_executor = ThreadPoolExecutor(max_workers=16)
+        for name in self.data:
+            preview_executor.submit(download_end_anime_preview, name, self.data[name]['img'])
+        # 確認圖片都爬完了。
+        while True:
+            if self.preview_count == total_preview_count:
+                break
+            time.sleep(0.5)
+        self.end_anime_data_signal.emit(self.data)

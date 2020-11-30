@@ -696,6 +696,44 @@ gridline-color:#000000
       </item>
      </layout>
     </widget>
+    <widget class="QWidget" name="end_anime_page">
+     <attribute name="title">
+      <string>完結動漫</string>
+     </attribute>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="0">
+       <widget class="QScrollArea" name="end_anime_scrollArea">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="end_anime_scrollAreaWidgetContents">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>983</width>
+           <height>337</height>
+          </rect>
+         </property>
+         <layout class="QGridLayout" name="end_anime_gridLayout"/>
+        </widget>
+       </widget>
+      </item>
+      <item row="0" column="0" alignment="Qt::AlignLeft">
+       <widget class="QLineEdit" name="end_anime_lineEdit">
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="placeholderText">
+         <string>搜尋</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </widget>
    <widget class="QGroupBox" name="customize_groupBox">
     <property name="geometry">

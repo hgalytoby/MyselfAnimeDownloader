@@ -1,3 +1,5 @@
+import os
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -125,6 +127,14 @@ def get_total_page(get_html=False):
         return {'total_page': total_page}
 
 
+def download_end_anime_preview(img_url):
+    """
+    下載圖片預覽圖用的。
+    :param img_url: 給圖片URL。
+    """
+    return requests.get(url=img_url, headers=headers, stream=True).content
+
+
 def get_now_page_anime_data(page, res=None):
     """
     完結動漫頁面的動漫資料。
@@ -140,11 +150,11 @@ def get_now_page_anime_data(page, res=None):
     for i in html.find_all('div', class_='c cl'):
         anime_url = f"https://myself-bbs.com/{i.find('a')['href']}"
         anime_name = i.find('a')['title']
-        # anime_img = f"https://myself-bbs.com/{i.find('a').find('img')['src']}"
-        # print(anime_url, anime_name)
-        data.update({anime_name: anime_url})
+        anime_img = f"https://myself-bbs.com/{i.find('a').find('img')['src']}"
+        anime_total_episodes = i.find('p', class_='ep_info').text
+        data.update({anime_name: {'url': anime_url, 'img': anime_img, 'total': anime_total_episodes}})
     return data
 
 
 if __name__ == '__main__':
-    pass
+    get_now_page_anime_data(1)
