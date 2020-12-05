@@ -12,7 +12,8 @@ from ConfigUI import Config
 from UI.main_ui import Ui_Anime
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingConfigStatus, DownloadVideo
+from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingConfigStatus, DownloadVideo, EndAnimeData
+from myself_tools import badname
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36'}
@@ -33,14 +34,14 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
     def __init__(self):
         super(Anime, self).__init__()
         self.setupUi(self)
-        self.ban = '//:*?"<>|.'
         self.now_download_value = 0
+        self.load_end_anime_status = False
         self.load_week_label_status = False
         self.load_anime_label_status = False
-        self.load_end_anime_status = False
         self.thread_write_download_order_status = False
-        self.week_dict = dict()
         self.end_tab = dict()
+        self.week_dict = dict()
+        self.preview_dict = dict()
         self.end_qt_object = dict()
         self.week_layout_dict = dict()
         self.story_checkbox_dict = dict()
@@ -62,6 +63,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.load_download_menu()
         self.load_history()
         self.loading_end_anime()
+        self.localhost_end_anime_dict, self.localhost_end_anime_list = self.load_localhost_end_anime_data()
+        self.pushbutton_clicked_connect()
         self.setFixedSize(self.width(), self.height())
         self.week = {0: self.Monday_scrollAreaWidgetContents, 1: self.Tuesday_scrollAreaWidgetContents,
                      2: self.Wednesday_scrollAreaWidgetContents, 3: self.Thursday_scrollAreaWidgetContents,
@@ -71,35 +74,43 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.download_tableWidget.setColumnWidth(1, 150)
         # self.download_tableWidget.setColumnWidth(2, 431)
         self.download_tableWidget.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
-        self.download_tableWidget.cellClicked.connect(self.print_row)
         self.download_tableWidget.verticalHeader().setVisible(False)
         self.download_tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.download_tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.download_tableWidget.customContextMenuRequested.connect(
-            self.download_tableWidget_on_custom_context_menu_requested)
         self.download_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.history_tableWidget.setColumnWidth(1, 150)
         self.history_tableWidget.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.history_tableWidget.verticalHeader().setVisible(False)
         self.history_tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.history_tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.history_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+
+    def pushbutton_clicked_connect(self):
+        self.download_tableWidget.cellClicked.connect(self.print_row)
+        self.download_tableWidget.customContextMenuRequested.connect(
+            self.download_tableWidget_on_custom_context_menu_requested)
         self.history_tableWidget.customContextMenuRequested.connect(
             self.history_tableWidget_on_custom_context_menu_requested)
-        self.history_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.menu.actions()[0].triggered.connect(self.config)
         self.menu.actions()[2].triggered.connect(self.closeEvent)
         self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
         self.download_pushbutton.clicked.connect(self.download_anime)
         self.customize_pushButton.clicked.connect(self.check_url)
         self.anime_info_tabWidget.currentChanged.connect(self.click_on_tablewidget)
+        self.end_anime_pushButton.clicked.connect(self.update_end_anime)
+        self.end_anime_lineEdit.textChanged.connect(self.search_end_anime)
 
-    def badname(self, name):
-        """
-        避免不正當名字出現導致資料夾或檔案無法創建。
-        """
-        for i in self.ban:
-            name = str(name).replace(i, ' ')
-        return name.strip()
+    def load_localhost_end_anime_data(self):
+        if os.path.isdir('./EndAnimeData/') and os.path.isfile('./EndAnimeData/EndAnimeData.json') and \
+                os.path.isdir('./EndAnimeData/preview') and os.path.isfile('./EndAnimeData/UpdateDate.json'):
+            self.end_anime_lineEdit.setPlaceholderText('搜尋')
+            self.end_anime_lineEdit.setEnabled(True)
+            data_dict = json.load(open('./EndAnimeData/EndAnimeData.json', 'r', encoding='utf-8'))
+            data_list = list(data_dict.keys())
+            date = json.load(open('./EndAnimeData/UpdateDate.json', 'r', encoding='utf-8'))['Date']
+            self.end_anime_last_update_date.setText(f'最後更新日期: {date}')
+            return data_dict, data_list
+        return dict(), list()
 
     def history_tableWidget_on_custom_context_menu_requested(self, pos):
         """
@@ -652,9 +663,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 self.story_list_scrollArea.setGeometry(QtCore.QRect(10, 60, 211, 40 + len(signal['total']) * 20))
             for i, m in enumerate(signal['total']):
                 data = json.dumps(
-                    {'name': self.badname(signal['name']), 'num': self.badname(m), 'url': signal['total'][m],
-                     'name_num': f"{self.badname(signal['name'])}　　{self.badname(m)}", 'schedule': 0,
-                     'status': '準備中', 'total_name': self.badname(signal['name']) + self.badname(m),
+                    {'name': badname(signal['name']), 'num': badname(m), 'url': signal['total'][m],
+                     'name_num': f"{badname(signal['name'])}　　{badname(m)}", 'schedule': 0,
+                     'status': '準備中', 'total_name': badname(signal['name']) + badname(m),
                      'video_ts': 0, 'time': None, 'home': signal['home']})
                 self.story_checkbox_dict.update({i: QtWidgets.QCheckBox(m)})
                 self.story_checkbox_dict[i].setObjectName(data)
@@ -671,10 +682,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         開 Thread 爬完結列表。
         """
         self.end_anime = EndAnime()
-        self.end_anime.end_anime_signal.connect(self.end_anime_data)
+        self.end_anime.end_anime_signal.connect(self.end_anime_list)
         self.end_anime.start()
 
-    def end_anime_data(self, signal):
+    def end_anime_list(self, signal):
         """
         創建完界列表頁面的 Item。
         :param signal: 完界列表的所有資料。
@@ -700,7 +711,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                     self.end_qt_object[j][k].setObjectName(signal[i][j][k])
                     self.end_qt_object[j][k].setStyleSheet("QPushButton {\n"
                                                            "background-color:transparent;\n"
-                                                           "color: #000000;\n"
+                                                           "color: #339900;\n"
                                                            "font-size:12px;\n"
                                                            "}"
                                                            "QPushButton:hover{background-color:transparent; color: #00aaff;}\n"
@@ -789,6 +800,66 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                          self.history_tableWidget_dict[signal['total_name']]['name'])
         self.history_tableWidget.setItem(rowcount, 1,
                                          self.history_tableWidget_dict[signal['total_name']]['time'])
+
+    def update_end_anime(self):
+        self.end_anime_data = EndAnimeData()
+        self.end_anime_data.end_anime_data_signal.connect(self.update_end_anime_mission)
+        self.end_anime_data.start()
+        self.end_anime_pushButton.setText('正在更新中')
+        self.end_anime_pushButton.setEnabled(False)
+
+    def update_end_anime_mission(self, signal):
+        self.end_anime_pushButton.setText('更新')
+        self.end_anime_pushButton.setEnabled(True)
+        self.end_anime_lineEdit.setPlaceholderText('搜尋')
+        self.end_anime_lineEdit.setEnabled(True)
+        self.localhost_end_anime_dict = signal['data']
+        self.localhost_end_anime_list = list(signal['data'].keys())
+        self.end_anime_last_update_date.setText(f'最後更新日期: {signal["date"]}')
+
+    def search_end_anime(self):
+        search = self.end_anime_lineEdit.text()
+        search_data = list()
+        self.delete_end_anime_frame()
+        self.preview_dict.clear()
+        if len(search) > 0:
+            for i, name in enumerate(self.localhost_end_anime_list):
+                if search in name:
+                    search_data.append(self.localhost_end_anime_list[i])
+            self.create_end_anime_frame(search_data=search_data)
+
+    def delete_end_anime_frame(self):
+        for i in range(self.end_anime_gridLayout.count()):
+            self.end_anime_gridLayout.itemAt(i).widget().deleteLater()
+
+    def create_end_anime_frame(self, search_data):
+        for i, name in enumerate(search_data):
+            self.preview_dict.update({
+                name: {
+                    'img_label': QtWidgets.QLabel(),
+                    'total_label': QtWidgets.QLabel(),
+                    'name_button': QtWidgets.QPushButton(),
+                    'preview_frame': QtWidgets.QFrame(),
+                    'layout': QtWidgets.QVBoxLayout()
+                }
+            })
+            self.preview_dict[name]['img_label'].setPixmap(QtGui.QPixmap(f'./EndAnimeData/preview/{name}.jpg'))
+            self.preview_dict[name]['img_label'].setScaledContents(True)
+            self.preview_dict[name]['total_label'].setText(self.localhost_end_anime_dict[name]['total'])
+            self.preview_dict[name]['name_button'].setText(name)
+            self.preview_dict[name]['name_button'].setToolTip(name)
+            self.preview_dict[name]['name_button'].setObjectName(self.localhost_end_anime_dict[name]['url'])
+            self.preview_dict[name]['name_button'].clicked.connect(self.anime_info_event)
+            self.preview_dict[name]['layout'].addWidget(self.preview_dict[name]['img_label'])
+            self.preview_dict[name]['layout'].addWidget(self.preview_dict[name]['total_label'], 0,
+                                                        QtCore.Qt.AlignHCenter)
+            self.preview_dict[name]['layout'].setContentsMargins(0, 0, 0, 0)
+            self.preview_dict[name]['layout'].addWidget(self.preview_dict[name]['name_button'])
+            self.preview_dict[name]['preview_frame'].setFrameShape(QtWidgets.QFrame.Box)
+            self.preview_dict[name]['preview_frame'].setLayout(self.preview_dict[name]['layout'])
+            self.preview_dict[name]['preview_frame'].setMinimumSize(QtCore.QSize(231, 210))
+            self.preview_dict[name]['preview_frame'].setMaximumSize(QtCore.QSize(231, 210))
+            self.end_anime_gridLayout.addWidget(self.preview_dict[name]['preview_frame'], i // 4, i % 4)
 
     def mouseHoverOnTabBar(self):
         """

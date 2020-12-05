@@ -1,5 +1,3 @@
-import os
-
 import requests
 from bs4 import BeautifulSoup
 
@@ -9,6 +7,16 @@ headers = {
 requests_RequestException = requests.exceptions.RequestException
 requests_ConnectionError = requests.ConnectionError
 requests_ChunkedEncodingError = requests.exceptions.ChunkedEncodingError
+
+
+def badname(name):
+    ban = '//:*?"<>|.'
+    """
+    避免不正當名字出現導致資料夾或檔案無法創建。
+    """
+    for i in ban:
+        name = str(name).replace(i, ' ')
+    return name.strip()
 
 
 def get_weekly_update():
@@ -132,7 +140,7 @@ def download_end_anime_preview(img_url):
     下載圖片預覽圖用的。
     :param img_url: 給圖片URL。
     """
-    return requests.get(url=img_url, headers=headers, stream=True).content
+    return requests.get(url=img_url, headers=headers, stream=True)
 
 
 def get_now_page_anime_data(page, res=None):
@@ -149,7 +157,7 @@ def get_now_page_anime_data(page, res=None):
     data = dict()
     for i in html.find_all('div', class_='c cl'):
         anime_url = f"https://myself-bbs.com/{i.find('a')['href']}"
-        anime_name = i.find('a')['title']
+        anime_name = badname(i.find('a')['title'])
         anime_img = f"https://myself-bbs.com/{i.find('a').find('img')['src']}"
         anime_total_episodes = i.find('p', class_='ep_info').text
         data.update({anime_name: {'url': anime_url, 'img': anime_img, 'total': anime_total_episodes}})
@@ -157,4 +165,4 @@ def get_now_page_anime_data(page, res=None):
 
 
 if __name__ == '__main__':
-    get_now_page_anime_data(1)
+    pass

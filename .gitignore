@@ -6,4 +6,4 @@
 /EndAnimeData
 config.json
 main.spec
-test.py
+test.pyx

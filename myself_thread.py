@@ -2,6 +2,7 @@ import shutil
 import time
 import os
 import json
+import datetime
 from concurrent.futures.thread import ThreadPoolExecutor
 
 import psutil
@@ -9,7 +10,7 @@ from PyQt5 import QtCore
 
 from myself_tools import get_weekly_update, get_end_anime_list, get_anime_data, requests_RequestException, \
     requests_ChunkedEncodingError, requests_ConnectionError, download_request, get_total_page, get_now_page_anime_data, \
-    download_end_anime_preview
+    download_end_anime_preview, badname
 
 
 class WeeklyUpdate(QtCore.QThread):
@@ -355,28 +356,35 @@ class EndAnimeData(QtCore.QThread):
     """
     end_anime_data_signal = QtCore.pyqtSignal(dict)
 
-    def __init__(self, reset):
+    def __init__(self):
         """
         :param reset:
             謹慎檢查，如果等於 True 就是從第一頁爬到最尾頁，如果是 False 就是遇到資料已存在就不爬了。
             主要是避免還沒爬完就被關閉程式，導致沒爬到最尾頁的資料，下次爬的時候一開始就會止步了。
         """
         super(EndAnimeData, self).__init__()
-        self.reset = reset
         self.data = dict()
         self.page_count = 1
         self.preview_count = 0
 
     def get_now_page_anime_data(self, page):
-        page_data = get_now_page_anime_data(page=page)
-        self.data.update({page_data})
-        self.page_count += 1
+        try:
+            page_data = get_now_page_anime_data(page=page)
+            self.data.update(page_data)
+            self.page_count += 1
+        except BaseException as e:
+            print('爬完結動漫頁面 Thread 出錯了', e)
 
     def download_end_anime_preview(self, name, img_url):
-        img_content = download_end_anime_preview(img_url)
-        with open(f'./EndAnimeData/preview/{name}.jpg', 'wb') as img:
-            shutil.copyfileobj(img_content.raw, img)
-        self.preview_count += 1
+        try:
+            name = badname(name)
+            if not os.path.isfile(f'./EndAnimeData/preview/{name}.jpg'):
+                img_content = download_end_anime_preview(img_url)
+                with open(f'./EndAnimeData/preview/{name}.jpg', 'wb') as img:
+                    shutil.copyfileobj(img_content.raw, img)
+            self.preview_count += 1
+        except BaseException as e:
+            print('爬完結動漫預覽圖 Thread 出錯了', e)
 
     def run(self):
         # 創資料夾
@@ -384,9 +392,6 @@ class EndAnimeData(QtCore.QThread):
             os.mkdir('EndAnimeData')
         if not os.path.isdir('./EndAnimeData/preview'):
             os.mkdir('./EndAnimeData/preview')
-        # 讀取上次爬到的完結動漫 json 資料。
-        if self.reset and os.path.isfile('./EndAnimeData/EndAnimeData.json'):
-            self.data = json.load(open('./EndAnimeData/EndAnimeData.json', 'r', encoding='utf-8'))
         # 取得最後一頁，get_html=True 是指 拿回 html，False就是不拿取，因為是到第一頁的頁面取得總頁數，所以等等第一頁可以不要爬了。
         total_page = get_total_page(get_html=True)
         # 開執行續池爬快一點最多一次看16頁。
@@ -394,26 +399,33 @@ class EndAnimeData(QtCore.QThread):
         for page in range(1, total_page['total_page'] + 1):
             if page == 1 and 'html' in total_page:
                 # 因為有html，所以就不用爬了。
-                page_data = get_now_page_anime_data(page=page, res=total_page['page1'])
-                self.data.update({page_data})
+                page_data = get_now_page_anime_data(page=page, res=total_page['html'])
+                self.data.update(page_data)
             else:
                 executor.submit(self.get_now_page_anime_data, page)
         # 確認全部爬完了再進離開。
         while True:
-            if self.page_count == total_page:
+            if self.page_count == total_page['total_page']:
                 break
             time.sleep(0.5)
-        # 寫入資料
-        json.dump(self.data, open('./EndAnimeData/EndAnimeData.json', 'w', encoding='utf-8'), indent=2)
         # 總動漫數量
         total_preview_count = len(self.data)
         # 開執行續池爬圖片最多一次爬16個圖片。
         preview_executor = ThreadPoolExecutor(max_workers=16)
         for name in self.data:
-            preview_executor.submit(download_end_anime_preview, name, self.data[name]['img'])
+            preview_executor.submit(self.download_end_anime_preview, name, self.data[name]['img'])
         # 確認圖片都爬完了。
         while True:
             if self.preview_count == total_preview_count:
                 break
             time.sleep(0.5)
-        self.end_anime_data_signal.emit(self.data)
+        # 取得更新日期
+        date = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d')
+        # 寫入資料
+        json.dump({'Date': date}, open('./EndAnimeData/UpdateDate.json', 'w', encoding='utf-8'), indent=2)
+        json.dump(self.data, open('./EndAnimeData/EndAnimeData.json', 'w', encoding='utf-8'), indent=2)
+        result = {
+            'data': self.data,
+            'date': date,
+        }
+        self.end_anime_data_signal.emit(result)

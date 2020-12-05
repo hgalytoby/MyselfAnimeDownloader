@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1021</width>
+    <width>1020</width>
     <height>460</height>
    </rect>
   </property>
@@ -701,7 +701,7 @@ gridline-color:#000000
       <string>完結動漫</string>
      </attribute>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="0">
+      <item row="1" column="0" colspan="2">
        <widget class="QScrollArea" name="end_anime_scrollArea">
         <property name="frameShape">
          <enum>QFrame::NoFrame</enum>
@@ -715,21 +715,78 @@ gridline-color:#000000
            <x>0</x>
            <y>0</y>
            <width>983</width>
-           <height>337</height>
+           <height>317</height>
           </rect>
          </property>
          <layout class="QGridLayout" name="end_anime_gridLayout"/>
         </widget>
        </widget>
       </item>
-      <item row="0" column="0" alignment="Qt::AlignLeft">
-       <widget class="QLineEdit" name="end_anime_lineEdit">
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
+      <item row="0" column="0" colspan="2">
+       <widget class="QWidget" name="end_anime_widget" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>40</height>
+         </size>
         </property>
-        <property name="placeholderText">
-         <string>搜尋</string>
-        </property>
+        <widget class="QLineEdit" name="end_anime_lineEdit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>10</y>
+           <width>113</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="frame">
+          <bool>true</bool>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <property name="dragEnabled">
+          <bool>false</bool>
+         </property>
+         <property name="placeholderText">
+          <string>請先更新</string>
+         </property>
+         <property name="clearButtonEnabled">
+          <bool>false</bool>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="end_anime_pushButton">
+         <property name="geometry">
+          <rect>
+           <x>150</x>
+           <y>10</y>
+           <width>75</width>
+           <height>23</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>更新</string>
+         </property>
+        </widget>
+        <widget class="QLabel" name="end_anime_last_update_date">
+         <property name="geometry">
+          <rect>
+           <x>230</x>
+           <y>13</y>
+           <width>161</width>
+           <height>16</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>最後更新日期: 無紀錄</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+        </widget>
        </widget>
       </item>
      </layout>
@@ -754,7 +811,7 @@ gridline-color:#000000
 border:none}</string>
     </property>
     <property name="title">
-     <string>每周更新以外的動漫</string>
+     <string>填入您指定的動漫網址</string>
     </property>
     <widget class="QLabel" name="customize_label">
      <property name="geometry">
@@ -919,7 +976,7 @@ background-color: rgba(255, 255, 240, 100)
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1021</width>
+     <width>1020</width>
      <height>26</height>
     </rect>
    </property>
