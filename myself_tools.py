@@ -166,7 +166,10 @@ def get_now_page_anime_data(page, res=None):
 
 def check_version(version):
     res = requests.get(url='https://github.com/hgalytoby/MyselfAnimeDownloader', headers=headers).text
-    new_version = res.split('版本ver ')[1]
+    new_version = res.split('版本ver ')[1].split('<')[0]
+    if new_version != version:
+        return True
+    return False
 
 
 if __name__ == '__main__':

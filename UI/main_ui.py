@@ -47,9 +47,10 @@ class Ui_Anime(object):
         self.anime_info_tabWidget.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.anime_info_tabWidget.setStyleSheet(
                 "QTabWidget:pane {border-top:0px solid #e8f3f9;background: transparent; }\n"
-                "QTabWidget::tab-bar {\n"
-                "    left: 0; \n"
-                "}")
+                "      QTabWidget::tab-bar {\n"
+                "      left: 0;\n"
+                "      }\n"
+                "     ")
         self.anime_info_tabWidget.setObjectName("anime_info_tabWidget")
         self.week_page = QtWidgets.QWidget()
         self.week_page.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
@@ -444,8 +445,14 @@ class Ui_Anime(object):
         icon2.addPixmap(QtGui.QPixmap("./UI\\../image/logo.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.menu_about.setIcon(icon2)
         self.menu_about.setObjectName("menu_about")
+        self.actionf = QtWidgets.QAction(Anime)
+        icon3 = QtGui.QIcon()
+        icon3.addPixmap(QtGui.QPixmap("./UI\\../image/update.ico"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionf.setIcon(icon3)
+        self.actionf.setObjectName("actionf")
         self.menu.addAction(self.menu_config)
         self.menu.addAction(self.menu_about)
+        self.menu.addAction(self.actionf)
         self.menu.addAction(self.menu_exit)
         self.menubar.addAction(self.menu.menuAction())
 
@@ -523,3 +530,4 @@ class Ui_Anime(object):
             self.menu_exit.setStatusTip(_translate("Anime", "離開"))
             self.menu_about.setText(_translate("Anime", "關於"))
             self.menu_about.setStatusTip(_translate("Anime", "關於"))
+            self.actionf.setText(_translate("Anime", "檢查更新"))

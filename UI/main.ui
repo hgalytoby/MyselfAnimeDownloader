@@ -1000,6 +1000,7 @@ background-color: rgba(255, 255, 240, 100)
     </property>
     <addaction name="menu_config"/>
     <addaction name="menu_about"/>
+    <addaction name="actionf"/>
     <addaction name="menu_exit"/>
    </widget>
    <addaction name="menu"/>
@@ -1050,6 +1051,16 @@ background-color: rgba(255, 255, 240, 100)
    </property>
    <property name="statusTip">
     <string>關於</string>
+   </property>
+  </action>
+  <action name="actionf">
+   <property name="icon">
+    <iconset>
+     <normaloff>../image/update.ico</normaloff>../image/update.ico
+    </iconset>
+   </property>
+   <property name="text">
+    <string>檢查更新</string>
    </property>
   </action>
  </widget>

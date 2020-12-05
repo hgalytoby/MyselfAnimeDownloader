@@ -35,6 +35,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         super(Anime, self).__init__()
         self.setupUi(self)
         self.now_download_value = 0
+        self.check_version_result = False
         self.load_end_anime_status = False
         self.load_week_label_status = False
         self.load_anime_label_status = False
@@ -93,7 +94,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.history_tableWidget.customContextMenuRequested.connect(
             self.history_tableWidget_on_custom_context_menu_requested)
         self.menu.actions()[0].triggered.connect(self.config)
-        self.menu.actions()[2].triggered.connect(self.closeEvent)
+        self.menu.actions()[2].triggered.connect(self.check_version)
+        self.menu.actions()[3].triggered.connect(self.closeEvent)
         self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
         self.download_pushbutton.clicked.connect(self.download_anime)
         self.customize_pushButton.clicked.connect(self.check_url)
@@ -119,7 +121,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.check_version_thread.start()
 
     def check_version_task(self, signal):
-        pass
+        if signal:
+            text = f"<br><br><font size=4  color=#000000>作者更新了！ <a href=https://github.com/hgalytoby/MyselfAnimeDownloader>GitHub</a>"
+            QtWidgets.QMessageBox().about(self, '發現新版本', text)
+            self.check_version_result = True
 
     def history_tableWidget_on_custom_context_menu_requested(self, pos):
         """

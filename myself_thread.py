@@ -45,14 +45,14 @@ class CheckVersion(QtCore.QThread):
     """
     爬完結列表的動漫。
     """
-    check_version = QtCore.pyqtSignal(dict)
+    check_version = QtCore.pyqtSignal(bool)
 
     def __init__(self, version):
         super(CheckVersion, self).__init__()
         self.version = version
 
     def run(self):
-        result = check_version(VERSION)
+        result = check_version(self.version)
         self.check_version.emit(result)
 
 
