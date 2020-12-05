@@ -16,7 +16,7 @@ from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingCon
     CheckVersion
 from myself_tools import badname
 
-VERSION = '1.0'
+VERSION = '1.0.1'
 
 
 class MyProxyStyle(QtWidgets.QProxyStyle):
@@ -124,7 +124,11 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         if signal:
             text = f"<br><br><font size=4  color=#000000>作者更新了！ <a href=https://github.com/hgalytoby/MyselfAnimeDownloader>GitHub</a>"
             QtWidgets.QMessageBox().about(self, '發現新版本', text)
-            self.check_version_result = True
+        else:
+            if self.check_version_result:
+                text = f"<br><br>已經是最新版本了"
+                QtWidgets.QMessageBox().about(self, '發現新版本', text)
+        self.check_version_result = True
 
     def history_tableWidget_on_custom_context_menu_requested(self, pos):
         """
@@ -420,7 +424,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def load_download_menu(self):
         """
-        讀取下載動漫任務列表並在下載清淡創建Item。
+        讀取下載動漫任務列表並在下載清單創建Item。
         """
         menu = self.now_download_video_mission_list + self.wait_download_video_mission_list
         for i in self.now_download_video_mission_list:
@@ -429,7 +433,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         wait_list = self.wait_download_video_mission_list[:]
         for i in wait_list:
             data = json.load(open(f'./Log/undone/{i}.json', 'r', encoding='utf-8'))
-            self.create_tablewidgetitem(data=data, init=True)
+            self.create_tablewidgetitem(data=data, now=True, init=True)
         for i in os.listdir('./Log/undone/'):
             if i.endswith('.json') and i[:-5] not in menu:
                 data = json.load(open(f'./Log/undone/{i}', 'r', encoding='utf-8'))
@@ -472,7 +476,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         創下載任務表，以及開 Thread 爬動漫。
         :param data: 指定動漫的資料。
-        :param now: 縣在下載任務的列表。
+        :param now: 現在下載任務的列表。
         :param init: 判斷是不是剛打開程式時的判斷。
         """
         if not now:

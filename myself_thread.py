@@ -225,16 +225,16 @@ class DownloadVideo(QtCore.QThread):
                     self.anime.now_download_value += 1
                     break
                 elif len(self.anime.wait_download_video_mission_list) > 0 and \
-                        self.anime.wait_download_video_mission_list[0] == \
-                        self.data["name"] + self.data[
-                    "num"] and self.anime.simultaneously_value > self.anime.now_download_value:
+                        self.anime.wait_download_video_mission_list[0] == self.data["name"] + self.data["num"] \
+                        and self.anime.simultaneously_value > self.anime.now_download_value:
                     self.anime.now_download_value += 1
                     self.anime.now_download_video_mission_list.append(
                         self.anime.wait_download_video_mission_list.pop(0))
                     self.write_download_order()
                     break
                 time.sleep(3)
-            except NameError:
+            except NameError as e:
+                print(f'turn_me error: {e}')
                 time.sleep(0.5)
 
     def get_host_video_data(self):
@@ -296,6 +296,7 @@ class DownloadVideo(QtCore.QThread):
                 if self.data['video_ts'] == m3u8_count:
                     # self.data.update({'status': '已完成'})
                     self.anime.now_download_video_mission_list.remove(self.data['total_name'])
+                    # print(f'{self.data["name"] + self.data["num"]}結束了, wait:{self.anime.wait_download_video_mission_list} now: {self.anime.now_download_video_mission_list}')
                     self.write_download_order()
                     self.anime.now_download_value -= 1
                     break
