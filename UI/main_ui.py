@@ -45,7 +45,11 @@ class Ui_Anime(object):
         font.setPointSize(12)
         self.anime_info_tabWidget.setFont(font)
         self.anime_info_tabWidget.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
-        self.anime_info_tabWidget.setStyleSheet("QTabWidget:pane {border-top:0px solid #e8f3f9;background: transparent; }")
+        self.anime_info_tabWidget.setStyleSheet(
+                "QTabWidget:pane {border-top:0px solid #e8f3f9;background: transparent; }\n"
+                "QTabWidget::tab-bar {\n"
+                "    left: 0; \n"
+                "}")
         self.anime_info_tabWidget.setObjectName("anime_info_tabWidget")
         self.week_page = QtWidgets.QWidget()
         self.week_page.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
@@ -395,7 +399,7 @@ class Ui_Anime(object):
                                          "}")
         self.status_widget.setObjectName("status_widget")
         self.left_status_label = QtWidgets.QLabel(self.status_widget)
-        self.left_status_label.setGeometry(QtCore.QRect(20, 0, 211, 20))
+        self.left_status_label.setGeometry(QtCore.QRect(20, 0, 291, 20))
         self.left_status_label.setObjectName("left_status_label")
         self.right_ststus_label = QtWidgets.QLabel(self.status_widget)
         self.right_ststus_label.setGeometry(QtCore.QRect(780, 0, 211, 20))

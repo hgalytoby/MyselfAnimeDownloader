@@ -72,7 +72,11 @@
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="styleSheet">
-     <string notr="true">QTabWidget:pane {border-top:0px solid #e8f3f9;background: transparent; }</string>
+     <string notr="true">QTabWidget:pane {border-top:0px solid #e8f3f9;background: transparent; }
+      QTabWidget::tab-bar {
+      left: 0;
+      }
+     </string>
     </property>
     <property name="currentIndex">
      <number>0</number>
@@ -927,7 +931,7 @@ background-color: rgba(255, 255, 240, 100)
       <rect>
        <x>20</x>
        <y>0</y>
-       <width>211</width>
+       <width>291</width>
        <height>20</height>
       </rect>
      </property>
