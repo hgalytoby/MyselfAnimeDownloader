@@ -10,7 +10,7 @@ from PyQt5 import QtCore
 
 from myself_tools import get_weekly_update, get_end_anime_list, get_anime_data, requests_RequestException, \
     requests_ChunkedEncodingError, requests_ConnectionError, download_request, get_total_page, get_now_page_anime_data, \
-    download_end_anime_preview, badname
+    download_end_anime_preview, badname, check_version
 
 
 class WeeklyUpdate(QtCore.QThread):
@@ -39,6 +39,21 @@ class EndAnime(QtCore.QThread):
     def run(self):
         data = get_end_anime_list()
         self.end_anime_signal.emit(data)
+
+
+class CheckVersion(QtCore.QThread):
+    """
+    爬完結列表的動漫。
+    """
+    check_version = QtCore.pyqtSignal(dict)
+
+    def __init__(self, version):
+        super(CheckVersion, self).__init__()
+        self.version = version
+
+    def run(self):
+        result = check_version(VERSION)
+        self.check_version.emit(result)
 
 
 class AnimeData(QtCore.QThread):

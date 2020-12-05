@@ -12,11 +12,11 @@ from ConfigUI import Config
 from UI.main_ui import Ui_Anime
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingConfigStatus, DownloadVideo, EndAnimeData
+from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingConfigStatus, DownloadVideo, EndAnimeData, \
+    CheckVersion
 from myself_tools import badname
 
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36'}
+VERSION = '1.0'
 
 
 class MyProxyStyle(QtWidgets.QProxyStyle):
@@ -65,6 +65,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.loading_end_anime()
         self.localhost_end_anime_dict, self.localhost_end_anime_list = self.load_localhost_end_anime_data()
         self.pushbutton_clicked_connect()
+        self.check_version()
         self.setFixedSize(self.width(), self.height())
         self.week = {0: self.Monday_scrollAreaWidgetContents, 1: self.Tuesday_scrollAreaWidgetContents,
                      2: self.Wednesday_scrollAreaWidgetContents, 3: self.Thursday_scrollAreaWidgetContents,
@@ -111,6 +112,14 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.end_anime_last_update_date.setText(f'最後更新日期: {date}')
             return data_dict, data_list
         return dict(), list()
+
+    def check_version(self):
+        self.check_version_thread = CheckVersion(version=VERSION)
+        self.check_version_thread.check_version.connect(self.check_version_task)
+        self.check_version_thread.start()
+
+    def check_version_task(self, signal):
+        pass
 
     def history_tableWidget_on_custom_context_menu_requested(self, pos):
         """
