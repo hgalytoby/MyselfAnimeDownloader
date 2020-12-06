@@ -1,60 +1,35 @@
 import os
-import re
 import sys
 import json
 # import gc
 import datetime
 import webbrowser
-# from concurrent.futures import ProcessPoolExecutor
 
 from AboutUI import About
 from ConfigUI import Config
 from UI.main_ui import Ui_Anime
 from PyQt5 import QtCore, QtWidgets, QtGui
 
+from event.CheckUrl import check_url
+from event.ClickOnMainTableWidget import click_on_tablewidget
+from event.EndAnime import search_end_anime, update_end_anime_mission, update_end_anime
+from event.History import create_history_tablewidget_item
+from event.InitParameter import init_parameter
+from event.PushButtonClickedConnect import pushbutton_clicked_connect
+from event.Version import check_version_task
 from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingConfigStatus, DownloadVideo, EndAnimeData, \
     CheckVersion
-from myself_tools import badname
+from myself_tools import badname, basic_config, kill_pid, load_localhost_end_anime_data
 
-VERSION = '1.0.1'
-
-
-class MyProxyStyle(QtWidgets.QProxyStyle):
-    pass
-
-    def pixelMetric(self, QStyle_PixelMetric, option=None, widget=None):
-
-        if QStyle_PixelMetric == QtWidgets.QStyle.PM_SmallIconSize:
-            return 40
-        else:
-            return QtWidgets.QProxyStyle.pixelMetric(self, QStyle_PixelMetric, option, widget)
+VERSION = '1.0.2'
 
 
 class Anime(QtWidgets.QMainWindow, Ui_Anime):
-    def __init__(self):
+    def __init__(self, pid):
         super(Anime, self).__init__()
         self.setupUi(self)
-        self.now_download_value = 0
-        self.check_version_result = False
-        self.load_end_anime_status = False
-        self.load_week_label_status = False
-        self.load_anime_label_status = False
-        self.thread_write_download_order_status = False
-        self.end_tab = dict()
-        self.week_dict = dict()
-        self.preview_dict = dict()
-        self.end_qt_object = dict()
-        self.week_layout_dict = dict()
-        self.story_checkbox_dict = dict()
-        self.download_anime_Thread = dict()
-        self.history_tableWidget_dict = dict()
-        self.download_progressBar_dict = dict()
-        self.download_status_label_dict = dict()
-        self.tableWidgetItem_download_dict = dict()
-        self.pid = os.getpid()
-        self.setWindowIcon(QtGui.QIcon('image/logo.ico'))
-        self.download_tableWidget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
-        self.save_path, self.simultaneously_value, self.speed_value, self.wait_download_video_mission_list, self.now_download_video_mission_list = self.basic_config()
+        self.init_parameter(pid)
+        self.save_path, self.simultaneously_value, self.speed_value, self.download_queue = basic_config()
         self.load_week_data()
         self.anime_page_Visible()
         self.load_anime_label.setVisible(False)
@@ -67,68 +42,46 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.localhost_end_anime_dict, self.localhost_end_anime_list = self.load_localhost_end_anime_data()
         self.pushbutton_clicked_connect()
         self.check_version()
-        self.setFixedSize(self.width(), self.height())
-        self.week = {0: self.Monday_scrollAreaWidgetContents, 1: self.Tuesday_scrollAreaWidgetContents,
-                     2: self.Wednesday_scrollAreaWidgetContents, 3: self.Thursday_scrollAreaWidgetContents,
-                     4: self.Friday_scrollAreaWidgetContents, 5: self.Staurday_scrollAreaWidgetContents,
-                     6: self.Sunday_scrollAreaWidgetContents}
-        self.download_tableWidget.setColumnWidth(0, 400)
-        self.download_tableWidget.setColumnWidth(1, 150)
-        # self.download_tableWidget.setColumnWidth(2, 431)
-        self.download_tableWidget.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.Stretch)
-        self.download_tableWidget.verticalHeader().setVisible(False)
-        self.download_tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.download_tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.download_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.history_tableWidget.setColumnWidth(1, 150)
-        self.history_tableWidget.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
-        self.history_tableWidget.verticalHeader().setVisible(False)
-        self.history_tableWidget.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.history_tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
-        self.history_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+
+    def init_parameter(self, pid):
+        """
+        宣告物件和一些物件的參數操作。
+        :param pid: 程序的 pid。
+        """
+        init_parameter(self=self, pid=pid)
 
     def pushbutton_clicked_connect(self):
-        self.download_tableWidget.cellClicked.connect(self.print_row)
-        self.download_tableWidget.customContextMenuRequested.connect(
-            self.download_tableWidget_on_custom_context_menu_requested)
-        self.history_tableWidget.customContextMenuRequested.connect(
-            self.history_tableWidget_on_custom_context_menu_requested)
-        self.menu.actions()[0].triggered.connect(self.config)
-        self.menu.actions()[2].triggered.connect(self.check_version)
-        self.menu.actions()[3].triggered.connect(self.closeEvent)
-        self.story_list_all_pushButton.clicked.connect(self.check_checkbox)
-        self.download_pushbutton.clicked.connect(self.download_anime)
-        self.customize_pushButton.clicked.connect(self.check_url)
-        self.anime_info_tabWidget.currentChanged.connect(self.click_on_tablewidget)
-        self.end_anime_pushButton.clicked.connect(self.update_end_anime)
-        self.end_anime_lineEdit.textChanged.connect(self.search_end_anime)
+        """
+        所有 pushbutton 連接方法。
+        """
+        pushbutton_clicked_connect(self=self)
 
     def load_localhost_end_anime_data(self):
-        if os.path.isdir('./EndAnimeData/') and os.path.isfile('./EndAnimeData/EndAnimeData.json') and \
-                os.path.isdir('./EndAnimeData/preview') and os.path.isfile('./EndAnimeData/UpdateDate.json'):
+        """
+        讀取本地端完結動漫資料。
+        """
+        data, exist = load_localhost_end_anime_data()
+        if exist:
             self.end_anime_lineEdit.setPlaceholderText('搜尋')
             self.end_anime_lineEdit.setEnabled(True)
-            data_dict = json.load(open('./EndAnimeData/EndAnimeData.json', 'r', encoding='utf-8'))
-            data_list = list(data_dict.keys())
-            date = json.load(open('./EndAnimeData/UpdateDate.json', 'r', encoding='utf-8'))['Date']
-            self.end_anime_last_update_date.setText(f'最後更新日期: {date}')
-            return data_dict, data_list
-        return dict(), list()
+            self.end_anime_last_update_date.setText(f'最後更新日期: {data["date"]}')
+            return data['data_dict'], data['data_list']
+        return data['data_dict'], data['data_list']
 
     def check_version(self):
+        """
+        開 Thread 檢查程式版本。
+        """
         self.check_version_thread = CheckVersion(version=VERSION)
         self.check_version_thread.check_version.connect(self.check_version_task)
         self.check_version_thread.start()
 
     def check_version_task(self, signal):
-        if signal:
-            text = f"<br><br><font size=4  color=#000000>作者更新了！ <a href=https://github.com/hgalytoby/MyselfAnimeDownloader>GitHub</a>"
-            QtWidgets.QMessageBox().about(self, '發現新版本', text)
-        else:
-            if self.check_version_result:
-                text = f"<br><br>已經是最新版本了"
-                QtWidgets.QMessageBox().about(self, '發現新版本', text)
-        self.check_version_result = True
+        """
+        接收版本訊息。
+        :param signal: 版本訊息。
+        """
+        check_version_task(self=self, signal=signal)
 
     def history_tableWidget_on_custom_context_menu_requested(self, pos):
         """
@@ -259,9 +212,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         控制下載清單的順序。
         :param data: 選取的動漫欄位資料。
-        :param status: 忘了..好像是判斷 下載的最後一個 跟 等待下載的第一個 要互換位置用的?
+        :param status: 用來判斷提高或降低。
         """
-
         def move_item(mode):
             for i in data:
                 move_name = self.download_tableWidget.item(i - mode, 0).text()
@@ -292,20 +244,10 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                     {move_item: {'name': move_name_item,
                                  'status': move_status_item,
                                  'schedule': move_schedule}})
-                if move_item in self.wait_download_video_mission_list and select_item in self.wait_download_video_mission_list:
-                    move_index = self.wait_download_video_mission_list.index(move_item)
-                    select_index = self.wait_download_video_mission_list.index(select_item)
-                    self.wait_download_video_mission_list[select_index], self.wait_download_video_mission_list[
-                        move_index] = \
-                        self.wait_download_video_mission_list[move_index], self.wait_download_video_mission_list[
-                            select_index]
-                elif select_item in self.now_download_video_mission_list and move_item in self.now_download_video_mission_list:
-                    move_index = self.now_download_video_mission_list.index(move_item)
-                    select_index = self.now_download_video_mission_list.index(select_item)
-                    self.now_download_video_mission_list[select_index], self.now_download_video_mission_list[
-                        move_index] = \
-                        self.now_download_video_mission_list[move_index], self.now_download_video_mission_list[
-                            select_index]
+                move_index = self.download_queue.index(move_item)
+                select_index = self.download_queue.index(select_item)
+                self.download_queue[select_index], self.download_queue[move_index] = self.download_queue[move_index], \
+                                                                                     self.download_queue[select_index]
                 self.download_tableWidget.takeItem(i - mode, 0)
                 self.download_tableWidget.setItem(i - mode, 0, select_name_item)
                 self.download_tableWidget.takeItem(i - mode, 1)
@@ -327,9 +269,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             if self.download_tableWidget.rowCount() - 1 in data:
                 del data[self.download_tableWidget.rowCount() - 1]
             move_item(mode=-1)
-        json.dump({'wait': self.wait_download_video_mission_list,
-                   'now': self.now_download_video_mission_list},
-                  open('./Log/download_order.json', 'w', encoding='utf-8'), indent=2)
+        json.dump({'queue': self.download_queue}, open('./Log/DownloadQueue.json', 'w', encoding='utf-8'), indent=2)
 
     def download_menu_delete_list(self, data=None, remove_file=False):
         """
@@ -344,18 +284,14 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                   QtWidgets.QMessageBox.No)
         if msg == QtWidgets.QMessageBox.Ok:
             for i in data:
-                # if data[i]["thread"] in self.download_anime_Thread:
-                if data[i]["thread"] in self.now_download_video_mission_list:
-                    self.now_download_video_mission_list.remove(data[i]["thread"])
+                if data[i]["thread"] in self.download_queue[:self.simultaneously_value]:
                     self.now_download_value -= 1
-                if data[i]["thread"] in self.wait_download_video_mission_list:
-                    self.wait_download_video_mission_list.remove(data[i]["thread"])
                 if os.path.isfile(f'./Log/undone/{data[i]["thread"]}.json'):
                     os.remove(f'./Log/undone/{data[i]["thread"]}.json')
+                self.download_anime_Thread[data[i]["thread"]]['thread'].exit = True
                 if remove_file:
                     if not self.download_anime_Thread[data[i]["thread"]]['over']:
                         self.download_anime_Thread[data[i]["thread"]]['thread'].remove_file = True
-                        self.download_anime_Thread[data[i]["thread"]]['thread'].exit = True
                     try:
                         if os.path.isfile(f'{self.save_path}/{data[i]["directory"]}/{data[i]["file_name"]}.mp4'):
                             os.remove(f'{self.save_path}/{data[i]["directory"]}/{data[i]["file_name"]}.mp4')
@@ -369,20 +305,12 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         TabWidget切換時，判斷讀取動漫資訊是否顯示。
         """
-        if index != 0 and not self.load_week_label_status:
-            self.load_week_label.setVisible(False)
-        elif index == 0 and not self.load_week_label_status:
-            self.load_week_label.setVisible(True)
-        if index != 1 and not self.load_end_anime_status:
-            self.load_end_anime_label.setVisible(False)
-        elif index == 1 and not self.load_end_anime_status:
-            self.load_end_anime_label.setVisible(True)
-        if index != 2 and self.load_anime_label_status:
-            self.load_anime_label.setVisible(False)
-        elif index == 2 and self.load_anime_label_status:
-            self.load_anime_label.setVisible(True)
+        click_on_tablewidget(self=self, index=index)
 
     def print_row(self, r, c):
+        """
+        當初找 QT 功能時測試用的，目前沒用處了，但不刪除。
+        """
         # print(r, c)
         pass
 
@@ -392,56 +320,17 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         QtWidgets.QApplication.closeAllWindows()
 
-    def basic_config(self):
-        """
-        每次打開會判斷有沒有 config.json。
-        """
-        config = {'path': os.getcwd(), 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5}
-        if not os.path.isfile('config.json'):
-            data = config
-            json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
-        else:
-            data = json.load(open('config.json', 'r', encoding='utf-8'))
-            for i in config:
-                if i not in data:
-                    data[i] = config[i]
-            json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
-
-        if not os.path.isdir('Log'):
-            os.mkdir('Log')
-        if not os.path.isdir('./Log/undone'):
-            os.mkdir('./Log/undone')
-        if not os.path.isdir('./Log/history'):
-            os.mkdir('./Log/history')
-        if os.path.isfile('./Log/download_order.json'):
-            download_order = json.load(open('./Log/download_order.json', 'r', encoding='utf-8'))
-            wait = download_order['wait']
-            now = download_order['now']
-        else:
-            wait = list()
-            now = list()
-        return data['path'], data['simultaneous'], data['speed']['value'], wait, now
-
     def load_download_menu(self):
         """
         讀取下載動漫任務列表並在下載清單創建Item。
         """
-        menu = self.now_download_video_mission_list + self.wait_download_video_mission_list
-        for i in self.now_download_video_mission_list:
-            data = json.load(open(f'./Log/undone/{i}.json', 'r', encoding='utf-8'))
-            self.create_tablewidgetitem(data=data, now=True, init=True)
-        wait_list = self.wait_download_video_mission_list[:]
-        for i in wait_list:
-            data = json.load(open(f'./Log/undone/{i}.json', 'r', encoding='utf-8'))
-            self.create_tablewidgetitem(data=data, now=True, init=True)
-        for i in os.listdir('./Log/undone/'):
-            if i.endswith('.json') and i[:-5] not in menu:
-                data = json.load(open(f'./Log/undone/{i}', 'r', encoding='utf-8'))
-                self.create_tablewidgetitem(data=data, init=True)
+        for queue in self.download_queue:
+            data = json.load(open(f'./Log/undone/{queue}.json', 'r', encoding='utf-8'))
+            self.create_tablewidgetitem(data=data, old=True)
 
     def loading_config_status(self):
         """
-        創讀取狀態列的 Thread。
+        開讀取狀態列的 Thread。
         """
         self.config_status = LoadingConfigStatus(pid=os.getpid())
         self.config_status.loading_config_status_signal.connect(self.loading_config_status_mission)
@@ -464,7 +353,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 data = json.loads(self.story_checkbox_dict[i].objectName())
                 if data['total_name'] in self.download_anime_Thread and self.download_anime_Thread[data['total_name']][
                     'over']:
-                    msg = QtWidgets.QMessageBox().information(self, '確認', '確認重新下鮺',
+                    msg = QtWidgets.QMessageBox().information(self, '確認', f'{data["total_name"]} 要重新下載嗎?',
                                                               QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.No,
                                                               QtWidgets.QMessageBox.No)
                     if msg == QtWidgets.QMessageBox.Ok:
@@ -472,15 +361,16 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 elif data['total_name'] not in self.download_anime_Thread:
                     self.create_tablewidgetitem(data=data)
 
-    def create_tablewidgetitem(self, data=None, now=False, init=False):
+    def create_tablewidgetitem(self, data=None, old=False):
         """
         創下載任務表，以及開 Thread 爬動漫。
+        :param old:
         :param data: 指定動漫的資料。
         :param now: 現在下載任務的列表。
         :param init: 判斷是不是剛打開程式時的判斷。
         """
-        if not now:
-            self.wait_download_video_mission_list.append(data['total_name'])
+        if not old:
+            self.download_queue.append(data['total_name'])
         rowcount = self.download_tableWidget.rowCount()
         self.download_tableWidget.setRowCount(rowcount + 1)
         self.tableWidgetItem_download_dict.update(
@@ -502,7 +392,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                                     'over': True}})
         else:
             self.download_anime_Thread.update(
-                {data['total_name']: {'thread': DownloadVideo(data=data, init=init, anime=self),
+                {data['total_name']: {'thread': DownloadVideo(data=data, anime=self),
                                       'over': False}})
             self.download_anime_Thread[data['total_name']]['thread'].download_video.connect(self.download_anime_task)
             self.download_anime_Thread[data['total_name']]['thread'].start()
@@ -708,6 +598,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         創建完界列表頁面的 Item。
         :param signal: 完界列表的所有資料。
         """
+        # end_anime_list(self=self, signal=signal)
         for i in signal:
             self.end_tab.update({i: QtWidgets.QTabWidget()})
             month_dict = dict()
@@ -781,16 +672,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         判斷 Myself 網的的指定動漫頁面。
         """
-        url = self.customize_lineEdit.text().strip()
-        if re.match(r'^https://myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) \
-                or re.match(r'^https://myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url):
-            self.loading_anime(url=url)
-        else:
-            if url[-1] == '/':
-                url = url[:-1]
-            self.url_error = QtWidgets.QMessageBox.information(self, '錯誤',
-                                                               f"<font size=5  color=#000000>網址有誤！</font> <br/><font size=4  color=#000000>確認輸入的 <a href={url}>網址 </a><font size=4  color=#000000>是否正確！<",
-                                                               QtWidgets.QMessageBox.Ok)
+        check_url(self=self)
 
     def load_history(self):
         """
@@ -805,79 +687,19 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         新的歷史紀錄，創建新的 TableWidgetItem。
         :param signal: 新的歷史紀錄資料。
         """
-        rowcount = self.history_tableWidget.rowCount()
-        self.history_tableWidget.setRowCount(rowcount + 1)
-        self.history_tableWidget_dict.update(
-            {signal['total_name']: {'name': QtWidgets.QTableWidgetItem(signal['name_num']),
-                                    'time': QtWidgets.QTableWidgetItem(signal['time']),
-                                    'home': signal['home']
-                                    }})
-        self.history_tableWidget_dict[signal['total_name']]['time'].setTextAlignment(QtCore.Qt.AlignCenter)
-        self.history_tableWidget_dict[signal['total_name']]['name'].setTextAlignment(QtCore.Qt.AlignCenter)
-        self.history_tableWidget.setItem(rowcount, 0,
-                                         self.history_tableWidget_dict[signal['total_name']]['name'])
-        self.history_tableWidget.setItem(rowcount, 1,
-                                         self.history_tableWidget_dict[signal['total_name']]['time'])
+        create_history_tablewidget_item(self=self, signal=signal)
 
     def update_end_anime(self):
         self.end_anime_data = EndAnimeData()
         self.end_anime_data.end_anime_data_signal.connect(self.update_end_anime_mission)
         self.end_anime_data.start()
-        self.end_anime_pushButton.setText('正在更新中')
-        self.end_anime_pushButton.setEnabled(False)
+        update_end_anime(self=self)
 
     def update_end_anime_mission(self, signal):
-        self.end_anime_pushButton.setText('更新')
-        self.end_anime_pushButton.setEnabled(True)
-        self.end_anime_lineEdit.setPlaceholderText('搜尋')
-        self.end_anime_lineEdit.setEnabled(True)
-        self.localhost_end_anime_dict = signal['data']
-        self.localhost_end_anime_list = list(signal['data'].keys())
-        self.end_anime_last_update_date.setText(f'最後更新日期: {signal["date"]}')
+        update_end_anime_mission(self=self, signal=signal)
 
     def search_end_anime(self):
-        search = self.end_anime_lineEdit.text()
-        search_data = list()
-        self.delete_end_anime_frame()
-        self.preview_dict.clear()
-        if len(search) > 0:
-            for i, name in enumerate(self.localhost_end_anime_list):
-                if search in name:
-                    search_data.append(self.localhost_end_anime_list[i])
-            self.create_end_anime_frame(search_data=search_data)
-
-    def delete_end_anime_frame(self):
-        for i in range(self.end_anime_gridLayout.count()):
-            self.end_anime_gridLayout.itemAt(i).widget().deleteLater()
-
-    def create_end_anime_frame(self, search_data):
-        for i, name in enumerate(search_data):
-            self.preview_dict.update({
-                name: {
-                    'img_label': QtWidgets.QLabel(),
-                    'total_label': QtWidgets.QLabel(),
-                    'name_button': QtWidgets.QPushButton(),
-                    'preview_frame': QtWidgets.QFrame(),
-                    'layout': QtWidgets.QVBoxLayout()
-                }
-            })
-            self.preview_dict[name]['img_label'].setPixmap(QtGui.QPixmap(f'./EndAnimeData/preview/{name}.jpg'))
-            self.preview_dict[name]['img_label'].setScaledContents(True)
-            self.preview_dict[name]['total_label'].setText(self.localhost_end_anime_dict[name]['total'])
-            self.preview_dict[name]['name_button'].setText(name)
-            self.preview_dict[name]['name_button'].setToolTip(name)
-            self.preview_dict[name]['name_button'].setObjectName(self.localhost_end_anime_dict[name]['url'])
-            self.preview_dict[name]['name_button'].clicked.connect(self.anime_info_event)
-            self.preview_dict[name]['layout'].addWidget(self.preview_dict[name]['img_label'])
-            self.preview_dict[name]['layout'].addWidget(self.preview_dict[name]['total_label'], 0,
-                                                        QtCore.Qt.AlignHCenter)
-            self.preview_dict[name]['layout'].setContentsMargins(0, 0, 0, 0)
-            self.preview_dict[name]['layout'].addWidget(self.preview_dict[name]['name_button'])
-            self.preview_dict[name]['preview_frame'].setFrameShape(QtWidgets.QFrame.Box)
-            self.preview_dict[name]['preview_frame'].setLayout(self.preview_dict[name]['layout'])
-            self.preview_dict[name]['preview_frame'].setMinimumSize(QtCore.QSize(231, 210))
-            self.preview_dict[name]['preview_frame'].setMaximumSize(QtCore.QSize(231, 210))
-            self.end_anime_gridLayout.addWidget(self.preview_dict[name]['preview_frame'], i // 4, i % 4)
+        search_end_anime(self=self)
 
     def mouseHoverOnTabBar(self):
         """
@@ -903,73 +725,15 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         return super().eventFilter(obj, event)
 
 
-# def html(get_html=None, result_html=None, choose='one'):
-#     """
-#     兩種用法，結果都是一樣的。
-#     1.
-#     app = QtWidgets.QApplication(sys.argv)
-#     browser = QtWebEngineWidgets.QWebEngineView()
-#     browser.load(QtCore.QUrl(url))
-#     browser.loadFinished.connect(on_load_finished)
-#     app.exec_()
-#     2.
-#     r = render(url)
-#     result_html.put(r)
-#     """
-#
-#     def render(url):
-#
-#         class Render(QtWebEngineWidgets.QWebEngineView):
-#             def __init__(self, url):
-#                 self.html = None
-#                 self.app = QtWidgets.QApplication(sys.argv)
-#                 QtWebEngineWidgets.QWebEngineView.__init__(self)
-#                 self.loadFinished.connect(self._loadFinished)
-#                 self.load(QtCore.QUrl(url))
-#                 while self.html is None:
-#                     self.app.processEvents(
-#                         QtCore.QEventLoop.ExcludeUserInputEvents | QtCore.QEventLoop.ExcludeSocketNotifiers | QtCore.QEventLoop.WaitForMoreEvents)
-#                 self.app.quit()
-#
-#             def _callable(self, data):
-#                 self.html = data
-#
-#             def _loadFinished(self, result):
-#                 self.page().toHtml(self._callable)
-#
-#         return Render(url).html
-#
-#     def callback_function(html):
-#         result_html.put(html)
-#         browser.close()
-#
-#     def on_load_finished():
-#         browser.page().runJavaScript("document.getElementsByTagName('html')[0].innerHTML", callback_function)
-#
-#     while True:
-#         if get_html.qsize() > 0:
-#             url = get_html.get()
-#             if choose == 'one':
-#                 r = render(url)
-#                 result_html.put(r)
-#             else:
-#                 app = QtWidgets.QApplication(sys.argv)
-#                 browser = QtWebEngineWidgets.QWebEngineView()
-#                 browser.load(QtCore.QUrl(url))
-#                 browser.loadFinished.connect(on_load_finished)
-#                 app.exec_()
-#             break
-#         time.sleep(1)
-
-
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     # myStyle = MyProxyStyle()
     # app.setStyle(myStyle)
-    anime = Anime()
+    anime = Anime(pid=os.getpid())
     # config = Config(anime=anime)
     about = About()
     # anime.menu.actions()[0].triggered.connect(config.show)
     anime.menu.actions()[1].triggered.connect(about.show)
     anime.show()
     app.exec_()
+    kill_pid(os.getpid())

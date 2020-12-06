@@ -1,3 +1,7 @@
+import json
+import os
+import uuid
+import psutil
 import requests
 from bs4 import BeautifulSoup
 
@@ -17,6 +21,53 @@ def badname(name):
     for i in ban:
         name = str(name).replace(i, ' ')
     return name.strip()
+
+
+def basic_config():
+    """
+    每次打開會判斷有沒有 config.json。
+    """
+    config = {'path': os.getcwd(), 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5}
+    if not os.path.isfile('config.json'):
+        data = config
+        json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
+    else:
+        data = json.load(open('config.json', 'r', encoding='utf-8'))
+        for i in config:
+            if i not in data:
+                data[i] = config[i]
+        json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
+
+    if not os.path.isdir('Log'):
+        os.mkdir('Log')
+    if not os.path.isdir('./Log/undone'):
+        os.mkdir('./Log/undone')
+    if not os.path.isdir('./Log/history'):
+        os.mkdir('./Log/history')
+    if os.path.isfile('./Log/DownloadQueue.json'):
+        download_queue = json.load(open('./Log/DownloadQueue.json', 'r', encoding='utf-8'))['queue']
+    else:
+        download_queue = list()
+    return data['path'], data['simultaneous'], data['speed']['value'], download_queue
+
+
+def load_localhost_end_anime_data():
+    result = {
+        'data_dict': dict(),
+        'data_list': list()
+    }
+    if os.path.isdir('./EndAnimeData/') and os.path.isfile('./EndAnimeData/EndAnimeData.json') and \
+            os.path.isdir('./EndAnimeData/preview') and os.path.isfile('./EndAnimeData/UpdateDate.json'):
+        data_dict = json.load(open('./EndAnimeData/EndAnimeData.json', 'r', encoding='utf-8'))
+        data_list = list(data_dict.keys())
+        date = json.load(open('./EndAnimeData/UpdateDate.json', 'r', encoding='utf-8'))['Date']
+        result.update({
+            'data_dict': data_dict,
+            'data_list': data_list,
+            'date': date
+        })
+        return result, True
+    return result, False
 
 
 def get_weekly_update():
@@ -109,6 +160,31 @@ def get_anime_data(anime_url):
     return data
 
 
+def cpu_memory(info):
+    """
+    檢查 CPU 與 記憶體用的。
+    :param info: 給 psutil.Process(pid)。
+    :return:
+    """
+    cpu = '%.2f' % (info.cpu_percent() / psutil.cpu_count())
+    memory = '%.2f' % (info.memory_full_info().rss / 1024 / 1024)
+    # memory = '%.2f' % (psutil.virtual_memory().percent)
+    # memory = '%.2f' % (self.info.memory_full_info().uss / 1024 / 1024)
+    return {'cpu': cpu, 'memory': memory}
+
+
+def kill_pid(pid):
+    """
+    因開了 Thread 的關係，按右上角 X 關閉時，無法將整個程式完整關掉，所以這裡下命令直接 kill，
+    :param pid: 程式 pid。
+    :return:
+    """
+    parent = psutil.Process(pid)
+    for child in parent.children(recursive=True):  # or parent.children() for recursive=False
+        child.kill()
+    parent.kill()
+
+
 def download_request(url=None, stream=False, timeout=None):
     """
     給 QT Thread 下載動漫用的。
@@ -165,6 +241,11 @@ def get_now_page_anime_data(page, res=None):
 
 
 def check_version(version):
+    """
+    檢查主程式版本用的
+    :param version: 主程式目前版本
+    :return: True = 有新版本，False = 最新版本。
+    """
     res = requests.get(url='https://github.com/hgalytoby/MyselfAnimeDownloader', headers=headers).text
     new_version = res.split('版本ver ')[1].split('<')[0]
     if new_version != version:
@@ -173,4 +254,4 @@ def check_version(version):
 
 
 if __name__ == '__main__':
-    pass
+    kill_pid(16100)

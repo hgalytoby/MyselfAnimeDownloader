@@ -1,4 +1,4 @@
-# MyselfAnimeDownloader 版本ver 1.0.1
+# MyselfAnimeDownloader 版本ver 1.0.2
 ## 預覽
 圖(最後更新2020/12/05)。<br><br>
 ![image](https://i.imgur.com/WYDIX0m.gif)<br>
@@ -20,7 +20,7 @@ GitHub 支援Gif 只到5MB 這張圖4.84MB了，所以錄影時有暫停等待�
 	- 我是3.7開發的，3.6應該也可以?，3.6以下就不行了，因為我用 f'' 這個功能在3.6以後才有。
 	
 ## 運行
-安裝 requirements.txt <br>
+安裝 requirements.txt (就是安裝此程式依賴的套件)<br>
 `
 pip install -r -requirements.txt
 `
@@ -36,6 +36,5 @@ pip install -r -requirements.txt
 1.暫停下載。<br>
 2.程式美觀。<br>
 3.減少記憶體占用量。<br>
-4.提升下載優先權、降低下載優先權雖然有選項可以用，但目前是有BUG的!請不要使用!<br>
-5.尚未發現的 BUG。<br>
-6.一個人測試找BUG極慢 >< 。<br>
+4.尚未發現的 BUG。<br>
+5.一個人測試找BUG極慢 >< 。<br>
