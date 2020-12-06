@@ -19,6 +19,9 @@ GitHub 支援Gif 只到5MB 這張圖4.84MB了，所以錄影時有暫停等待�
 - Python 3.7以上
 	- 我是3.7開發的，3.6應該也可以?，3.6以下就不行了，因為我用 f'' 這個功能在3.6以後才有。
 	
+## 更新日誌
+[查看更新日誌](https://github.com/hgalytoby/MyselfAnimeDownloader/blob/master/UpdateLog.md)	
+	
 ## 運行
 安裝 requirements.txt (就是安裝此程式依賴的套件)<br>
 `
