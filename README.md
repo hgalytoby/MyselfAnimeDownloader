@@ -28,7 +28,7 @@ Windows, Mac, Linux 使用者可以[點擊這裡](https://github.com/hgalytoby/M
 ## 運行
 安裝 requirements.txt (就是安裝此程式依賴的套件)<br>
 `
-pip install -r -requirements.txt
+pip install -r requirements.txt
 `
 <br>
 執行 main.py <br>
