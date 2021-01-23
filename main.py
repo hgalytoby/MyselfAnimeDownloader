@@ -740,12 +740,11 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         觸發最小化時的事件判斷。
         """
         if event.type() == QtCore.QEvent.WindowStateChange:
-            self.tray_icon = TrayIcon(anime)
             if self.isHidden():
-                self.tray_icon.hide()
+                tray_icon.hide()
                 self.show()
             else:
-                self.tray_icon.show()
+                tray_icon.show()
                 self.hide()
 
 
@@ -763,5 +762,6 @@ if __name__ == '__main__':
     # anime.menu.actions()[0].triggered.connect(config.show)
     anime.menu.actions()[1].triggered.connect(about.show)
     anime.show()
+    tray_icon = TrayIcon(anime)
     app.exec_()
     kill_pid(os.getpid())
