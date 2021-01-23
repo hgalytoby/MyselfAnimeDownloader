@@ -35,7 +35,9 @@ class TrayIcon(QtWidgets.QSystemTrayIcon):
                 self.ui.activateWindow()
                 self.ui.setWindowFlags(QtCore.Qt.Window)
                 self.ui.show()
+                self.hide()
             else:
                 self.ui.showMinimized()
                 self.ui.setWindowFlags(QtCore.Qt.SplashScreen)
                 self.ui.show()
+                self.hide()
