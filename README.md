@@ -17,7 +17,7 @@ GitHub 支援Gif 只到5MB 這張圖4.84MB了，所以錄影時有暫停等待�
 	- 我是3.7開發的，3.6應該也可以?，3.6以下就不行了，因為我用 f'' 這個功能在3.6以後才有。
 
 ## 檔案運行(對於不熟悉Python的使用者)
-Windows, Mac, Linux 使用者可以[點擊這裡](https://github.com/hgalytoby/MyselfAnimeDownloader/releases/tag/ver1.0.2) 下載zip 解壓縮後使用.
+Windows, Mac, Linux 使用者可以[點擊這裡](https://github.com/hgalytoby/MyselfAnimeDownloader/releases) 下載zip 解壓縮後使用.
 
 ## 更新日誌
 [查看更新日誌](https://github.com/hgalytoby/MyselfAnimeDownloader/blob/master/UpdateLog.md)	
