@@ -3,9 +3,10 @@ import os
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 
-def init_parameter(self, pid):
+def init_parameter(self, pid, os_system):
     self.now_download_value = 0
     self.pid = pid
+    self.os_system = os_system
     self.check_version_result = False
     self.load_end_anime_status = False
     self.load_week_label_status = False

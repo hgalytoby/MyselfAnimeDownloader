@@ -1,5 +1,8 @@
 import os
 import sys
+
+import platform
+import subprocess
 import json
 # import gc
 import datetime
@@ -7,6 +10,7 @@ import webbrowser
 
 from AboutUI import About
 from ConfigUI import Config
+from TrayIcon import TrayIcon
 from UI.main_ui import Ui_Anime
 from PyQt5 import QtCore, QtWidgets, QtGui
 
@@ -21,14 +25,14 @@ from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingCon
     CheckVersion
 from myself_tools import badname, basic_config, kill_pid, load_localhost_end_anime_data
 
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 
 
 class Anime(QtWidgets.QMainWindow, Ui_Anime):
-    def __init__(self, pid):
+    def __init__(self, pid, os_system):
         super(Anime, self).__init__()
         self.setupUi(self)
-        self.init_parameter(pid)
+        self.init_parameter(pid, os_system)
         self.save_path, self.simultaneously_value, self.speed_value, self.download_queue = basic_config()
         self.load_week_data()
         self.anime_page_Visible()
@@ -43,12 +47,12 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.pushbutton_clicked_connect()
         self.check_version()
 
-    def init_parameter(self, pid):
+    def init_parameter(self, pid, os_system):
         """
         宣告物件和一些物件的參數操作。
         :param pid: 程序的 pid。
         """
-        init_parameter(self=self, pid=pid)
+        init_parameter(self=self, pid=pid, os_system=os_system)
 
     def pushbutton_clicked_connect(self):
         """
@@ -198,7 +202,13 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                     del self.tableWidgetItem_download_dict[download_anime_Thread_name]
         else:
             if action == open_directory:
-                os.startfile(f'{self.save_path}/{select[list(select.keys())[0]]["directory"]}')
+                folder_path = f'{self.save_path}/{select[list(select.keys())[0]]["directory"]}'
+                if self.os_system == "Windows":
+                    os.startfile(folder_path)
+                elif self.os_system == "Darwin":
+                    subprocess.Popen(["open", folder_path])
+                else:
+                    subprocess.Popen(["xdg-open", folder_path])
             elif action == raise_priority_action:
                 self.control_download_tablewidget(data=select, status=True)
             elif action == lower_priority_action:
@@ -214,6 +224,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         :param data: 選取的動漫欄位資料。
         :param status: 用來判斷提高或降低。
         """
+
         def move_item(mode):
             for i in data:
                 move_name = self.download_tableWidget.item(i - mode, 0).text()
@@ -724,12 +735,29 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                     return True
         return super().eventFilter(obj, event)
 
+    def changeEvent(self, event):
+        """
+        觸發最小化時的事件判斷。
+        """
+        if event.type() == QtCore.QEvent.WindowStateChange:
+            self.tray_icon = TrayIcon(anime)
+            if self.isHidden():
+                self.tray_icon.hide()
+                self.show()
+            else:
+                self.tray_icon.show()
+                self.hide()
+
 
 if __name__ == '__main__':
+    os_system = platform.system()
+    if os_system == "Darwin":
+        # MAC 要改 工作路徑
+        os.chdir(os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]))
     app = QtWidgets.QApplication(sys.argv)
     # myStyle = MyProxyStyle()
     # app.setStyle(myStyle)
-    anime = Anime(pid=os.getpid())
+    anime = Anime(pid=os.getpid(), os_system=os_system)
     # config = Config(anime=anime)
     about = About()
     # anime.menu.actions()[0].triggered.connect(config.show)

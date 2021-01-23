@@ -1,4 +1,4 @@
-# MyselfAnimeDownloader 版本ver 1.0.2
+# MyselfAnimeDownloader 版本ver 1.0.3
 ## 預覽
 圖(最後更新2020/12/05)。<br><br>
 ![image](https://i.imgur.com/WYDIX0m.gif)<br>
@@ -8,9 +8,6 @@ GitHub 支援Gif 只到5MB 這張圖4.84MB了，所以錄影時有暫停等待�
 - 作業系統
 	- Windows
 	- Mac 與 Linux
-		- 有些功能會無法使用
-			- 例如
-				- 開啟目錄 我是用 os.startfile 所以會報錯。
 		- 版型會跑掉
 			- Mac
 				- QTabWidget tabBar 會在中間，所以版型會跑掉。
@@ -33,10 +30,9 @@ pip install -r requirements.txt
 <br>
 執行 main.py <br>
 
-# 作者去學Django了。<br>
-心血來潮會更新一下<br>
-如果有 BUG 要修請告知我!我會修!<br>
-如果看得懂程式碼，想改就改吧!<br>
+# 作者心血來潮會更新一下。<br>
+如果有 BUG 要修請告知我!我會盡快修!<br>
+如果看得懂程式碼，想加功能就自己加吧!<br>
 
 ## 尚未解決功能
 1.暫停下載。<br>
