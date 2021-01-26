@@ -1,5 +1,10 @@
 # 更新日誌
 
+## ver1.0.4
+- 1.解決 Mac 11 版本打不開程式的問題，更新 PyQt 版本重新打包即可。
+- 2.將 Mac 的工作路徑寫死 `/Applications/MyselfAnime.app/Contents/Macos`
+- 3.新增 Mac 打包成 .app 的 icns。
+
 ## ver1.0.3
 - 1.解決 Mac、Linux 無法使用打開目錄的功能。
 - 2.現在點擊右上角最小化時，不再只是隱藏視窗。

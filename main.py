@@ -25,7 +25,7 @@ from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingCon
     CheckVersion
 from myself_tools import badname, basic_config, kill_pid, load_localhost_end_anime_data
 
-VERSION = '1.0.3'
+VERSION = '1.0.4'
 
 
 class Anime(QtWidgets.QMainWindow, Ui_Anime):
@@ -751,8 +751,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 if __name__ == '__main__':
     os_system = platform.system()
     if os_system == "Darwin":
-        # MAC 要改 工作路徑
-        os.chdir(os.path.sep.join(sys.argv[0].split(os.path.sep)[:-1]))
+        # MAC 要改 工作路徑，此路徑為 Applications 絕對路徑。
+        os.chdir('/Applications/MyselfAnime.app/Contents/Macos')
     app = QtWidgets.QApplication(sys.argv)
     # myStyle = MyProxyStyle()
     # app.setStyle(myStyle)
