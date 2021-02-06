@@ -506,7 +506,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                               "color: #339900;\n"
                                                               "font-size:22px;\n"
                                                               "}"
-                                                              "QPushButton:hover{background-color:transparent; color: #000000;}\n"
+                                                              "QPushButton:hover{background-color:transparent; color: #00aaff;}\n"
                                                               "QPushButton:pressed{\n"
                                                               "background-color: transparent;\n"
                                                               "border-style: inset;\n"
