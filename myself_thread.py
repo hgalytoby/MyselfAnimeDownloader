@@ -10,7 +10,7 @@ from PyQt5 import QtCore
 
 from myself_tools import get_weekly_update, get_end_anime_list, get_anime_data, requests_RequestException, \
     requests_ChunkedEncodingError, requests_ConnectionError, download_request, get_total_page, get_now_page_anime_data, \
-    download_end_anime_preview, badname, check_version, cpu_memory
+    download_end_anime_preview, badname, check_version, cpu_memory, myself_login, get_login_select
 
 
 class WeeklyUpdate(QtCore.QThread):
@@ -398,3 +398,30 @@ class EndAnimeData(QtCore.QThread):
             'date': date,
         }
         self.end_anime_data_signal.emit(result)
+
+
+class LoginInit(QtCore.QThread):
+    """
+    """
+    login_init_signal = QtCore.pyqtSignal(dict)
+
+    def __init__(self):
+        super(LoginInit, self).__init__()
+
+    def run(self):
+        result = get_login_select()
+        self.login_init_signal.emit(result)
+
+
+class MyselfLogin(QtCore.QThread):
+    """
+    """
+    myself_login_signal = QtCore.pyqtSignal(bool)
+
+    def __init__(self, login_data):
+        super(MyselfLogin, self).__init__()
+        self.login_data = login_data
+
+    def run(self):
+        result = myself_login(self.login_data)
+        self.myself_login_signal.emit(result)

@@ -5,6 +5,7 @@ pyuic5 -o ./UI/note_ui.py ./UI/note.ui
 pyuic5 -o ./UI/url_ui.py ./UI/url.ui
 pyuic5 -o ./UI/about_ui.py ./UI/about.ui
 pyuic5 -o ./UI/test_ui.py ./UI/test.ui
+pyuic5 -o ./UI/login_ui.py ./UI/login.ui
 pyinstaller -F main.py
 pyinstaller --onefile --windowed --icon logo.icns main.py
 pip freeze > requirements.txt

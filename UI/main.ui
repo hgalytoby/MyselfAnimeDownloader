@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>1020</width>
-    <height>460</height>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -55,7 +55,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>20</y>
+      <y>55</y>
       <width>1001</width>
       <height>405</height>
      </rect>
@@ -800,7 +800,7 @@ gridline-color:#000000
     <property name="geometry">
      <rect>
       <x>590</x>
-      <y>0</y>
+      <y>10</y>
       <width>421</width>
       <height>61</height>
      </rect>
@@ -871,7 +871,7 @@ border:none}</string>
     <property name="geometry">
      <rect>
       <x>370</x>
-      <y>160</y>
+      <y>195</y>
       <width>221</width>
       <height>51</height>
      </rect>
@@ -895,7 +895,7 @@ border:none}</string>
     <property name="geometry">
      <rect>
       <x>350</x>
-      <y>160</y>
+      <y>195</y>
       <width>221</width>
       <height>51</height>
      </rect>
@@ -916,7 +916,7 @@ border:none}</string>
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>415</y>
+      <y>450</y>
       <width>1011</width>
       <height>21</height>
      </rect>
@@ -960,7 +960,7 @@ background-color: rgba(255, 255, 240, 100)
     <property name="geometry">
      <rect>
       <x>400</x>
-      <y>155</y>
+      <y>190</y>
       <width>171</width>
       <height>61</height>
      </rect>
@@ -972,6 +972,48 @@ background-color: rgba(255, 255, 240, 100)
     </property>
     <property name="text">
      <string>完結動漫讀取中</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="login_pushButton">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>20</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>登入</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="user_icon_label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>5</y>
+      <width>51</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../image/noavatar_small.gif</pixmap>
+    </property>
+   </widget>
+   <widget class="QLabel" name="username_label">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>25</y>
+      <width>131</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>尚未登入</string>
     </property>
    </widget>
   </widget>

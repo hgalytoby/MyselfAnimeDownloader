@@ -1,12 +1,12 @@
 import json
 import os
-import uuid
 import psutil
 import requests
 from bs4 import BeautifulSoup
 
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36'}
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
+}
 
 requests_RequestException = requests.exceptions.RequestException
 requests_ConnectionError = requests.ConnectionError
@@ -128,6 +128,10 @@ def get_anime_data(anime_url):
     res = requests.get(url=anime_url, headers=headers)
     html = BeautifulSoup(res.text, features='lxml')
     data = {'home': anime_url}
+    permission = html.find('div', id='messagetext')
+    if permission:
+        data.update({'permission': permission.text.strip()})
+
     total = dict()
     for i in html.select('ul.main_list'):
         for j in i.find_all('a', href='javascript:;'):
@@ -253,5 +257,58 @@ def check_version(version):
     return False
 
 
+def get_login_select():
+    default = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
+    }
+    res = requests.get(url='https://myself-bbs.com/member.php?mod=logging&action=login', headers=default)
+    html = BeautifulSoup(res.text, 'lxml')
+    data = {'login': {}, 'question': {}}
+    for i, m in enumerate(html.find_all('select')):
+        if i == 0:
+            for j in m.find_all('option'):
+                data['login'].update({j.text: j['value']})
+        else:
+            for j in m.find_all('option'):
+                data['question'].update({j.text: j['value']})
+    return data
+
+
+def get_formhash(res_text):
+    html = BeautifulSoup(res_text.text, 'lxml')
+    for i in html.find_all('input', type='hidden'):
+        if i['name'] == 'formhash':
+            return i['value']
+
+
+def myself_logout():
+    if headers.get('cookie'):
+        del headers['cookie']
+
+
+def myself_login(login_data):
+    home_url = 'https://myself-bbs.com/portal.php'
+    login_url = 'https://myself-bbs.com/member.php?mod=logging&action=login&loginsubmit=yes&handlekey=login&loginhash=Lz0RU&inajax=1'
+    myself_logout()
+    data = {
+        'referer': home_url,
+        'loginfield': login_data['loginfield'],
+        'username': login_data['username'],
+        'password': login_data['password'],
+        'questionid': login_data['questionid'],
+        'answer': login_data['answer'],
+        'cookietime': 2592000,
+    }
+    res = requests.Session()
+    home_html = res.get(url=home_url, headers=headers)
+    data.update({'formhash': get_formhash(res_text=home_html)})
+    res.post(url=login_url, headers=headers, data=data)
+    if not res.cookies.get('UETw_aa10_saltkey') or not res.cookies.get('UETw_aa10_auth'):
+        return False
+    headers.update({
+        'cookie': f'UETw_aa10_saltkey={res.cookies["UETw_aa10_saltkey"]}; UETw_aa10_auth={res.cookies["UETw_aa10_auth"]};'})
+    return True
+
+
 if __name__ == '__main__':
-    kill_pid(16100)
+    pass

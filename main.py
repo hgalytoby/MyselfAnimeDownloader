@@ -19,13 +19,14 @@ from event.ClickOnMainTableWidget import click_on_tablewidget
 from event.EndAnime import search_end_anime, update_end_anime_mission, update_end_anime
 from event.History import create_history_tablewidget_item
 from event.InitParameter import init_parameter
+from event.Login import login_event
 from event.PushButtonClickedConnect import pushbutton_clicked_connect
 from event.Version import check_version_task
 from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingConfigStatus, DownloadVideo, EndAnimeData, \
     CheckVersion
 from myself_tools import badname, basic_config, kill_pid, load_localhost_end_anime_data
 
-VERSION = '1.0.4'
+VERSION = '1.0.5'
 
 
 class Anime(QtWidgets.QMainWindow, Ui_Anime):
@@ -551,7 +552,15 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         創建指定動漫資訊。
         :param signal: 指定動漫的資料。
         """
-        if len(signal['total']) == 0:
+        if signal.get('permission'):
+            self.load_anime_label.setVisible(False)
+            self.load_anime_label_status = False
+            msg = QtWidgets.QMessageBox().information(self, "確定",
+                                                      f"<font size=4  color=#000000>{signal['permission']}</font><br/><font size=4  color=#000000>請進行登入!</a>",
+                                                      QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.No)
+            if msg == QtWidgets.QMessageBox.Ok:
+                self.login_event()
+        elif not signal['total']:
             self.load_anime_label.setVisible(False)
             self.load_anime_label_status = False
             QtWidgets.QMessageBox().information(self, "確定",
@@ -711,6 +720,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def search_end_anime(self):
         search_end_anime(self=self)
+
+    def login_event(self):
+        login_event(self=self)
 
     def mouseHoverOnTabBar(self):
         """

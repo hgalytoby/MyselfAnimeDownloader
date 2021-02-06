@@ -8,8 +8,10 @@ def check_url(self):
     判斷 Myself 網的的指定動漫頁面。
     """
     url = self.customize_lineEdit.text().strip()
-    if re.match(r'^https://myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) \
-            or re.match(r'^https://myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url):
+    if re.match(r'^https://myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) or re.match(
+            r'^https://myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url) or re.match(
+        r'^https://www.myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) or re.match(
+        r'^https://www.myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url):
         self.loading_anime(url=url)
     else:
         if url[-1] == '/':
