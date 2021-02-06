@@ -2,7 +2,7 @@ import json
 import os
 
 from UI.login_ui import Ui_AccountLogin
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 
 from myself_thread import LoginInit, MyselfLogin
 
@@ -15,6 +15,7 @@ class AccountLogin(QtWidgets.QMainWindow, Ui_AccountLogin):
     def __init__(self, main_label, main_button):
         super(AccountLogin, self).__init__()
         self.setupUi(self)
+        self.setWindowIcon(QtGui.QIcon('image/logo.ico'))
         self.main_label = main_label
         self.main_button = main_button
         self.login_dict = {}
