@@ -43,4 +43,5 @@ def init_parameter(self, pid, os_system):
     self.history_tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
     self.history_tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
     self.setWindowIcon(QtGui.QIcon('image/logo.ico'))
+    self.user_icon_label.setPixmap(QtGui.QPixmap("./image/noavatar_small.gif"))
     self.setFixedSize(self.width(), self.height())

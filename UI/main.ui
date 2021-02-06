@@ -149,8 +149,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>82</width>
+               <height>16</height>
               </rect>
              </property>
             </widget>
@@ -176,8 +176,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>82</width>
+               <height>16</height>
               </rect>
              </property>
             </widget>
@@ -203,8 +203,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>82</width>
+               <height>16</height>
               </rect>
              </property>
             </widget>
@@ -230,8 +230,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>82</width>
+               <height>16</height>
               </rect>
              </property>
             </widget>
@@ -263,8 +263,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>82</width>
+               <height>16</height>
               </rect>
              </property>
             </widget>
@@ -296,8 +296,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>82</width>
+               <height>16</height>
               </rect>
              </property>
             </widget>
@@ -327,8 +327,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>983</width>
-           <height>363</height>
+           <width>100</width>
+           <height>30</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="end_scrollAreaWidgetContents_Layout"/>
@@ -718,8 +718,8 @@ gridline-color:#000000
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>983</width>
-           <height>317</height>
+           <width>100</width>
+           <height>30</height>
           </rect>
          </property>
          <layout class="QGridLayout" name="end_anime_gridLayout"/>
@@ -998,9 +998,6 @@ background-color: rgba(255, 255, 240, 100)
     </property>
     <property name="text">
      <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap>../image/noavatar_small.gif</pixmap>
     </property>
    </widget>
    <widget class="QLabel" name="username_label">
