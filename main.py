@@ -37,7 +37,7 @@ VERSION = '1.1.0'
 #     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 # QT_AUTO_SCREEN_SCALE_FACTOR = 2
-# QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
+QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
 
 
 class Anime(QtWidgets.QMainWindow, Ui_Anime):
