@@ -9,9 +9,13 @@ def check_url(self):
     """
     url = self.customize_lineEdit.text().strip()
     if re.match(r'^https://myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) or re.match(
-            r'^https://myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url) or re.match(
+            r'^http://myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) or re.match(
+        r'^https://myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url) or re.match(
+        r'^http://myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url) or re.match(
         r'^https://www.myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) or re.match(
-        r'^https://www.myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url):
+        r'^http://www.myself-bbs.com/thread-[0-9]{5,5}-1-1.html$', url) or re.match(
+        r'^https://www.myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url) or re.match(
+        r'^http://www.myself-bbs.com/forum.php\Wmod=viewthread&tid=[0-9]{5,5}&.', url):
         self.loading_anime(url=url)
     else:
         if url[-1] == '/':
