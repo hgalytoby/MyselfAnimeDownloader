@@ -1,7 +1,7 @@
 # MyselfAnimeDownloader 版本ver 1.1.0
 ## 預覽
-圖(最後更新2020/12/05)。<br><br>
-![image](https://i.imgur.com/WYDIX0m.gif)<br>
+圖(最後更新2021/03/15)。<br><br>
+![image](https://i.imgur.com/rXhfd67.gif)<br>
 GitHub 支援Gif 只到5MB 這張圖4.84MB了，所以錄影時有暫停等待爬資料的時間，並且我的操作速度很快。
 
 ## 作者想說的話
