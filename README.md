@@ -1,11 +1,8 @@
-# MyselfAnimeDownloader 版本ver 1.0.5
+# MyselfAnimeDownloader 版本ver 1.1.0
 ## 預覽
 圖(最後更新2020/12/05)。<br><br>
 ![image](https://i.imgur.com/WYDIX0m.gif)<br>
 GitHub 支援Gif 只到5MB 這張圖4.84MB了，所以錄影時有暫停等待爬資料的時間，並且我的操作速度很快。
-
-## 更新日誌
-[查看更新日誌](https://github.com/hgalytoby/MyselfAnimeDownloader/blob/master/UpdateLog.md)
 
 ## 作者想說的話
 - 1.此專案依賴 [Myself 動漫網](https://myself-bbs.com/portal.php)，如果網站關閉此程式就無法使用!
@@ -34,6 +31,8 @@ Mac 使用者解壓縮後，請將 MyselfAnime.app 放到 應用程式的資料�
 <br><br>
  一定要放到這裡！不然會無法開啟程式唷！
 
+## 更新日誌
+[查看更新日誌](https://github.com/hgalytoby/MyselfAnimeDownloader/blob/master/UpdateLog.md)	
 ## 運行
 安裝 requirements.txt (就是安裝此程式依賴的套件)<br>
 `
@@ -41,6 +40,8 @@ pip install -r requirements.txt
 `
 <br>
 執行 main.py <br>
+
+
 
 ## 尚未解決功能
 1.暫停下載。<br>
