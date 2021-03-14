@@ -1,9 +1,6 @@
-import json
-import sys
-
 from UI.myself_close_ui import Ui_MyselfClose
 
-from PyQt5 import QtWidgets, QtGui, Qt
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 from myself_thread import ProcessExit
 
@@ -12,7 +9,7 @@ class MyselfClose(QtWidgets.QWidget, Ui_MyselfClose):
     def __init__(self, anime):
         super(MyselfClose, self).__init__()
         self.setupUi(self)
-        self.setWindowFlags(Qt.Qt.CustomizeWindowHint)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setFixedSize(self.width(), self.height())
         self.pixmap = QtGui.QPixmap("./image/logo.png")
         self.logo_label.setPixmap(self.pixmap)

@@ -28,7 +28,7 @@ from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingCon
     CheckVersion
 from myself_tools import badname, basic_config, kill_pid, load_localhost_end_anime_data, get_all_page
 
-VERSION = '1.0.5'
+VERSION = '1.1.0'
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 #     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -37,7 +37,7 @@ VERSION = '1.0.5'
 #     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 # QT_AUTO_SCREEN_SCALE_FACTOR = 2
-QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
+# QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
 
 
 class Anime(QtWidgets.QMainWindow, Ui_Anime):
