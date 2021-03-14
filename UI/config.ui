@@ -242,7 +242,7 @@
      </font>
     </property>
     <property name="toolTip">
-     <string>1次8個連接</string>
+     <string>1次6個連接</string>
     </property>
     <property name="text">
      <string>高速</string>
@@ -263,7 +263,7 @@
      </font>
     </property>
     <property name="toolTip">
-     <string>1次16個連接</string>
+     <string>1次10個連接</string>
     </property>
     <property name="text">
      <string>星爆</string>
@@ -347,9 +347,10 @@ background: transparent;
 color: #0055ff;
 }
 QPushButton:pressed{
-background: transparent;
-color: #0055ff;
-}</string>
+      background: transparent;
+      color: #0055ff;
+      }
+     </string>
     </property>
     <property name="text">
      <string>注意事項</string>
@@ -357,6 +358,18 @@ color: #0055ff;
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>download_path_lineEdit</tabstop>
+  <tabstop>browse_pushButton</tabstop>
+  <tabstop>slow_radioButton</tabstop>
+  <tabstop>genera_radioButton</tabstop>
+  <tabstop>high_radioButton</tabstop>
+  <tabstop>starburst_radioButton</tabstop>
+  <tabstop>simultaneous_download_lineEdit</tabstop>
+  <tabstop>note_pushButton</tabstop>
+  <tabstop>save_pushButton</tabstop>
+  <tabstop>cancel_pushButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

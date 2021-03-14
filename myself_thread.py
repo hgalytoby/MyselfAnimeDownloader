@@ -155,6 +155,7 @@ class DownloadVideo(QtCore.QThread):
         self.stop = False
         self.exit = False
         self.remove_file = False
+        self.process_end = True
 
     def write_undone(self, index, m3u8_count):
         if self.data['video_ts'] == m3u8_count - 1 or self.data['video_ts'] == m3u8_count:
@@ -168,9 +169,8 @@ class DownloadVideo(QtCore.QThread):
             'schedule': schedule,
             'status': status
         })
-        if not self.exit:
-            json.dump(self.data, open(f'./Log/undone/{self.data["total_name"]}.json', 'w', encoding='utf-8'),
-                      indent=2)
+        json.dump(self.data, open(f'./Log/undone/{self.data["total_name"]}.json', 'w', encoding='utf-8'),
+                  indent=2)
 
     def del_file(self):
         try:
@@ -249,10 +249,7 @@ class DownloadVideo(QtCore.QThread):
             for i in range(self.data['video_ts'], m3u8_count):
                 executor.submit(self.video, i, res, host, m3u8_count)
             while True:
-                if self.data['video_ts'] == m3u8_count:
-                    self.anime.now_download_value -= 1
-                    break
-                if self.exit:
+                if self.data['video_ts'] == m3u8_count or self.exit:
                     break
                 self.data.update({
                     'schedule': int(self.data['video_ts'] / (m3u8_count - 1) * 100),
@@ -261,13 +258,14 @@ class DownloadVideo(QtCore.QThread):
                 self.download_video.emit(self.data)
                 time.sleep(1)
             self.download_video.emit(self.data)
-        try:
-            self.anime.download_queue.remove(self.data["total_name"])
-        except BaseException as e:
-            print(f'抓刪除時 queue 有錯誤 {e}')
+            self.anime.now_download_value -= 1
+            try:
+                if self.data['video_ts'] == m3u8_count:
+                    self.anime.download_queue.remove(self.data["total_name"])
+            except BaseException as e:
+                print(f'抓刪除時 queue 有錯誤 {e}')
         json.dump({'queue': self.anime.download_queue}, open('./Log/DownloadQueue.json', 'w', encoding='utf-8'),
                   indent=2)
-        self.del_undone_json()
         self.quit()
         self.wait()
 
@@ -281,17 +279,21 @@ class DownloadVideo(QtCore.QThread):
         while True:
             try:
                 if not self.stop and not self.exit:
-                    data = download_request(url=url, stream=True, timeout=3)
-                    if data:
+                    data = download_request(url=url, stream=False, timeout=3)
+                    if data.ok:
                         while True:
-                            if self.data['video_ts'] == i:
+                            if self.data['video_ts'] == i and self.process_end:
+                                self.process_end = False
                                 with open(f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4', 'ab') as v:
                                     self.write_undone(index=i, m3u8_count=m3u8_count)
-                                    shutil.copyfileobj(data.raw, v)
+                                    v.write(data.content)
+                                    v.flush()
+                                    # shutil.copyfileobj(data.raw, v)
                                 self.data['video_ts'] += 1
                                 self.write_undone(index=self.data['video_ts'], m3u8_count=m3u8_count)
                                 if self.remove_file:
                                     self.del_file()
+                                self.process_end = True
                                 ok = True
                                 data.close()
                                 del data
@@ -300,7 +302,7 @@ class DownloadVideo(QtCore.QThread):
                                 data.close()
                                 del data
                                 break
-                            time.sleep(1)
+                            time.sleep(0.1)
                     if ok:
                         break
                 if self.exit:
@@ -313,10 +315,16 @@ class DownloadVideo(QtCore.QThread):
                 else:
                     host_value += 1
                 url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
-                print(e, url)
+                # print(e, url)
                 time.sleep(1)
             except BaseException as error:
-                print('基礎錯誤', error)
+                if host_value - 1 > len(host):
+                    host_value = 0
+                else:
+                    host_value += 1
+                url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
+                # print(error, url)
+                # print('不明的錯: 暫時先換分流照做')
 
 
 class EndAnimeData(QtCore.QThread):
@@ -425,3 +433,26 @@ class MyselfLogin(QtCore.QThread):
     def run(self):
         result = myself_login(self.login_data)
         self.myself_login_signal.emit(result)
+
+
+class ProcessExit(QtCore.QThread):
+    """
+    """
+    process_exit_signal = QtCore.pyqtSignal(bool)
+
+    def __init__(self, anime):
+        super(ProcessExit, self).__init__()
+        self.anime = anime
+
+    def run(self):
+        for k, v in self.anime.download_anime_Thread.items():
+            if not v['over']:
+                v['thread'].exit = True
+        for k, v in self.anime.download_anime_Thread.items():
+            if not v['over']:
+                while True:
+                    if v['thread'].process_end:
+                        break
+                    time.sleep(0.5)
+        time.sleep(1)
+        self.process_exit_signal.emit(True)

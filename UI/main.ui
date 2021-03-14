@@ -368,6 +368,12 @@
           <height>16777215</height>
          </size>
         </property>
+        <property name="sizeIncrement">
+         <size>
+          <width>250</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
          <string>anime_image</string>
         </property>
@@ -383,7 +389,7 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>16777215</width>
+          <width>238</width>
           <height>16777215</height>
          </size>
         </property>
@@ -402,7 +408,7 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>16777215</width>
+          <width>238</width>
           <height>16777215</height>
          </size>
         </property>
@@ -421,12 +427,15 @@
         </property>
         <property name="maximumSize">
          <size>
-          <width>16777215</width>
+          <width>238</width>
           <height>16777215</height>
          </size>
         </property>
         <property name="text">
          <string>TextLabel</string>
+        </property>
+        <property name="openExternalLinks">
+         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -434,7 +443,7 @@
        <widget class="QLabel" name="premiere_label">
         <property name="maximumSize">
          <size>
-          <width>16777215</width>
+          <width>238</width>
           <height>16777215</height>
          </size>
         </property>
@@ -447,7 +456,7 @@
        <widget class="QLabel" name="remarks_label">
         <property name="maximumSize">
          <size>
-          <width>16777215</width>
+          <width>238</width>
           <height>16777215</height>
          </size>
         </property>
@@ -460,7 +469,7 @@
        <widget class="QLabel" name="author_label">
         <property name="maximumSize">
          <size>
-          <width>16777215</width>
+          <width>238</width>
           <height>16777215</height>
          </size>
         </property>
@@ -704,34 +713,13 @@ gridline-color:#000000
      <attribute name="title">
       <string>完結動漫</string>
      </attribute>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="1" column="0" colspan="2">
-       <widget class="QScrollArea" name="end_anime_scrollArea">
-        <property name="frameShape">
-         <enum>QFrame::NoFrame</enum>
-        </property>
-        <property name="widgetResizable">
-         <bool>true</bool>
-        </property>
-        <widget class="QWidget" name="end_anime_scrollAreaWidgetContents">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>0</y>
-           <width>983</width>
-           <height>317</height>
-          </rect>
-         </property>
-         <layout class="QGridLayout" name="end_anime_gridLayout"/>
-        </widget>
-       </widget>
-      </item>
-      <item row="0" column="0" colspan="2">
+     <layout class="QVBoxLayout" name="end_anime_page_verticalLayout" stretch="1,8,1">
+      <item>
        <widget class="QWidget" name="end_anime_widget" native="true">
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>40</height>
+          <height>0</height>
          </size>
         </property>
         <widget class="QLineEdit" name="end_anime_lineEdit">
@@ -791,6 +779,84 @@ gridline-color:#000000
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
         </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QScrollArea" name="end_anime_scrollArea">
+        <property name="frameShape">
+         <enum>QFrame::NoFrame</enum>
+        </property>
+        <property name="widgetResizable">
+         <bool>true</bool>
+        </property>
+        <widget class="QWidget" name="end_anime_scrollAreaWidgetContents">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>983</width>
+           <height>281</height>
+          </rect>
+         </property>
+         <layout class="QGridLayout" name="end_anime_gridLayout"/>
+        </widget>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="page_widget" native="true">
+        <layout class="QHBoxLayout" name="page_widget_horizontalLayout" stretch="2,6,2">
+         <item>
+          <widget class="QLabel" name="page_temp1_label">
+           <property name="minimumSize">
+            <size>
+             <width>250</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="page_button_horizontalLayout">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="sizeConstraint">
+            <enum>QLayout::SetDefaultConstraint</enum>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLabel" name="page_temp3_label">
+           <property name="minimumSize">
+            <size>
+             <width>250</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
       </item>
      </layout>
@@ -870,9 +936,9 @@ border:none}</string>
    <widget class="QLabel" name="load_week_label">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>195</y>
-      <width>221</width>
+      <x>300</x>
+      <y>220</y>
+      <width>400</width>
       <height>51</height>
      </rect>
     </property>
@@ -894,9 +960,9 @@ border:none}</string>
     </property>
     <property name="geometry">
      <rect>
-      <x>350</x>
-      <y>195</y>
-      <width>221</width>
+      <x>300</x>
+      <y>220</y>
+      <width>400</width>
       <height>51</height>
      </rect>
     </property>
@@ -959,10 +1025,10 @@ background-color: rgba(255, 255, 240, 100)
    <widget class="QLabel" name="load_end_anime_label">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>190</y>
-      <width>171</width>
-      <height>61</height>
+      <x>300</x>
+      <y>220</y>
+      <width>400</width>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -972,6 +1038,9 @@ background-color: rgba(255, 255, 240, 100)
     </property>
     <property name="text">
      <string>完結動漫讀取中</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
    <widget class="QPushButton" name="login_pushButton">

@@ -37,18 +37,21 @@ def basic_config():
             if i not in data:
                 data[i] = config[i]
         json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
-
+    download_queue = list()
+    load_download_end_anime = list()
     if not os.path.isdir('Log'):
         os.mkdir('Log')
     if not os.path.isdir('./Log/undone'):
         os.mkdir('./Log/undone')
     if not os.path.isdir('./Log/history'):
         os.mkdir('./Log/history')
+    for json_name in os.listdir('./Log/undone'):
+        file = json.load(open(f'./Log/undone/{json_name}', 'r', encoding='utf-8'))
+        if file['schedule'] == 100:
+            load_download_end_anime.append(file['total_name'])
     if os.path.isfile('./Log/DownloadQueue.json'):
-        download_queue = json.load(open('./Log/DownloadQueue.json', 'r', encoding='utf-8'))['queue']
-    else:
-        download_queue = list()
-    return data['path'], data['simultaneous'], data['speed']['value'], download_queue
+        download_queue += json.load(open('./Log/DownloadQueue.json', 'r', encoding='utf-8'))['queue']
+    return data['path'], data['simultaneous'], data['speed']['value'], download_queue, load_download_end_anime
 
 
 def load_localhost_end_anime_data():
@@ -144,7 +147,10 @@ def get_anime_data(anime_url):
     data.update({'total': total})
     for i in html.find_all('div', class_='info_info'):
         for j, m in enumerate(i.find_all('li')):
-            data.update({j: m.text})
+            text = m.text
+            if j == 4:
+                text = text.split('官方網站: ')[1]
+            data.update({j: text})
     for i in html.find_all('div', class_='info_introduction'):
         for j in i.find_all('p'):
             data.update({'info': j.text})
@@ -308,6 +314,13 @@ def myself_login(login_data):
     headers.update({
         'cookie': f'UETw_aa10_saltkey={res.cookies["UETw_aa10_saltkey"]}; UETw_aa10_auth={res.cookies["UETw_aa10_auth"]};'})
     return True
+
+
+def get_all_page(data):
+    all_page, _ = divmod(len(data), 8)
+    if _ != 0:
+        all_page += 1
+    return all_page
 
 
 if __name__ == '__main__':

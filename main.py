@@ -10,13 +10,15 @@ import webbrowser
 
 from AboutUI import About
 from ConfigUI import Config
+from MyselfClose import MyselfClose
 from TrayIcon import TrayIcon
 from UI.main_ui import Ui_Anime
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from event.CheckUrl import check_url
 from event.ClickOnMainTableWidget import click_on_tablewidget
-from event.EndAnime import search_end_anime, update_end_anime_mission, update_end_anime
+from event.EndAnime import search_end_anime, update_end_anime_mission, update_end_anime, create_end_anime_frame, \
+    create_end_anime_page
 from event.History import create_history_tablewidget_item
 from event.InitParameter import init_parameter
 from event.Login import login_event
@@ -24,9 +26,18 @@ from event.PushButtonClickedConnect import pushbutton_clicked_connect
 from event.Version import check_version_task
 from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingConfigStatus, DownloadVideo, EndAnimeData, \
     CheckVersion
-from myself_tools import badname, basic_config, kill_pid, load_localhost_end_anime_data
+from myself_tools import badname, basic_config, kill_pid, load_localhost_end_anime_data, get_all_page
 
 VERSION = '1.0.5'
+
+# if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
+#     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+#
+# if hasattr(QtCore.Qt, 'AA_UseHighDpiPixmaps'):
+#     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
+# QT_AUTO_SCREEN_SCALE_FACTOR = 2
+QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
 
 
 class Anime(QtWidgets.QMainWindow, Ui_Anime):
@@ -34,7 +45,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         super(Anime, self).__init__()
         self.setupUi(self)
         self.init_parameter(pid, os_system)
-        self.save_path, self.simultaneously_value, self.speed_value, self.download_queue = basic_config()
+        self.save_path, self.simultaneously_value, self.speed_value, self.download_queue, self.download_end_anime = basic_config()
         self.load_week_data()
         self.anime_page_Visible()
         self.load_anime_label.setVisible(False)
@@ -45,6 +56,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.load_history()
         self.loading_end_anime()
         self.localhost_end_anime_dict, self.localhost_end_anime_list = self.load_localhost_end_anime_data()
+        self.create_end_anime_frame_and_page()
         self.pushbutton_clicked_connect()
         self.check_version()
 
@@ -72,6 +84,11 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.end_anime_last_update_date.setText(f'最後更新日期: {data["date"]}')
             return data['data_dict'], data['data_list']
         return data['data_dict'], data['data_list']
+
+    def create_end_anime_frame_and_page(self):
+        create_end_anime_frame(self=self, search_data=self.localhost_end_anime_list, page=0, limit=8)
+        all_page = get_all_page(self.localhost_end_anime_list)
+        create_end_anime_page(self=self, page=0, all_page=all_page)
 
     def check_version(self):
         """
@@ -296,11 +313,12 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                   QtWidgets.QMessageBox.No)
         if msg == QtWidgets.QMessageBox.Ok:
             for i in data:
-                if data[i]["thread"] in self.download_queue[:self.simultaneously_value]:
-                    self.now_download_value -= 1
+                if data[i]["thread"] in self.download_queue:
+                    self.download_queue.remove(data[i]["thread"])
                 if os.path.isfile(f'./Log/undone/{data[i]["thread"]}.json'):
                     os.remove(f'./Log/undone/{data[i]["thread"]}.json')
-                self.download_anime_Thread[data[i]["thread"]]['thread'].exit = True
+                if self.download_anime_Thread[data[i]["thread"]]['thread']:
+                    self.download_anime_Thread[data[i]["thread"]]['thread'].exit = True
                 if remove_file:
                     if not self.download_anime_Thread[data[i]["thread"]]['over']:
                         self.download_anime_Thread[data[i]["thread"]]['thread'].remove_file = True
@@ -330,12 +348,25 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         關閉主視窗其餘子視窗也會關閉。
         """
-        QtWidgets.QApplication.closeAllWindows()
+        reply = QtWidgets.QMessageBox.question(self,
+                                               '關閉',
+                                               "是否離開程式？",
+                                               QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                               QtWidgets.QMessageBox.No)
+        if reply == QtWidgets.QMessageBox.Yes:
+            self.hide()
+            self.myself_close = MyselfClose(anime=self)
+            self.myself_close.show()
+        else:
+            event.ignore()
 
     def load_download_menu(self):
         """
         讀取下載動漫任務列表並在下載清單創建Item。
         """
+        for anime in self.download_end_anime:
+            data = json.load(open(f'./Log/undone/{anime}.json', 'r', encoding='utf-8'))
+            self.create_tablewidgetitem(data=data, old=True)
         for queue in self.download_queue:
             data = json.load(open(f'./Log/undone/{queue}.json', 'r', encoding='utf-8'))
             self.create_tablewidgetitem(data=data, old=True)
@@ -579,8 +610,14 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.premiere_label.setText(signal[1])
             self.total_set_label.setText(signal[2])
             self.author_label.setText(signal[3])
-            self.web_label.setText(signal[4])
+            self.web_label.setText(f"官方網站: <a href=\"{signal[4]}\">{signal[4]}</a>")
             self.remarks_label.setText(signal[5])
+            self.type_label.setToolTip(signal[0])
+            self.premiere_label.setToolTip(signal[1])
+            self.total_set_label.setToolTip(signal[2])
+            self.author_label.setToolTip(signal[3])
+            self.web_label.setToolTip(signal[4])
+            self.remarks_label.setToolTip(signal[5])
             self.introduction_textBrowser.setHtml(
                 '<p style=\" color: #000000;\"font-size:16pt;>劇情介紹</p>\n' + signal['info'])
             for i in range(self.story_list_scrollAreaWidgetContents_Layout.count()):
@@ -592,6 +629,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             for i, m in enumerate(signal['total']):
                 data = json.dumps(
                     {'name': badname(signal['name']), 'num': badname(m), 'url': signal['total'][m],
+                     # name_num 的參數有兩個 "全形空白" 是因為要跟下載清單頁面的右鍵選單功能配合。
                      'name_num': f"{badname(signal['name'])}　　{badname(m)}", 'schedule': 0,
                      'status': '準備中', 'total_name': badname(signal['name']) + badname(m),
                      'video_ts': 0, 'time': None, 'home': signal['home']})
@@ -717,9 +755,22 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def update_end_anime_mission(self, signal):
         update_end_anime_mission(self=self, signal=signal)
+        self.create_end_anime_frame_and_page()
 
     def search_end_anime(self):
-        search_end_anime(self=self)
+        search_data = search_end_anime(self=self)
+        create_end_anime_frame(self=self, search_data=search_data, page=0, limit=8)
+        all_page = get_all_page(data=search_data)
+        create_end_anime_page(self=self, page=0, all_page=all_page)
+
+    def page_event(self):
+        sender = self.sender()
+        pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
+        page = int(pushButton.objectName())
+        search_data = search_end_anime(self=self)
+        create_end_anime_frame(self=self, search_data=search_data, page=page, limit=8)
+        all_page = get_all_page(data=search_data)
+        create_end_anime_page(self=self, page=page, all_page=all_page)
 
     def login_event(self):
         login_event(self=self)

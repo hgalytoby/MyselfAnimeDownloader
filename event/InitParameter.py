@@ -16,6 +16,7 @@ def init_parameter(self, pid, os_system):
     self.week_dict = dict()
     self.preview_dict = dict()
     self.end_qt_object = dict()
+    self.page_button_dict = dict()
     self.week_layout_dict = dict()
     self.story_checkbox_dict = dict()
     self.download_anime_Thread = dict()
