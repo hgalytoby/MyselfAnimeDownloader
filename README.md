@@ -6,10 +6,13 @@ GitHub 支援 Gif 只到5MB，所以錄影時有暫停等待爬資料的時間�
 
 ## 更新日誌
 [查看更新日誌](https://github.com/hgalytoby/MyselfAnimeDownloader/blob/master/UpdateLog.md)	
+
 ## 運行
 安裝 requirements.txt (就是安裝此程式依賴的套件)<br>
-`
-pip install -r requirements.txt
+
+`pip install -r requirements.txt`<br>
+
+執行 `main.py` <br>
 
 ## 作者想說的話
 - 1.此專案依賴 [Myself 動漫網](https://myself-bbs.com/portal.php)，如果網站關閉此程式就無法使用!
@@ -36,10 +39,8 @@ Mac 使用者解壓縮後，請將 MyselfAnime.app 放到 應用程式的資料�
 <br>
 ![image](https://i.imgur.com/0hPR31d.png)
 <br><br>
- 一定要放到這裡！不然會無法開啟程式唷！
+一定要放到這裡！不然會無法開啟程式唷！
 <br>
-執行 main.py <br>
-
 
 
 ## 尚未解決功能
