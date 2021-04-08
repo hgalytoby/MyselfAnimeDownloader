@@ -2,9 +2,11 @@ altgraph==0.17
 beautifulsoup4==4.9.1
 certifi==2020.6.20
 chardet==3.0.4
+Cython==0.29.21
 future==0.18.2
 idna==2.10
-lxml==4.6.2
+importlib-metadata==3.4.0
+lxml==4.6.3
 macholib==1.14
 pefile==2019.4.18
 psutil==5.7.2
@@ -13,8 +15,10 @@ pyinstaller-hooks-contrib==2020.7
 PyQt5==5.15.2
 PyQt5-sip==12.8.0
 PyQt5-stubs==5.14.2.2
-# PyQtWebEngine==5.15.0
+PyQtWebEngine==5.15.0
 pywin32-ctypes==0.2.0
 requests==2.24.0
 soupsieve==2.0.1
+typing-extensions==3.7.4.3
 urllib3==1.25.10
+zipp==3.4.0
