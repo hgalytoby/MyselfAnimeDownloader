@@ -104,7 +104,6 @@ class Ui_Config(object):
         font = QtGui.QFont()
         font.setPointSize(12)
         self.simultaneous_download_lineEdit.setFont(font)
-        self.simultaneous_download_lineEdit.setText("")
         self.simultaneous_download_lineEdit.setAlignment(QtCore.Qt.AlignCenter)
         self.simultaneous_download_lineEdit.setObjectName("simultaneous_download_lineEdit")
         self.note_pushButton = QtWidgets.QPushButton(self.download_groupBox)
@@ -115,20 +114,34 @@ class Ui_Config(object):
         self.note_pushButton.setFont(font)
         self.note_pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.note_pushButton.setStyleSheet("QPushButton{\n"
-"background: transparent;\n"
-"border-radius:6px;\n"
-"color: #0055ff;\n"
-"text-decoration: underline;\n"
-"}\n"
-"QPushButton:hover {\n"
-"background: transparent;\n"
+                                           "background: transparent;\n"
+                                           "border-radius:6px;\n"
+                                           "color: #0055ff;\n"
+                                           "text-decoration: underline;\n"
+                                           "}\n"
+                                           "QPushButton:hover {\n"
+                                           "background: transparent;\n"
                                            "color: #0055ff;\n"
                                            "}\n"
                                            "QPushButton:pressed{\n"
-                                           "background: transparent;\n"
-                                           "color: #0055ff;\n"
-                                           "}")
+                                           "      background: transparent;\n"
+                                           "      color: #0055ff;\n"
+                                           "      }\n"
+                                           "     ")
         self.note_pushButton.setObjectName("note_pushButton")
+        self.re_download_Checkbox = QtWidgets.QCheckBox(self.download_groupBox)
+        self.re_download_Checkbox.setGeometry(QtCore.QRect(20, 60, 281, 16))
+        self.re_download_Checkbox.setChecked(True)
+        self.re_download_Checkbox.setTristate(False)
+        self.re_download_Checkbox.setObjectName("re_download_Checkbox")
+        self.re_download_lineEdit = QtWidgets.QLineEdit(self.download_groupBox)
+        self.re_download_lineEdit.setGeometry(QtCore.QRect(300, 58, 61, 20))
+        self.re_download_lineEdit.setAlignment(QtCore.Qt.AlignCenter)
+        self.re_download_lineEdit.setObjectName("re_download_lineEdit")
+        self.label = QtWidgets.QLabel(self.download_groupBox)
+        self.label.setGeometry(QtCore.QRect(360, 60, 47, 16))
+        self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setObjectName("label")
 
         self.retranslateUi(Config)
         QtCore.QMetaObject.connectSlotsByName(Config)
@@ -168,5 +181,9 @@ class Ui_Config(object):
         self.simultaneous_download_label.setToolTip(_translate("Config", "同時下載的數量"))
         self.simultaneous_download_label.setText(_translate("Config", "同時下載的數量:"))
         self.simultaneous_download_lineEdit.setToolTip(_translate("Config", "輸入數字"))
+        self.simultaneous_download_lineEdit.setText(_translate("Config", "5"))
         self.note_pushButton.setToolTip(_translate("Config", "重要事項"))
         self.note_pushButton.setText(_translate("Config", "注意事項"))
+        self.re_download_Checkbox.setText(_translate("Config", "如有下載失敗，重新嘗試下載每隔"))
+        self.re_download_lineEdit.setText(_translate("Config", "2"))
+        self.label.setText(_translate("Config", "分"))

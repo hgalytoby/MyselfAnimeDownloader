@@ -20,6 +20,7 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         self.save_pushButton.clicked.connect(self.save_config)
         self.cancel_pushButton.clicked.connect(self.close)
         self.simultaneous_download_lineEdit.setValidator(QtGui.QIntValidator())
+        self.re_download_lineEdit.setValidator(QtGui.QIntValidator())
         self.note_pushButton.clicked.connect(self.note_message_box)
         self.speed_radioButton_dict = {self.slow_radioButton: {'type': 'slow', 'value': 1},
                                        self.genera_radioButton: {'type': 'genera', 'value': 3},
@@ -49,24 +50,40 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         else:
             self.slow_radioButton.setChecked(True)
         self.simultaneous_download_lineEdit.setText(str(config['simultaneous']))
+        self.re_download_lineEdit.setText(str(config['re_download']['min']))
+        if not config['re_download']['status']:
+            self.re_download_Checkbox.setChecked(False)
 
     def save_config(self):
         """
         儲存按鈕事件。
         """
         path = self.download_path_lineEdit.text()
-        simultaneous = self.simultaneous_download_lineEdit.text()
-        for i in self.speed_radioButton_dict:
-            if i.isChecked():
-                speed = self.speed_radioButton_dict[i]
-                break
-        data = {'path': path, 'speed': speed, 'simultaneous': int(simultaneous)}
-        json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
-        self.anime.save_path = data['path']
-        self.anime.simultaneously_value = data['simultaneous']
-        self.anime.speed_value = data['speed']['value']
-        QtWidgets.QMessageBox().information(self, '儲存', "<font size='6'>資料已成功地儲存。</font>", QtWidgets.QMessageBox.Ok)
-        self.close()
+        simultaneous = int(self.simultaneous_download_lineEdit.text())
+        re_time = int(self.re_download_lineEdit.text())
+        if 0 > simultaneous:
+            QtWidgets.QMessageBox().warning(self, '愛調皮', '調皮!輸入正整數哦!', QtWidgets.QMessageBox.Ok)
+            self.simultaneous_download_lineEdit.setText('5')
+        elif 0 > re_time:
+            QtWidgets.QMessageBox().warning(self, '愛調皮', '調皮!輸入正整數哦!', QtWidgets.QMessageBox.Ok)
+            self.re_download_lineEdit.setText('2')
+        else:
+            for i in self.speed_radioButton_dict:
+                if i.isChecked():
+                    speed = self.speed_radioButton_dict[i]
+                    break
+            data = {'path': path, 'speed': speed, 'simultaneous': simultaneous,
+                    're_download': {'status': True, 'min': re_time}}
+            if not self.re_download_Checkbox.isChecked():
+                data['re_download']['status'] = False
+            json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
+            self.anime.save_path = data['path']
+            self.anime.simultaneously_value = data['simultaneous']
+            self.anime.speed_value = data['speed']['value']
+            self.anime.re_download_status = data['re_download']['status']
+            self.anime.re_download_min = data['re_download']['min']
+            QtWidgets.QMessageBox().information(self, '儲存', "<font size='6'>資料已成功地儲存。</font>", QtWidgets.QMessageBox.Ok)
+            self.close()
 
     def download_path(self):
         """

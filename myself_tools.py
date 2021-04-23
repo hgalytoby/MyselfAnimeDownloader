@@ -27,15 +27,16 @@ def basic_config():
     """
     每次打開會判斷有沒有 config.json。
     """
-    config = {'path': os.getcwd(), 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5}
+    config = {'path': os.getcwd(), 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5,
+              're_download': {'status': True, 'min': 2}}
     if not os.path.isfile('config.json'):
         data = config
         json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
     else:
         data = json.load(open('config.json', 'r', encoding='utf-8'))
-        for i in config:
-            if i not in data:
-                data[i] = config[i]
+        for k, v in config.items():
+            if k not in data:
+                data[k] = v
         json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
     download_queue = list()
     load_download_end_anime = list()
@@ -51,7 +52,8 @@ def basic_config():
             load_download_end_anime.append(file['total_name'])
     if os.path.isfile('./Log/DownloadQueue.json'):
         download_queue += json.load(open('./Log/DownloadQueue.json', 'r', encoding='utf-8'))['queue']
-    return data['path'], data['simultaneous'], data['speed']['value'], download_queue, load_download_end_anime
+    return data['path'], data['simultaneous'], data['speed']['value'], data['re_download']['status'], \
+           data['re_download']['min'], download_queue, load_download_end_anime
 
 
 def load_localhost_end_anime_data():

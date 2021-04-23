@@ -156,6 +156,9 @@ class DownloadVideo(QtCore.QThread):
         self.exit = False
         self.remove_file = False
         self.process_end = True
+        self.requests_error_count = 0
+        self.re_download_count = 66
+        self.ts_time = time.time()
 
     def write_undone(self, index, m3u8_count):
         if self.data['video_ts'] == m3u8_count - 1 or self.data['video_ts'] == m3u8_count:
@@ -251,6 +254,19 @@ class DownloadVideo(QtCore.QThread):
             while True:
                 if self.data['video_ts'] == m3u8_count or self.exit:
                     break
+                if self.requests_error_count > self.re_download_count:
+                    self.data.update({
+                        'schedule': int(self.data['video_ts'] / (m3u8_count - 1) * 100),
+                        'status': '下載失敗',
+                    })
+                    self.anime.re_download_dict.update({
+                        self.data['total_name']:
+                            {
+                                'time': time.time(),
+                                'data': self.data,
+                            },
+                    })
+                    break
                 self.data.update({
                     'schedule': int(self.data['video_ts'] / (m3u8_count - 1) * 100),
                     'status': '下載中',
@@ -278,7 +294,7 @@ class DownloadVideo(QtCore.QThread):
         ok = False
         while True:
             try:
-                if not self.stop and not self.exit:
+                if not self.stop and not self.exit and self.re_download_count > self.requests_error_count:
                     data = download_request(url=url, stream=False, timeout=3)
                     if data.ok:
                         while True:
@@ -298,18 +314,19 @@ class DownloadVideo(QtCore.QThread):
                                 data.close()
                                 del data
                                 break
-                            elif self.stop or self.exit:
+                            elif self.stop or self.exit or self.requests_error_count > self.re_download_count:
                                 data.close()
                                 del data
                                 break
                             time.sleep(0.1)
                     if ok:
                         break
-                if self.exit:
+                if self.exit or self.requests_error_count > self.re_download_count:
                     break
                 time.sleep(3)
             except (requests_RequestException, requests_ConnectionError,
                     requests_ChunkedEncodingError, ConnectionResetError) as e:
+                self.requests_error_count += 1
                 if host_value - 1 > len(host):
                     host_value = 0
                 else:
@@ -318,13 +335,16 @@ class DownloadVideo(QtCore.QThread):
                 # print(e, url)
                 time.sleep(1)
             except BaseException as error:
+                self.requests_error_count += 1
                 if host_value - 1 > len(host):
                     host_value = 0
                 else:
                     host_value += 1
                 url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
+                print(error)
                 # print(error, url)
                 # print('不明的錯: 暫時先換分流照做')
+        self.ts_time = time.time()
 
 
 class EndAnimeData(QtCore.QThread):
@@ -410,6 +430,7 @@ class EndAnimeData(QtCore.QThread):
 
 class LoginInit(QtCore.QThread):
     """
+    抓登入會員時需要的資料。
     """
     login_init_signal = QtCore.pyqtSignal(dict)
 
@@ -423,6 +444,7 @@ class LoginInit(QtCore.QThread):
 
 class MyselfLogin(QtCore.QThread):
     """
+    登入會員。
     """
     myself_login_signal = QtCore.pyqtSignal(bool)
 
@@ -437,6 +459,7 @@ class MyselfLogin(QtCore.QThread):
 
 class ProcessExit(QtCore.QThread):
     """
+    結束程式時，等待所有下載動漫的 Thread 離開再關閉程式。
     """
     process_exit_signal = QtCore.pyqtSignal(bool)
 
@@ -456,3 +479,51 @@ class ProcessExit(QtCore.QThread):
                     time.sleep(0.5)
         time.sleep(1)
         self.process_exit_signal.emit(True)
+
+
+class CheckTsStatus(QtCore.QThread):
+    check_ts_status = QtCore.pyqtSignal(dict)
+
+    def __init__(self, anime):
+        super(CheckTsStatus, self).__init__()
+        self.anime = anime
+
+    def run(self):
+        while True:
+            for k, v in self.anime.download_anime_Thread.items():
+                if not v['over'] and time.time() - self.anime.download_anime_Thread[k][
+                    'thread'].ts_time > self.anime.re_download_min + 60:
+                    self.anime.download_anime_Thread[k]['thread'].requests_error_count += 200
+                    time.sleep(10)
+                    self.anime.re_download_dict.update({
+                        k:
+                            {
+                                'time': time.time() - 60 * (self.anime.re_download_min + 1),
+                                'data': self.anime.download_anime_Thread[k]['thread'].data,
+                            },
+                    })
+            time.sleep(1)
+
+
+class ReDownload(QtCore.QThread):
+    """
+    因失敗太多，等待一定的時間後，重新下載的動漫。
+    """
+    re_download = QtCore.pyqtSignal(dict)
+
+    def __init__(self, anime):
+        super(ReDownload, self).__init__()
+        self.anime = anime
+
+    def run(self):
+        _ = []
+        while True:
+            if self.anime.re_download_dict:
+                for k, v in self.anime.re_download_dict.items():
+                    if time.time() - v['time'] > 60 * self.anime.re_download_min:
+                        self.re_download.emit(v['data'])
+                        _.append(k)
+                for k in _:
+                    del self.anime.re_download_dict[k]
+                _.clear()
+            time.sleep(1)

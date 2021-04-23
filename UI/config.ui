@@ -308,7 +308,7 @@
      <string>輸入數字</string>
     </property>
     <property name="text">
-     <string/>
+     <string>5</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -344,9 +344,9 @@ text-decoration: underline;
 }
 QPushButton:hover {
 background: transparent;
-color: #0055ff;
-}
-QPushButton:pressed{
+      color: #0055ff;
+      }
+      QPushButton:pressed{
       background: transparent;
       color: #0055ff;
       }
@@ -354,6 +354,57 @@ QPushButton:pressed{
     </property>
     <property name="text">
      <string>注意事項</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="re_download_Checkbox">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>60</y>
+      <width>281</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>如有下載失敗，重新嘗試下載每隔</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+    <property name="tristate">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="re_download_lineEdit">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>58</y>
+      <width>61</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>2</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>360</x>
+      <y>60</y>
+      <width>47</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>分</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>

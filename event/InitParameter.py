@@ -2,6 +2,8 @@ import os
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
+from myself_tools import basic_config
+
 
 def init_parameter(self, pid, os_system):
     self.now_download_value = 0
@@ -18,12 +20,14 @@ def init_parameter(self, pid, os_system):
     self.end_qt_object = dict()
     self.page_button_dict = dict()
     self.week_layout_dict = dict()
+    self.re_download_dict = dict()
     self.story_checkbox_dict = dict()
     self.download_anime_Thread = dict()
     self.history_tableWidget_dict = dict()
     self.download_progressBar_dict = dict()
     self.download_status_label_dict = dict()
     self.tableWidgetItem_download_dict = dict()
+    self.save_path, self.simultaneously_value, self.speed_value, self.re_download_status, self.re_download_min, self.download_queue, self.download_end_anime = basic_config()
     self.week = {0: self.Monday_scrollAreaWidgetContents, 1: self.Tuesday_scrollAreaWidgetContents,
                  2: self.Wednesday_scrollAreaWidgetContents, 3: self.Thursday_scrollAreaWidgetContents,
                  4: self.Friday_scrollAreaWidgetContents, 5: self.Staurday_scrollAreaWidgetContents,

@@ -25,10 +25,10 @@ from event.Login import login_event
 from event.PushButtonClickedConnect import pushbutton_clicked_connect
 from event.Version import check_version_task
 from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingConfigStatus, DownloadVideo, EndAnimeData, \
-    CheckVersion
-from myself_tools import badname, basic_config, kill_pid, load_localhost_end_anime_data, get_all_page
+    CheckVersion, ReDownload, CheckTsStatus
+from myself_tools import badname, kill_pid, load_localhost_end_anime_data, get_all_page
 
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 #     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -45,7 +45,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         super(Anime, self).__init__()
         self.setupUi(self)
         self.init_parameter(pid, os_system)
-        self.save_path, self.simultaneously_value, self.speed_value, self.download_queue, self.download_end_anime = basic_config()
         self.load_week_data()
         self.anime_page_Visible()
         self.load_anime_label.setVisible(False)
@@ -59,6 +58,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.create_end_anime_frame_and_page()
         self.pushbutton_clicked_connect()
         self.check_version()
+        self.check_re_download()
+        self.check_ts_status()
 
     def init_parameter(self, pid, os_system):
         """
@@ -104,6 +105,30 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         :param signal: 版本訊息。
         """
         check_version_task(self=self, signal=signal)
+
+    def check_re_download(self):
+        self.check_re_download_thread = ReDownload(anime=self)
+        self.check_re_download_thread.re_download.connect(self.check_re_download_task)
+        self.check_re_download_thread.start()
+
+    def check_re_download_task(self, signal):
+        self.download_anime_Thread.update(
+            {signal['total_name']: {'thread': DownloadVideo(data=signal, anime=self),
+                                    'over': False}})
+        self.download_anime_Thread[signal['total_name']]['thread'].download_video.connect(self.download_anime_task)
+        self.download_anime_Thread[signal['total_name']]['thread'].start()
+
+    def check_ts_status(self):
+        self.check_ts_status_thread = CheckTsStatus(anime=self)
+        self.check_ts_status_thread.check_ts_status.connect(self.check_ts_status_task)
+        self.check_ts_status_thread.start()
+
+    def check_ts_status_task(self, signal):
+        self.download_anime_Thread.update(
+            {signal['total_name']: {'thread': DownloadVideo(data=signal, anime=self),
+                                    'over': False}})
+        self.download_anime_Thread[signal['total_name']]['thread'].download_video.connect(self.download_anime_task)
+        self.download_anime_Thread[signal['total_name']]['thread'].start()
 
     def history_tableWidget_on_custom_context_menu_requested(self, pos):
         """

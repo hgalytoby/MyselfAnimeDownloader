@@ -46,11 +46,11 @@ class Ui_Anime(object):
         self.anime_info_tabWidget.setFont(font)
         self.anime_info_tabWidget.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
         self.anime_info_tabWidget.setStyleSheet(
-                "QTabWidget:pane {border-top:0px solid #e8f3f9;background: transparent; }\n"
-                "      QTabWidget::tab-bar {\n"
-                "      left: 0;\n"
-                "      }\n"
-                "     ")
+            "QTabWidget:pane {border-top:0px solid #e8f3f9;background: transparent; }\n"
+            "      QTabWidget::tab-bar {\n"
+            "      left: 0;\n"
+            "      }\n"
+            "     ")
         self.anime_info_tabWidget.setObjectName("anime_info_tabWidget")
         self.week_page = QtWidgets.QWidget()
         self.week_page.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
@@ -341,7 +341,7 @@ class Ui_Anime(object):
         self.end_anime_last_update_date = QtWidgets.QLabel(self.end_anime_widget)
         self.end_anime_last_update_date.setGeometry(QtCore.QRect(230, 13, 161, 16))
         self.end_anime_last_update_date.setAlignment(
-                QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self.end_anime_last_update_date.setObjectName("end_anime_last_update_date")
         self.end_anime_page_verticalLayout.addWidget(self.end_anime_widget)
         self.end_anime_scrollArea = QtWidgets.QScrollArea(self.end_anime_page)
@@ -503,74 +503,74 @@ class Ui_Anime(object):
         QtCore.QMetaObject.connectSlotsByName(Anime)
 
     def retranslateUi(self, Anime):
-            _translate = QtCore.QCoreApplication.translate
-            Anime.setWindowTitle(_translate("Anime", "Anime Download"))
-            self.anime_info_tabWidget.setWhatsThis(_translate("Anime", "<html><head/><body><p><br/></p></body></html>"))
-            self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Monday), _translate("Anime", "一"))
-            self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Tuesday), _translate("Anime", "二"))
-            self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Wednesday), _translate("Anime", "三"))
-            self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Thursday), _translate("Anime", "四"))
-            self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Friday), _translate("Anime", "五"))
-            self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Staurday), _translate("Anime", "六"))
-            self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Sunday), _translate("Anime", "日"))
-            self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.week_page),
-                                                 _translate("Anime", "每周更新"))
-            self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.end_page),
-                                                 _translate("Anime", "完結列表"))
-            self.image_label.setText(_translate("Anime", "anime_image"))
-            self.type_label.setText(_translate("Anime", "TextLabel"))
-            self.total_set_label.setText(_translate("Anime", "TextLabel"))
-            self.web_label.setText(_translate("Anime", "TextLabel"))
-            self.premiere_label.setText(_translate("Anime", "TextLabel"))
-            self.remarks_label.setText(_translate("Anime", "TextLabel"))
-            self.author_label.setText(_translate("Anime", "TextLabel"))
-            self.story_list_label.setText(_translate("Anime", "劇情列表"))
-            self.story_list_all_pushButton.setText(_translate("Anime", "全選"))
-            self.download_pushbutton.setText(_translate("Anime", "開始下載"))
-            self.introduction_textBrowser.setHtml(_translate("Anime",
-                                                             "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-                                                             "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-                                                             "p, li { white-space: pre-wrap; }\n"
-                                                             "</style></head><body style=\" font-family:\'PMingLiU\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
-                                                             "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
-            self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.anime_page),
-                                                 _translate("Anime", "動漫資訊"))
-            self.download_page.setWhatsThis(_translate("Anime", "<html><head/><body><p>123</p></body></html>"))
-            self.download_tableWidget.setSortingEnabled(False)
-            item = self.download_tableWidget.horizontalHeaderItem(0)
-            item.setText(_translate("Anime", "名稱"))
-            item = self.download_tableWidget.horizontalHeaderItem(1)
-            item.setText(_translate("Anime", "狀態"))
-            item = self.download_tableWidget.horizontalHeaderItem(2)
-            item.setText(_translate("Anime", "進度"))
-            self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.download_page),
-                                                 _translate("Anime", "下載清單"))
-            item = self.history_tableWidget.horizontalHeaderItem(0)
-            item.setText(_translate("Anime", "名稱"))
-            item = self.history_tableWidget.horizontalHeaderItem(1)
-            item.setText(_translate("Anime", "下載時間"))
-            self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.history_page),
-                                                 _translate("Anime", "歷史紀錄"))
-            self.end_anime_lineEdit.setPlaceholderText(_translate("Anime", "請先更新"))
-            self.end_anime_pushButton.setText(_translate("Anime", "更新"))
-            self.end_anime_last_update_date.setText(_translate("Anime", "最後更新日期: 無紀錄"))
-            self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.end_anime_page),
-                                                 _translate("Anime", "完結動漫"))
-            self.customize_groupBox.setTitle(_translate("Anime", "填入您指定的動漫網址"))
-            self.customize_label.setText(_translate("Anime", "網址:"))
-            self.customize_pushButton.setText(_translate("Anime", "確定"))
-            self.load_week_label.setText(_translate("Anime", "每周動漫更新讀取中"))
-            self.load_anime_label.setText(_translate("Anime", "動漫資訊讀取中"))
-            self.left_status_label.setText(_translate("Anime", "狀態: 0 個下載中　　連接設定: 0/20"))
-            self.right_ststus_label.setText(_translate("Anime", "記憶體用量: 10.10MB / 程序: 3.50%"))
-            self.load_end_anime_label.setText(_translate("Anime", "完結動漫讀取中"))
-            self.login_pushButton.setText(_translate("Anime", "登入"))
-            self.username_label.setText(_translate("Anime", "尚未登入"))
-            self.menu.setTitle(_translate("Anime", "設定"))
-            self.menu_config.setText(_translate("Anime", "設定"))
-            self.menu_config.setStatusTip(_translate("Anime", "設定"))
-            self.menu_exit.setText(_translate("Anime", "離開"))
-            self.menu_exit.setStatusTip(_translate("Anime", "離開"))
-            self.menu_about.setText(_translate("Anime", "關於"))
-            self.menu_about.setStatusTip(_translate("Anime", "關於"))
-            self.actionf.setText(_translate("Anime", "檢查更新"))
+        _translate = QtCore.QCoreApplication.translate
+        Anime.setWindowTitle(_translate("Anime", "Anime Download"))
+        self.anime_info_tabWidget.setWhatsThis(_translate("Anime", "<html><head/><body><p><br/></p></body></html>"))
+        self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Monday), _translate("Anime", "一"))
+        self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Tuesday), _translate("Anime", "二"))
+        self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Wednesday), _translate("Anime", "三"))
+        self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Thursday), _translate("Anime", "四"))
+        self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Friday), _translate("Anime", "五"))
+        self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Staurday), _translate("Anime", "六"))
+        self.week_tabWidget.setTabText(self.week_tabWidget.indexOf(self.Sunday), _translate("Anime", "日"))
+        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.week_page),
+                                             _translate("Anime", "每周更新"))
+        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.end_page),
+                                             _translate("Anime", "完結列表"))
+        self.image_label.setText(_translate("Anime", "anime_image"))
+        self.type_label.setText(_translate("Anime", "TextLabel"))
+        self.total_set_label.setText(_translate("Anime", "TextLabel"))
+        self.web_label.setText(_translate("Anime", "TextLabel"))
+        self.premiere_label.setText(_translate("Anime", "TextLabel"))
+        self.remarks_label.setText(_translate("Anime", "TextLabel"))
+        self.author_label.setText(_translate("Anime", "TextLabel"))
+        self.story_list_label.setText(_translate("Anime", "劇情列表"))
+        self.story_list_all_pushButton.setText(_translate("Anime", "全選"))
+        self.download_pushbutton.setText(_translate("Anime", "開始下載"))
+        self.introduction_textBrowser.setHtml(_translate("Anime",
+                                                         "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                                         "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+                                                         "p, li { white-space: pre-wrap; }\n"
+                                                         "</style></head><body style=\" font-family:\'PMingLiU\'; font-size:9pt; font-weight:400; font-style:normal;\">\n"
+                                                         "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.anime_page),
+                                             _translate("Anime", "動漫資訊"))
+        self.download_page.setWhatsThis(_translate("Anime", "<html><head/><body><p>123</p></body></html>"))
+        self.download_tableWidget.setSortingEnabled(False)
+        item = self.download_tableWidget.horizontalHeaderItem(0)
+        item.setText(_translate("Anime", "名稱"))
+        item = self.download_tableWidget.horizontalHeaderItem(1)
+        item.setText(_translate("Anime", "狀態"))
+        item = self.download_tableWidget.horizontalHeaderItem(2)
+        item.setText(_translate("Anime", "進度"))
+        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.download_page),
+                                             _translate("Anime", "下載清單"))
+        item = self.history_tableWidget.horizontalHeaderItem(0)
+        item.setText(_translate("Anime", "名稱"))
+        item = self.history_tableWidget.horizontalHeaderItem(1)
+        item.setText(_translate("Anime", "下載時間"))
+        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.history_page),
+                                             _translate("Anime", "歷史紀錄"))
+        self.end_anime_lineEdit.setPlaceholderText(_translate("Anime", "請先更新"))
+        self.end_anime_pushButton.setText(_translate("Anime", "更新"))
+        self.end_anime_last_update_date.setText(_translate("Anime", "最後更新日期: 無紀錄"))
+        self.anime_info_tabWidget.setTabText(self.anime_info_tabWidget.indexOf(self.end_anime_page),
+                                             _translate("Anime", "完結動漫"))
+        self.customize_groupBox.setTitle(_translate("Anime", "填入您指定的動漫網址"))
+        self.customize_label.setText(_translate("Anime", "網址:"))
+        self.customize_pushButton.setText(_translate("Anime", "確定"))
+        self.load_week_label.setText(_translate("Anime", "每周動漫更新讀取中"))
+        self.load_anime_label.setText(_translate("Anime", "動漫資訊讀取中"))
+        self.left_status_label.setText(_translate("Anime", "狀態: 0 個下載中　　連接設定: 0/20"))
+        self.right_ststus_label.setText(_translate("Anime", "記憶體用量: 10.10MB / 程序: 3.50%"))
+        self.load_end_anime_label.setText(_translate("Anime", "完結動漫讀取中"))
+        self.login_pushButton.setText(_translate("Anime", "登入"))
+        self.username_label.setText(_translate("Anime", "尚未登入"))
+        self.menu.setTitle(_translate("Anime", "設定"))
+        self.menu_config.setText(_translate("Anime", "設定"))
+        self.menu_config.setStatusTip(_translate("Anime", "設定"))
+        self.menu_exit.setText(_translate("Anime", "離開"))
+        self.menu_exit.setStatusTip(_translate("Anime", "離開"))
+        self.menu_about.setText(_translate("Anime", "關於"))
+        self.menu_about.setStatusTip(_translate("Anime", "關於"))
+        self.actionf.setText(_translate("Anime", "檢查更新"))

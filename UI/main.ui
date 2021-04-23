@@ -1151,7 +1151,7 @@ background-color: rgba(255, 255, 240, 100)
   <action name="menu_about">
    <property name="icon">
     <iconset>
-     <normaloff>../image/logo.ico</normaloff>../image/logo.ico
+        <normaloff>../image/logo.ico</normaloff>../image/logo.ico
     </iconset>
    </property>
    <property name="text">
@@ -1163,9 +1163,9 @@ background-color: rgba(255, 255, 240, 100)
   </action>
   <action name="actionf">
    <property name="icon">
-    <iconset>
-     <normaloff>../image/update.ico</normaloff>../image/update.ico
-    </iconset>
+       <iconset>
+           <normaloff>../image/update.ico</normaloff>../image/update.ico
+       </iconset>
    </property>
    <property name="text">
     <string>檢查更新</string>
