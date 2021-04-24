@@ -28,7 +28,7 @@ def basic_config():
     每次打開會判斷有沒有 config.json。
     """
     config = {'path': os.getcwd(), 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5,
-              're_download': {'status': True, 'min': 2}}
+              're_download': {'status': True, 'min': 2}, 'status_bar': True, 'update': True}
     if not os.path.isfile('config.json'):
         data = config
         json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
@@ -53,7 +53,7 @@ def basic_config():
     if os.path.isfile('./Log/DownloadQueue.json'):
         download_queue += json.load(open('./Log/DownloadQueue.json', 'r', encoding='utf-8'))['queue']
     return data['path'], data['simultaneous'], data['speed']['value'], data['re_download']['status'], \
-           data['re_download']['min'], download_queue, load_download_end_anime
+           data['re_download']['min'], data['status_bar'], data['update'], download_queue, load_download_end_anime
 
 
 def load_localhost_end_anime_data():

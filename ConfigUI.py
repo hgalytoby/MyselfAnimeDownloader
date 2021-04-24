@@ -50,6 +50,10 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         else:
             self.slow_radioButton.setChecked(True)
         self.simultaneous_download_lineEdit.setText(str(config['simultaneous']))
+        if not config['status_bar']:
+            self.status_bar_checkBox.setChecked(False)
+        if not config['update']:
+            self.chekc_update_checkBox.setChecked(False)
         self.re_download_lineEdit.setText(str(config['re_download']['min']))
         if not config['re_download']['status']:
             self.re_download_Checkbox.setChecked(False)
@@ -61,6 +65,8 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         path = self.download_path_lineEdit.text()
         simultaneous = int(self.simultaneous_download_lineEdit.text())
         re_time = int(self.re_download_lineEdit.text())
+        check_update = True
+        status_bar = True
         if 0 > simultaneous:
             QtWidgets.QMessageBox().warning(self, '愛調皮', '調皮!輸入正整數哦!', QtWidgets.QMessageBox.Ok)
             self.simultaneous_download_lineEdit.setText('5')
@@ -72,8 +78,12 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
                 if i.isChecked():
                     speed = self.speed_radioButton_dict[i]
                     break
+            if not self.status_bar_checkBox.isChecked():
+                status_bar = False
+            if not self.chekc_update_checkBox.isChecked():
+                check_update = False
             data = {'path': path, 'speed': speed, 'simultaneous': simultaneous,
-                    're_download': {'status': True, 'min': re_time}}
+                    're_download': {'status': True, 'min': re_time}, 'status_bar': status_bar, 'update': check_update}
             if not self.re_download_Checkbox.isChecked():
                 data['re_download']['status'] = False
             json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
@@ -82,6 +92,8 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
             self.anime.speed_value = data['speed']['value']
             self.anime.re_download_status = data['re_download']['status']
             self.anime.re_download_min = data['re_download']['min']
+            self.anime.status_bar = data['status_bar']
+            self.anime.update = data['update']
             QtWidgets.QMessageBox().information(self, '儲存', "<font size='6'>資料已成功地儲存。</font>", QtWidgets.QMessageBox.Ok)
             self.close()
 

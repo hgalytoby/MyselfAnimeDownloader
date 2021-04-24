@@ -27,7 +27,7 @@ def init_parameter(self, pid, os_system):
     self.download_progressBar_dict = dict()
     self.download_status_label_dict = dict()
     self.tableWidgetItem_download_dict = dict()
-    self.save_path, self.simultaneously_value, self.speed_value, self.re_download_status, self.re_download_min, self.download_queue, self.download_end_anime = basic_config()
+    self.save_path, self.simultaneously_value, self.speed_value, self.re_download_status, self.re_download_min, self.status_bar, self.check_update, self.download_queue, self.download_end_anime = basic_config()
     self.week = {0: self.Monday_scrollAreaWidgetContents, 1: self.Tuesday_scrollAreaWidgetContents,
                  2: self.Wednesday_scrollAreaWidgetContents, 3: self.Thursday_scrollAreaWidgetContents,
                  4: self.Friday_scrollAreaWidgetContents, 5: self.Staurday_scrollAreaWidgetContents,
@@ -50,3 +50,20 @@ def init_parameter(self, pid, os_system):
     self.setWindowIcon(QtGui.QIcon('image/logo.ico'))
     self.user_icon_label.setPixmap(QtGui.QPixmap("./image/noavatar_small.gif"))
     self.setFixedSize(self.width(), self.height())
+
+
+def init_auto_run(self):
+    self.load_week_data()
+    self.anime_page_Visible(init=True)
+    self.tabBar = self.mouseHoverOnTabBar()
+    self.loading_config_status()
+    self.load_download_menu()
+    self.load_history()
+    self.loading_end_anime()
+    self.localhost_end_anime_dict, self.localhost_end_anime_list = self.load_localhost_end_anime_data()
+    self.create_end_anime_frame_and_page()
+    self.pushbutton_clicked_connect()
+    if self.check_update:
+        self.check_version()
+    self.check_re_download()
+    self.check_ts_status()

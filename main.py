@@ -20,7 +20,7 @@ from event.ClickOnMainTableWidget import click_on_tablewidget
 from event.EndAnime import search_end_anime, update_end_anime_mission, update_end_anime, create_end_anime_frame, \
     create_end_anime_page
 from event.History import create_history_tablewidget_item
-from event.InitParameter import init_parameter
+from event.InitParameter import init_parameter, init_auto_run
 from event.Login import login_event
 from event.PushButtonClickedConnect import pushbutton_clicked_connect
 from event.Version import check_version_task
@@ -28,7 +28,7 @@ from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingCon
     CheckVersion, ReDownload, CheckTsStatus
 from myself_tools import badname, kill_pid, load_localhost_end_anime_data, get_all_page
 
-VERSION = '1.1.1'
+VERSION = '1.1.2'
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 #     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -45,21 +45,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         super(Anime, self).__init__()
         self.setupUi(self)
         self.init_parameter(pid, os_system)
-        self.load_week_data()
-        self.anime_page_Visible()
-        self.load_anime_label.setVisible(False)
-        self.load_end_anime_label.setVisible(False)
-        self.tabBar = self.mouseHoverOnTabBar()
-        self.loading_config_status()
-        self.load_download_menu()
-        self.load_history()
-        self.loading_end_anime()
-        self.localhost_end_anime_dict, self.localhost_end_anime_list = self.load_localhost_end_anime_data()
-        self.create_end_anime_frame_and_page()
-        self.pushbutton_clicked_connect()
-        self.check_version()
-        self.check_re_download()
-        self.check_ts_status()
+        self.init_auto_run()
 
     def init_parameter(self, pid, os_system):
         """
@@ -67,6 +53,13 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         :param pid: 程序的 pid。
         """
         init_parameter(self=self, pid=pid, os_system=os_system)
+
+    def init_auto_run(self):
+        """
+        宣告物件和一些物件的參數操作。
+        :param pid: 程序的 pid。
+        """
+        init_auto_run(self=self)
 
     def pushbutton_clicked_connect(self):
         """
@@ -504,7 +497,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                 self.story_checkbox_dict[i].setChecked(False)
             self.story_list_all_pushButton.setText('全選')
 
-    def anime_page_Visible(self, status=False):
+    def anime_page_Visible(self, status=False, init=False):
         """
         動漫資訊裡的各個物件顯示與隱藏。
         """
@@ -536,6 +529,9 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             self.story_list_all_pushButton.setVisible(False)
             self.story_list_scrollArea.setVisible(False)
             self.download_pushbutton.setVisible(False)
+        if init:
+            self.load_anime_label.setVisible(False)
+            self.load_end_anime_label.setVisible(False)
 
     def load_week_data(self):
         """
@@ -827,13 +823,34 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         觸發最小化時的事件判斷。
         """
-        if event.type() == QtCore.QEvent.WindowStateChange:
-            if self.isHidden():
-                tray_icon.hide()
-                self.show()
-            else:
-                tray_icon.show()
-                self.hide()
+        try:
+            status_bar = self.status_bar
+        except AttributeError:
+            status_bar = True
+        if status_bar:
+            if event.type() == QtCore.QEvent.WindowStateChange:
+                if self.isHidden():
+                    tray_icon.hide()
+                    self.show()
+                else:
+                    tray_icon.show()
+                    self.hide()
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            self.moveFlag = True
+            self.movePosition = event.globalPos() - self.pos()
+            self.setCursor(QtGui.QCursor(QtCore.Qt.OpenHandCursor))
+            event.accept()
+
+    def mouseMoveEvent(self, QMouseEvent):
+        if QtCore.Qt.LeftButton and self.moveFlag:
+            self.move(QMouseEvent.globalPos() - self.movePosition)
+            QMouseEvent.accept()
+
+    def mouseReleaseEvent(self, QMouseEvent):
+        self.moveFlag = False
+        self.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
 
 
 if __name__ == '__main__':
