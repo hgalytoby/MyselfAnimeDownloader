@@ -130,46 +130,49 @@ def get_anime_data(anime_url):
     :param anime_url: 給網址。
     :return: Dict。
     """
-    res = requests.get(url=anime_url, headers=headers)
-    html = BeautifulSoup(res.text, features='lxml')
-    data = {'home': anime_url}
-    permission = html.find('div', id='messagetext')
-    if permission:
-        data.update({'permission': permission.text.strip()})
+    try:
+        res = requests.get(url=anime_url, headers=headers)
+        html = BeautifulSoup(res.text, features='lxml')
+        data = {'home': anime_url}
+        permission = html.find('div', id='messagetext')
+        if permission:
+            data.update({'permission': permission.text.strip()})
 
-    total = dict()
-    for i in html.select('ul.main_list'):
-        for j in i.find_all('a', href='javascript:;'):
-            title = j.text
-            for k in j.parent.select("ul.display_none li"):
-                a = k.select_one("a[data-href*='v.myself-bbs.com']")
-                if k.select_one("a").text == '站內':
-                    url = a["data-href"].replace('player/play', 'vpx').replace("\r", "").replace("\n", "")
-                    total.update({title: url})
-    data.update({'total': total})
-    for i in html.find_all('div', class_='info_info'):
-        for j, m in enumerate(i.find_all('li')):
-            text = m.text
-            if j == 4:
-                text = text.split('官方網站: ')[1]
-            data.update({j: text})
-    for i in html.find_all('div', class_='info_introduction'):
-        for j in i.find_all('p'):
-            data.update({'info': j.text})
-    for i in html.find_all('div', class_='info_img_box fl'):
-        for j in i.find_all('img'):
-            image = requests.get(url=j['src'], headers=headers).content
-            data.update({'image': image})
-            image = None
-            del image
-    for i in html.find_all('div', class_='z'):
-        for j, m in enumerate(i.find_all('a')):
-            if j == 4:
-                data.update({'name': m.text.split('【')[0]})
-    res.close()
-    res, html = None, None
-    del res, html
-    return data
+        total = dict()
+        for i in html.select('ul.main_list'):
+            for j in i.find_all('a', href='javascript:;'):
+                title = j.text
+                for k in j.parent.select("ul.display_none li"):
+                    a = k.select_one("a[data-href*='v.myself-bbs.com']")
+                    if k.select_one("a").text == '站內':
+                        url = a["data-href"].replace('player/play', 'vpx').replace("\r", "").replace("\n", "")
+                        total.update({title: url})
+        data.update({'total': total})
+        for i in html.find_all('div', class_='info_info'):
+            for j, m in enumerate(i.find_all('li')):
+                text = m.text
+                if j == 4:
+                    text = text.split('官方網站: ')[1]
+                data.update({j: text})
+        for i in html.find_all('div', class_='info_introduction'):
+            for j in i.find_all('p'):
+                data.update({'info': j.text})
+        for i in html.find_all('div', class_='info_img_box fl'):
+            for j in i.find_all('img'):
+                image = requests.get(url=j['src'], headers=headers).content
+                data.update({'image': image})
+                image = None
+                del image
+        for i in html.find_all('div', class_='z'):
+            for j, m in enumerate(i.find_all('a')):
+                if j == 4:
+                    data.update({'name': m.text.split('【')[0]})
+        res.close()
+        res, html = None, None
+        del res, html
+        return data
+    except BaseException as error:
+        return False
 
 
 def cpu_memory(info):

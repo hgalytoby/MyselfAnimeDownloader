@@ -68,7 +68,9 @@ class AnimeData(QtCore.QThread):
 
     def run(self):
         data = get_anime_data(anime_url=self.anime_url)
-        self.anime_info_signal.emit(data)
+        if data:
+            self.anime_info_signal.emit(data)
+        self.anime_info_signal.emit({'error': True, 'home': self.anime_url})
 
 
 class History(QtCore.QThread):
@@ -295,7 +297,7 @@ class DownloadVideo(QtCore.QThread):
         while True:
             try:
                 if not self.stop and not self.exit and self.re_download_count > self.requests_error_count:
-                    data = download_request(url=url, stream=False, timeout=3)
+                    data = download_request(url=url, stream=False, timeout=(3, 30))
                     if data.ok:
                         while True:
                             if self.data['video_ts'] == i and self.process_end:

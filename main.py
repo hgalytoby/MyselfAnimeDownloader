@@ -612,12 +612,12 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                                                       QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.No)
             if msg == QtWidgets.QMessageBox.Ok:
                 self.login_event()
-        elif not signal['total']:
+        elif signal.get('error') or not signal['total']:
             self.load_anime_label.setVisible(False)
             self.load_anime_label_status = False
-            QtWidgets.QMessageBox().information(self, "確定",
-                                                f"<font size=5  color=#000000>網址有誤！</font> <br/><font size=4  color=#000000>請確認輸入的 <a href={signal['home']}>網址 </a>",
-                                                QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.information(self, "確定",
+                                              f"<font size=5  color=#000000>網址有誤！</font> <br/><font size=4  color=#000000>請確認輸入的 <a href={signal['home']}>網址 </a>",
+                                              QtWidgets.QMessageBox.Ok)
         else:
             self.customize_lineEdit.clear()
             self.story_list_all_pushButton.setText('全選')
