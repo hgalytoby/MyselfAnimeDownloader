@@ -70,7 +70,8 @@ class AnimeData(QtCore.QThread):
         data = get_anime_data(anime_url=self.anime_url)
         if data:
             self.anime_info_signal.emit(data)
-        self.anime_info_signal.emit({'error': True, 'home': self.anime_url})
+        else:
+            self.anime_info_signal.emit({'error': True, 'home': self.anime_url})
 
 
 class History(QtCore.QThread):
