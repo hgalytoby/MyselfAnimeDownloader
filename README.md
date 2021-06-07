@@ -34,11 +34,6 @@ Mac 使用者解壓縮後，請將 MyselfAnime.app 放到 應用程式的資料�
 - 5.如果您喜歡此專案，請幫我在頁面右上角按星星，謝謝您!
 
 
-## 全動漫下載
-- 1.[Myself 動漫網](https://myself-bbs.com/portal.php) 全部動漫下載。
-- 2.自動上傳到 Google Drive。
-- 3.這是額外的程式，需要請在 `Issues` 留言。
-
 ## 作者開發環境
 - 作業系統
 	- Windows(主要)
