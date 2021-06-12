@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>660</width>
-    <height>290</height>
+    <height>280</height>
    </rect>
   </property>
   <property name="font">
@@ -31,7 +31,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-        <y>250</y>
+     <y>240</y>
      <width>51</width>
      <height>31</height>
     </rect>
@@ -55,7 +55,7 @@
    <property name="geometry">
     <rect>
      <x>590</x>
-        <y>250</y>
+     <y>240</y>
      <width>51</width>
      <height>31</height>
     </rect>
@@ -81,7 +81,7 @@
      <x>10</x>
      <y>20</y>
      <width>641</width>
-        <height>121</height>
+     <height>121</height>
     </rect>
    </property>
    <property name="font">
@@ -151,56 +151,56 @@
     <property name="cursor">
      <cursorShape>PointingHandCursor</cursorShape>
     </property>
-       <property name="toolTip">
-           <string>瀏覽</string>
-       </property>
-       <property name="styleSheet">
-           <string notr="true"/>
-       </property>
-       <property name="text">
-           <string>瀏覽</string>
-       </property>
+    <property name="toolTip">
+     <string>瀏覽</string>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>瀏覽</string>
+    </property>
    </widget>
-      <widget class="QCheckBox" name="status_bar_checkBox">
-          <property name="geometry">
-              <rect>
-                  <x>20</x>
-                  <y>60</y>
-                  <width>211</width>
-                  <height>16</height>
-              </rect>
-          </property>
-          <property name="text">
-              <string>最下化到狀態列</string>
-          </property>
-          <property name="checked">
-              <bool>true</bool>
-          </property>
-      </widget>
-      <widget class="QCheckBox" name="chekc_update_checkBox">
-          <property name="geometry">
-              <rect>
-                  <x>20</x>
-                  <y>90</y>
-                  <width>211</width>
-                  <height>16</height>
-              </rect>
-          </property>
-          <property name="text">
-              <string>檢查更新</string>
-          </property>
-          <property name="checked">
-              <bool>true</bool>
-          </property>
-      </widget>
+   <widget class="QCheckBox" name="status_bar_checkBox">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>60</y>
+      <width>211</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>最下化到狀態列</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="chekc_update_checkBox">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>90</y>
+      <width>211</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>檢查更新</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="download_groupBox">
    <property name="geometry">
     <rect>
      <x>10</x>
-        <y>150</y>
+     <y>150</y>
      <width>641</width>
-        <height>91</height>
+     <height>81</height>
     </rect>
    </property>
    <property name="font">
@@ -388,75 +388,22 @@ background: transparent;
      <string>注意事項</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="re_download_Checkbox">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>60</y>
-      <width>281</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>如有下載失敗，重新嘗試下載每隔</string>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
-    </property>
-    <property name="tristate">
-     <bool>false</bool>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="re_download_lineEdit">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>58</y>
-      <width>61</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>2</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>360</x>
-      <y>60</y>
-      <width>47</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>分</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignCenter</set>
-    </property>
-   </widget>
   </widget>
  </widget>
-    <tabstops>
-        <tabstop>download_path_lineEdit</tabstop>
-        <tabstop>browse_pushButton</tabstop>
-        <tabstop>status_bar_checkBox</tabstop>
-        <tabstop>chekc_update_checkBox</tabstop>
-        <tabstop>slow_radioButton</tabstop>
-        <tabstop>genera_radioButton</tabstop>
-        <tabstop>high_radioButton</tabstop>
-        <tabstop>starburst_radioButton</tabstop>
-        <tabstop>simultaneous_download_lineEdit</tabstop>
-        <tabstop>note_pushButton</tabstop>
-        <tabstop>re_download_Checkbox</tabstop>
-        <tabstop>re_download_lineEdit</tabstop>
-        <tabstop>save_pushButton</tabstop>
-        <tabstop>cancel_pushButton</tabstop>
-    </tabstops>
+ <tabstops>
+  <tabstop>download_path_lineEdit</tabstop>
+  <tabstop>browse_pushButton</tabstop>
+  <tabstop>status_bar_checkBox</tabstop>
+  <tabstop>chekc_update_checkBox</tabstop>
+  <tabstop>slow_radioButton</tabstop>
+  <tabstop>genera_radioButton</tabstop>
+  <tabstop>high_radioButton</tabstop>
+  <tabstop>starburst_radioButton</tabstop>
+  <tabstop>simultaneous_download_lineEdit</tabstop>
+  <tabstop>note_pushButton</tabstop>
+  <tabstop>save_pushButton</tabstop>
+  <tabstop>cancel_pushButton</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

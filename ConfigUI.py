@@ -20,7 +20,7 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         self.save_pushButton.clicked.connect(self.save_config)
         self.cancel_pushButton.clicked.connect(self.close)
         self.simultaneous_download_lineEdit.setValidator(QtGui.QIntValidator())
-        self.re_download_lineEdit.setValidator(QtGui.QIntValidator())
+        # self.re_download_lineEdit.setValidator(QtGui.QIntValidator())
         self.note_pushButton.clicked.connect(self.note_message_box)
         self.speed_radioButton_dict = {self.slow_radioButton: {'type': 'slow', 'value': 1},
                                        self.genera_radioButton: {'type': 'genera', 'value': 3},
@@ -54,9 +54,9 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
             self.status_bar_checkBox.setChecked(False)
         if not config['update']:
             self.chekc_update_checkBox.setChecked(False)
-        self.re_download_lineEdit.setText(str(config['re_download']['min']))
-        if not config['re_download']['status']:
-            self.re_download_Checkbox.setChecked(False)
+        # self.re_download_lineEdit.setText(str(config['re_download']['min']))
+        # if not config['re_download']['status']:
+        #     self.re_download_Checkbox.setChecked(False)
 
     def save_config(self):
         """
@@ -64,15 +64,15 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         """
         path = self.download_path_lineEdit.text()
         simultaneous = int(self.simultaneous_download_lineEdit.text())
-        re_time = int(self.re_download_lineEdit.text())
+        # re_time = int(self.re_download_lineEdit.text())
         check_update = True
         status_bar = True
         if 0 > simultaneous:
             QtWidgets.QMessageBox().warning(self, '愛調皮', '調皮!輸入正整數哦!', QtWidgets.QMessageBox.Ok)
             self.simultaneous_download_lineEdit.setText('5')
-        elif 0 > re_time:
-            QtWidgets.QMessageBox().warning(self, '愛調皮', '調皮!輸入正整數哦!', QtWidgets.QMessageBox.Ok)
-            self.re_download_lineEdit.setText('2')
+        # elif 0 > re_time:
+        #     QtWidgets.QMessageBox().warning(self, '愛調皮', '調皮!輸入正整數哦!', QtWidgets.QMessageBox.Ok)
+        #     self.re_download_lineEdit.setText('2')
         else:
             for i in self.speed_radioButton_dict:
                 if i.isChecked():
@@ -82,16 +82,18 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
                 status_bar = False
             if not self.chekc_update_checkBox.isChecked():
                 check_update = False
-            data = {'path': path, 'speed': speed, 'simultaneous': simultaneous,
-                    're_download': {'status': True, 'min': re_time}, 'status_bar': status_bar, 'update': check_update}
-            if not self.re_download_Checkbox.isChecked():
-                data['re_download']['status'] = False
+            # data = {'path': path, 'speed': speed, 'simultaneous': simultaneous,
+            #         're_download': {'status': True, 'min': re_time}, 'status_bar': status_bar, 'update': check_update}
+            data = {'path': path, 'speed': speed, 'simultaneous': simultaneous, 'status_bar': status_bar,
+                    'update': check_update}
+            # if not self.re_download_Checkbox.isChecked():
+            #     data['re_download']['status'] = False
             json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
             self.anime.save_path = data['path']
             self.anime.simultaneously_value = data['simultaneous']
             self.anime.speed_value = data['speed']['value']
-            self.anime.re_download_status = data['re_download']['status']
-            self.anime.re_download_min = data['re_download']['min']
+            # self.anime.re_download_status = data['re_download']['status']
+            # self.anime.re_download_min = data['re_download']['min']
             self.anime.status_bar = data['status_bar']
             self.anime.update = data['update']
             QtWidgets.QMessageBox().information(self, '儲存', "<font size='6'>資料已成功地儲存。</font>", QtWidgets.QMessageBox.Ok)

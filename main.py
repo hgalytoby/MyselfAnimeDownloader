@@ -100,11 +100,19 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         check_version_task(self=self, signal=signal)
 
     def check_re_download(self):
+        """
+        暫時棄用。
+        :return:
+        """
         self.check_re_download_thread = ReDownload(anime=self)
         self.check_re_download_thread.re_download.connect(self.check_re_download_task)
         self.check_re_download_thread.start()
 
     def check_re_download_task(self, signal):
+        """
+        暫時棄用。
+        :return:
+        """
         self.download_anime_Thread.update(
             {signal['total_name']: {'thread': DownloadVideo(data=signal, anime=self),
                                     'over': False}})
@@ -112,11 +120,19 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.download_anime_Thread[signal['total_name']]['thread'].start()
 
     def check_ts_status(self):
+        """
+        暫時棄用。
+        :return:
+        """
         self.check_ts_status_thread = CheckTsStatus(anime=self)
         self.check_ts_status_thread.check_ts_status.connect(self.check_ts_status_task)
         self.check_ts_status_thread.start()
 
     def check_ts_status_task(self, signal):
+        """
+        暫時棄用。
+        :return:
+        """
         self.download_anime_Thread.update(
             {signal['total_name']: {'thread': DownloadVideo(data=signal, anime=self),
                                     'over': False}})
@@ -475,6 +491,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
                     self.tableWidgetItem_download_dict[signal['total_name']]['status'].setText(signal["status"])
                 self.tableWidgetItem_download_dict[signal['total_name']]['schedule'].setValue(signal["schedule"])
             except KeyError:
+                # print(signal)
                 print('應該是 Thread 被刪除，剛好 emit。')
 
     def config(self):
@@ -830,10 +847,12 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         if status_bar:
             if event.type() == QtCore.QEvent.WindowStateChange:
                 if self.isHidden():
+                    tray_icon.showMessage("Message", "被發現了", tray_icon.icon)
                     tray_icon.hide()
                     self.show()
                 else:
                     tray_icon.show()
+                    tray_icon.showMessage("Message", "藏起來了", tray_icon.icon)
                     self.hide()
 
     def mousePressEvent(self, event):

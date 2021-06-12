@@ -27,8 +27,10 @@ def basic_config():
     """
     每次打開會判斷有沒有 config.json。
     """
+    # config = {'path': os.getcwd(), 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5,
+    #           're_download': {'status': True, 'min': 2}, 'status_bar': True, 'update': True}
     config = {'path': os.getcwd(), 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5,
-              're_download': {'status': True, 'min': 2}, 'status_bar': True, 'update': True}
+              'status_bar': True, 'update': True}
     if not os.path.isfile('config.json'):
         data = config
         json.dump(data, open('config.json', 'w', encoding='utf-8'), indent=2)
@@ -52,8 +54,11 @@ def basic_config():
             load_download_end_anime.append(file['total_name'])
     if os.path.isfile('./Log/DownloadQueue.json'):
         download_queue += json.load(open('./Log/DownloadQueue.json', 'r', encoding='utf-8'))['queue']
-    return data['path'], data['simultaneous'], data['speed']['value'], data['re_download']['status'], \
-           data['re_download']['min'], data['status_bar'], data['update'], download_queue, load_download_end_anime
+    return data['path'], data['simultaneous'], data['speed']['value'], data['status_bar'], data[
+        'update'], download_queue, load_download_end_anime
+
+    # return data['path'], data['simultaneous'], data['speed']['value'], data['re_download']['status'], \
+    #        data['re_download']['min'], data['status_bar'], data['update'], download_queue, load_download_end_anime
 
 
 def load_localhost_end_anime_data():
@@ -133,11 +138,10 @@ def get_anime_data(anime_url):
     try:
         res = requests.get(url=anime_url, headers=headers)
         html = BeautifulSoup(res.text, features='lxml')
-        data = {'home': anime_url}
+        data = {'home': anime_url, 'name': badname(html.find('title').text.split('【')[0])}
         permission = html.find('div', id='messagetext')
         if permission:
             data.update({'permission': permission.text.strip()})
-
         total = dict()
         for i in html.select('ul.main_list'):
             for j in i.find_all('a', href='javascript:;'):
@@ -161,14 +165,8 @@ def get_anime_data(anime_url):
             for j in i.find_all('img'):
                 image = requests.get(url=j['src'], headers=headers).content
                 data.update({'image': image})
-                image = None
                 del image
-        for i in html.find_all('div', class_='z'):
-            for j, m in enumerate(i.find_all('a')):
-                if j == 4:
-                    data.update({'name': m.text.split('【')[0]})
         res.close()
-        res, html = None, None
         del res, html
         return data
     except BaseException as error:

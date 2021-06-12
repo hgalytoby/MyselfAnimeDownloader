@@ -1,5 +1,5 @@
 altgraph==0.17
-beautifulsoup4==4.9.1
+beautifulsoup4==4.9.3
 certifi==2020.6.20
 chardet==3.0.4
 Cython==0.29.21
@@ -17,8 +17,8 @@ PyQt5-sip==12.8.0
 PyQt5-stubs==5.14.2.2
 PyQtWebEngine==5.15.0
 pywin32-ctypes==0.2.0
-requests==2.24.0
+requests==2.25.1
 soupsieve==2.0.1
 typing-extensions==3.7.4.3
-urllib3==1.25.10
+urllib3==1.26.5
 zipp==3.4.0
