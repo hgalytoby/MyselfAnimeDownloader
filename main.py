@@ -28,7 +28,7 @@ from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingCon
     CheckVersion, ReDownload, CheckTsStatus
 from myself_tools import badname, kill_pid, load_localhost_end_anime_data, get_all_page, connect_myself_anime
 
-VERSION = '1.1.2'
+VERSION = '1.1.3'
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 #     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
