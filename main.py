@@ -26,7 +26,7 @@ from event.PushButtonClickedConnect import pushbutton_clicked_connect
 from event.Version import check_version_task
 from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingConfigStatus, DownloadVideo, EndAnimeData, \
     CheckVersion, ReDownload, CheckTsStatus
-from myself_tools import badname, kill_pid, load_localhost_end_anime_data, get_all_page
+from myself_tools import badname, kill_pid, load_localhost_end_anime_data, get_all_page, connect_myself_anime
 
 VERSION = '1.1.2'
 
@@ -874,18 +874,26 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
 if __name__ == '__main__':
     os_system = platform.system()
+    # myself_anime_connect = False
     if os_system == "Darwin":
         # MAC 要改 工作路徑，此路徑為 Applications 絕對路徑。
         os.chdir('/Applications/MyselfAnime.app/Contents/Macos')
     app = QtWidgets.QApplication(sys.argv)
-    # myStyle = MyProxyStyle()
-    # app.setStyle(myStyle)
-    anime = Anime(pid=os.getpid(), os_system=os_system)
-    # config = Config(anime=anime)
-    about = About()
-    # anime.menu.actions()[0].triggered.connect(config.show)
-    anime.menu.actions()[1].triggered.connect(about.show)
-    anime.show()
-    tray_icon = TrayIcon(anime)
-    app.exec_()
-    kill_pid(os.getpid())
+    if not connect_myself_anime():
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Critical)
+        msg.setText("請確認可以進入 <a href=https://myself-bbs.com/portal.php>MyselfAnime</a> 網站")
+        msg.setWindowTitle("無法取得 MyselfAnime 網站資料!")
+        msg.setWindowIcon(QtGui.QIcon('./image/logo.ico'))
+        msg.exec_()
+    else:
+        # myStyle = MyProxyStyle()
+        # app.setStyle(myStyle)
+        anime = Anime(pid=os.getpid(), os_system=os_system)
+        # config = Config(anime=anime)
+        about = About()
+        # anime.menu.actions()[0].triggered.connect(config.show)
+        anime.show()
+        tray_icon = TrayIcon(anime)
+        app.exec_()
+        kill_pid(os.getpid())

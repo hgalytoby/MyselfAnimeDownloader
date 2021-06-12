@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36',
 }
 
 requests_RequestException = requests.exceptions.RequestException
@@ -324,6 +324,16 @@ def get_all_page(data):
     if _ != 0:
         all_page += 1
     return all_page
+
+
+def connect_myself_anime():
+    try:
+        res = requests.get(url='https://myself-bbs.com/portal.php', headers=headers, timeout=5)
+        if res.ok:
+            return True
+    except:
+        pass
+    return False
 
 
 if __name__ == '__main__':
