@@ -8,7 +8,7 @@ GitHub 支援 Gif 只到5MB，所以錄影時有暫停等待爬資料的時間�
 [查看更新日誌](https://github.com/hgalytoby/MyselfAnimeDownloader/blob/master/UpdateLog.md)	
 
 
-## 檔案運行(對於不熟悉Python的使用者)
+## 下載檔案運行(對於不熟悉Python的使用者)
 Windows、Mac、Linux 使用者可以[點擊這裡](https://github.com/hgalytoby/MyselfAnimeDownloader/releases) 下載 zip 解壓縮後使用.<br><br>
 Mac 使用者解壓縮後，請將 MyselfAnime.app 放到 應用程式的資料夾。<br>
 <br>
