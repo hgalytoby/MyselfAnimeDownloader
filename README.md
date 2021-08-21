@@ -1,4 +1,4 @@
-# MyselfAnimeDownloader 版本ver 1.1.3
+# MyselfAnimeDownloader 版本ver 1.1.4
 ## 預覽
 圖(最後更新2021/03/15)。<br><br>
 ![image](https://i.imgur.com/rXhfd67.gif)<br>
