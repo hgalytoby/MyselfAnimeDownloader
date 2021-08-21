@@ -1,5 +1,7 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 
+from MyselfClose import MyselfClose
+
 
 class TrayIcon(QtWidgets.QSystemTrayIcon):
     def __init__(self, MainWindow, parent=None):
@@ -25,7 +27,15 @@ class TrayIcon(QtWidgets.QSystemTrayIcon):
         self.ui.activateWindow()
 
     def quit(self):
-        QtWidgets.qApp.quit()
+        reply = QtWidgets.QMessageBox.question(self.ui,
+                                               '關閉',
+                                               "是否離開程式？",
+                                               QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                               QtWidgets.QMessageBox.No)
+
+        if reply == QtWidgets.QMessageBox.Yes:
+            self.myself_close = MyselfClose(anime=self.ui)
+            self.myself_close.show()
 
     # 點擊 icon 傳送的信號會有一個整數值，1=右键，2=連續兩下左鍵，3=單點左鍵，4=滾輪點擊
     def onIconClicked(self, reason):

@@ -8,5 +8,6 @@ pyuic5 -o ./UI/test_ui.py ./UI/test.ui
 pyuic5 -o ./UI/login_ui.py ./UI/login.ui
 pyuic5 -o ./UI/myself_close_ui.py ./UI/myself_close.ui
 pyinstaller -F main.py
+pyinstaller -F main.spec
 pyinstaller --onefile --windowed --icon logo.icns main.py
 pip freeze > requirements.txt

@@ -162,11 +162,14 @@
     </property>
    </widget>
    <widget class="QCheckBox" name="status_bar_checkBox">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>20</x>
       <y>60</y>
-      <width>211</width>
+      <width>551</width>
       <height>16</height>
      </rect>
     </property>

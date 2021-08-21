@@ -28,7 +28,7 @@ from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingCon
     CheckVersion, ReDownload, CheckTsStatus
 from myself_tools import badname, kill_pid, load_localhost_end_anime_data, get_all_page, connect_myself_anime
 
-VERSION = '1.1.3'
+VERSION = '1.1.4'
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 #     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -845,7 +845,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         except AttributeError:
             status_bar = True
         if status_bar:
-            if event.type() == QtCore.QEvent.WindowStateChange:
+            if event.type() == QtCore.QEvent.WindowStateChange and self.os_system != "Darwin":
                 if self.isHidden():
                     tray_icon.showMessage("Message", "被發現了", tray_icon.icon)
                     tray_icon.hide()

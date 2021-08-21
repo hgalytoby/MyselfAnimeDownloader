@@ -50,7 +50,11 @@ class Config(QtWidgets.QMainWindow, Ui_Config):
         else:
             self.slow_radioButton.setChecked(True)
         self.simultaneous_download_lineEdit.setText(str(config['simultaneous']))
-        if not config['status_bar']:
+        if self.anime.os_system == 'Darwin':
+            self.status_bar_checkBox.setChecked(False)
+            self.status_bar_checkBox.setEnabled(False)
+            self.status_bar_checkBox.setText(f'{self.status_bar_checkBox.text()}(Mac 目前不支援)')
+        elif not config['status_bar']:
             self.status_bar_checkBox.setChecked(False)
         if not config['update']:
             self.chekc_update_checkBox.setChecked(False)
