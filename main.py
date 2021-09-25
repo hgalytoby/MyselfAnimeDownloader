@@ -28,7 +28,7 @@ from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingCon
     CheckVersion, ReDownload, CheckTsStatus
 from myself_tools import badname, kill_pid, load_localhost_end_anime_data, get_all_page, connect_myself_anime
 
-VERSION = '1.1.4'
+VERSION = '1.1.5'
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 #     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -101,7 +101,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def check_re_download(self):
         """
-        暫時棄用。
         :return:
         """
         self.check_re_download_thread = ReDownload(anime=self)
@@ -110,7 +109,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def check_re_download_task(self, signal):
         """
-        暫時棄用。
         :return:
         """
         self.download_anime_Thread.update(

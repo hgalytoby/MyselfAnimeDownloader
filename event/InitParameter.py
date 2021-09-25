@@ -20,7 +20,7 @@ def init_parameter(self, pid, os_system):
     self.end_qt_object = dict()
     self.page_button_dict = dict()
     self.week_layout_dict = dict()
-    # self.re_download_dict = dict()
+    self.re_download_dict = dict()
     self.story_checkbox_dict = dict()
     self.download_anime_Thread = dict()
     self.history_tableWidget_dict = dict()
@@ -66,5 +66,5 @@ def init_auto_run(self):
     self.pushbutton_clicked_connect()
     if self.check_update:
         self.check_version()
-    # self.check_re_download()
+    self.check_re_download()
     # self.check_ts_status()

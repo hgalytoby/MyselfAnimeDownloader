@@ -14,7 +14,7 @@ requests_ChunkedEncodingError = requests.exceptions.ChunkedEncodingError
 
 
 def badname(name):
-    ban = '//:*?"<>|.'
+    ban = r'\/:*?"<>|.'
     """
     避免不正當名字出現導致資料夾或檔案無法創建。
     """
