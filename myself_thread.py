@@ -256,7 +256,10 @@ class DownloadVideo(QtCore.QThread):
             self.data.update({'status': f'取得影片資料中(失敗{error_value}次)'})
             self.download_video.emit(self.data)
             error_value += 1
-            index += 1
+            if index == len(res['host']) - 1:
+                index = 0
+            else:
+                index += 1
             url = res['host'][index]['host'] + res['video']['720p']
             time.sleep(5)
 
@@ -278,7 +281,7 @@ class DownloadVideo(QtCore.QThread):
                 #         'schedule': int(self.data['video_ts'] / (m3u8_count - 1) * 100),
                 #         'status': '下載失敗',
                 #     })
-                if time.time() - self.ts_time > 90:
+                if time.time() - self.ts_time > 120:
                     self.anime.re_download_dict.update({
                         self.data['total_name']:
                             {
@@ -342,35 +345,27 @@ class DownloadVideo(QtCore.QThread):
                                 del data
                                 break
                             # elif self.stop or self.exit or self.requests_error_count > self.re_download_count:
-
                             time.sleep(0.1)
                     if ok:
                         break
                 # if self.exit or self.requests_error_count > self.re_download_count:
                 if self.exit:
                     break
-                time.sleep(3)
             except (requests_RequestException, requests_ConnectionError,
                     requests_ChunkedEncodingError, ConnectionResetError) as e:
-
                 # self.requests_error_count += 1
-                if host_value - 1 > len(host):
-                    host_value = 0
-                else:
-                    host_value += 1
-                url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
-                # print(e, url)
-                time.sleep(1)
+                print('req error', url)
             except BaseException as error:
                 # self.requests_error_count += 1
-                if host_value - 1 > len(host):
-                    host_value = 0
-                else:
-                    host_value += 1
-                url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
                 print('BaseException', url)
                 # print(error, url)
                 # print('不明的錯: 暫時先換分流照做')
+            if host_value == len(host) - 1:
+                host_value = 0
+            else:
+                host_value += 1
+            url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
+            time.sleep(3)
         self.ts_time = time.time()
 
 
