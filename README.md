@@ -7,6 +7,10 @@ GitHub 支援 Gif 只到5MB，所以錄影時有暫停等待爬資料的時間�
 ## 更新日誌(2021/09/28)
 [查看更新日誌](https://github.com/hgalytoby/MyselfAnimeDownloader/blob/master/UpdateLog.md)	
 
+## 開發 Web 版
+- Web 版本有興趣可以點以下連結。
+- [Web連結](https://bit.ly/gtihub-animate)
+- 目前還在開發階段。
 
 ## 下載檔案運行(對於不熟悉 Python 的使用者)
 Windows、Mac、Linux 使用者可以[點擊下載Zip](https://github.com/hgalytoby/MyselfAnimeDownloader/releases)。<br><br>
