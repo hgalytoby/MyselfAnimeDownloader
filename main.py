@@ -27,7 +27,7 @@ from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingCon
     CheckVersion, ReDownload, CheckTsStatus
 from myself_tools import badname, kill_pid, load_localhost_end_anime_data, get_all_page, connect_myself_anime
 
-VERSION = '1.1.6'
+VERSION = '1.1.7'
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 #     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -45,6 +45,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.setupUi(self)
         self.init_parameter(pid, os_system)
         self.init_auto_run()
+        self.setWindowTitle(f'{self.windowTitle()}  ver:{VERSION}')
 
     def init_parameter(self, pid, os_system):
         """
@@ -889,7 +890,7 @@ if __name__ == '__main__':
         anime = Anime(pid=os.getpid(), os_system=os_system)
         # config = Config(anime=anime)
         about = About()
-        # anime.menu.actions()[0].triggered.connect(config.show)
+        anime.menu.actions()[1].triggered.connect(about.show)
         anime.show()
         tray_icon = TrayIcon(anime)
         app.exec_()
