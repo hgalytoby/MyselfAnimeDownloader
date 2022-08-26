@@ -1,5 +1,3 @@
-import os
-
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from myself_tools import basic_config
@@ -13,6 +11,7 @@ def init_parameter(self, pid, os_system):
     self.load_end_anime_status = False
     self.load_week_label_status = False
     self.load_anime_label_status = False
+    self.load_search_anime_status = False
     self.thread_write_download_order_status = False
     self.end_tab = dict()
     self.week_dict = dict()
@@ -21,8 +20,10 @@ def init_parameter(self, pid, os_system):
     self.page_button_dict = dict()
     self.week_layout_dict = dict()
     self.re_download_dict = dict()
+    self.search_animate_dict = dict()
     self.story_checkbox_dict = dict()
     self.download_anime_Thread = dict()
+    self.search_pagination_dict = dict()
     self.history_tableWidget_dict = dict()
     self.download_progressBar_dict = dict()
     self.download_status_label_dict = dict()
@@ -67,4 +68,5 @@ def init_auto_run(self):
     if self.check_update:
         self.check_version()
     self.check_re_download()
+    self.init_search_animate_layout()
     # self.check_ts_status()

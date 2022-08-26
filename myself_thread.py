@@ -10,7 +10,8 @@ from PyQt5 import QtCore
 
 from myself_tools import get_weekly_update, get_end_anime_list, get_anime_data, requests_RequestException, \
     requests_ChunkedEncodingError, requests_ConnectionError, download_request, get_total_page, get_now_page_anime_data, \
-    download_end_anime_preview, badname, check_version, cpu_memory, myself_login, get_login_select
+    download_end_anime_preview, badname, check_version, cpu_memory, myself_login, get_login_select, search_animate, \
+    record
 
 
 class WeeklyUpdate(QtCore.QThread):
@@ -148,7 +149,7 @@ class DownloadVideo(QtCore.QThread):
         self.file_name = self.data['num']
         self.file_path = f'{self.path["path"]}/{self.folder_name}/{self.file_name}.mp4.download'
         if not os.path.isdir(f'{self.path["path"]}/{self.folder_name}'):
-            os.mkdir(f'{self.path["path"]}/{self.folder_name}')
+            os.makedirs(f'{self.path["path"]}/{self.folder_name}')
         if self.data['video_ts'] == 0 and os.path.isfile(self.file_path):
             os.remove(self.file_path)
         json.dump({'queue': self.anime.download_queue}, open('./Log/DownloadQueue.json', 'w', encoding='utf-8'),
@@ -264,6 +265,7 @@ class DownloadVideo(QtCore.QThread):
             time.sleep(5)
 
     def run(self):
+        record()
         self.turn_me()
         if not self.exit:
             res = self.get_host_video_data()
@@ -546,3 +548,19 @@ class ReDownload(QtCore.QThread):
                     del self.anime.re_download_dict[k]
                 _.clear()
             time.sleep(1)
+
+
+class SearchAnimateThread(QtCore.QThread):
+    """
+    搜尋動漫。
+    """
+    result = QtCore.pyqtSignal(dict)
+
+    def __init__(self, search_name: str = None, url=None):
+        super(SearchAnimateThread, self).__init__()
+        self.search_name = search_name
+        self.url = url
+
+    def run(self):
+        result = search_animate(name=self.search_name, url=self.url)
+        self.result.emit(result)

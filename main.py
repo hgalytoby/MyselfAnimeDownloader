@@ -22,12 +22,13 @@ from event.History import create_history_tablewidget_item
 from event.InitParameter import init_parameter, init_auto_run
 from event.Login import login_event
 from event.PushButtonClickedConnect import pushbutton_clicked_connect
+from event.SearchAnimate import create_search_item
 from event.Version import check_version_task
 from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingConfigStatus, DownloadVideo, EndAnimeData, \
-    CheckVersion, ReDownload, CheckTsStatus
+    CheckVersion, ReDownload, CheckTsStatus, SearchAnimateThread
 from myself_tools import badname, kill_pid, load_localhost_end_anime_data, get_all_page, connect_myself_anime
 
-VERSION = '1.1.7'
+VERSION = '1.1.8'
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 #     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -46,6 +47,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.init_parameter(pid, os_system)
         self.init_auto_run()
         self.setWindowTitle(f'{self.windowTitle()}  ver:{VERSION}')
+        self.search_image = QtGui.QPixmap('./image/search.png')
+        self.search_image_label.setPixmap(self.search_image)
 
     def init_parameter(self, pid, os_system):
         """
@@ -56,8 +59,6 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
 
     def init_auto_run(self):
         """
-        宣告物件和一些物件的參數操作。
-        :param pid: 程序的 pid。
         """
         init_auto_run(self=self)
 
@@ -547,6 +548,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         if init:
             self.load_anime_label.setVisible(False)
             self.load_end_anime_label.setVisible(False)
+            self.load_search_anime_label.setVisible(False)
 
     def load_week_data(self):
         """
@@ -868,6 +870,49 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
     def mouseReleaseEvent(self, QMouseEvent):
         self.moveFlag = False
         self.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
+
+    def init_search_animate_layout(self):
+        for i in range(self.search_anime_info_gridLayout.count()):
+            self.search_anime_info_gridLayout.itemAt(i).widget().deleteLater()
+        for i in range(20):
+            row, col = divmod(i, 10)
+            label = QtWidgets.QLabel(self.search_page_gridLayout_2)
+            self.search_anime_info_gridLayout.addWidget(label, col, row, 1, 1)
+        for i in range(self.search_page_horizontalLayout.count()):
+            self.search_page_horizontalLayout.itemAt(i).widget().deleteLater()
+        self.search_animate_dict.clear()
+        self.search_pagination_dict.clear()
+
+    def search_animate(self):
+        """
+        搜尋動漫
+        """
+        if self.search_lineEdit.text():
+            self.load_search_anime_status = True
+            self.load_search_anime_label.setVisible(True)
+            self.search_button.setEnabled(False)
+            self.init_search_animate_layout()
+            self.search_animete_thread = SearchAnimateThread(search_name=self.search_lineEdit.text())
+            self.search_animete_thread.result.connect(self.search_animate_thread_result)
+            self.search_animete_thread.start()
+
+    def search_animate_thread_result(self, data):
+        """
+        搜尋動漫結果
+        """
+        create_search_item(self, data)
+        self.load_search_anime_status = False
+        self.load_search_anime_label.setVisible(False)
+        self.search_button.setEnabled(True)
+
+    def search_animate_pagination_event(self):
+        sender = self.sender()
+        pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
+        url = pushButton.objectName()
+        self.init_search_animate_layout()
+        self.search_animete_thread = SearchAnimateThread(url=url)
+        self.search_animete_thread.result.connect(self.search_animate_thread_result)
+        self.search_animete_thread.start()
 
 
 if __name__ == '__main__':

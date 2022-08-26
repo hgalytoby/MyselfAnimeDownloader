@@ -14,3 +14,4 @@ def pushbutton_clicked_connect(self):
     self.end_anime_pushButton.clicked.connect(self.update_end_anime)
     self.end_anime_lineEdit.textChanged.connect(self.search_end_anime)
     self.login_pushButton.clicked.connect(self.login_event)
+    self.search_button.clicked.connect(self.search_animate)

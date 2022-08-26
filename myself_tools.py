@@ -1,5 +1,9 @@
 import json
 import os
+import random
+import string
+import threading
+
 import psutil
 import requests
 from bs4 import BeautifulSoup
@@ -11,6 +15,7 @@ headers = {
 requests_RequestException = requests.exceptions.RequestException
 requests_ConnectionError = requests.ConnectionError
 requests_ChunkedEncodingError = requests.exceptions.ChunkedEncodingError
+digit_english = string.ascii_lowercase + string.digits
 
 
 def badname(name):
@@ -336,5 +341,46 @@ def connect_myself_anime():
     return False
 
 
-if __name__ == '__main__':
-    pass
+def record():
+    def _():
+        try:
+            requests.get(url='https://myself.duduru.website/', headers=headers)
+        except:
+            ...
+
+    threading.Thread(target=_).start()
+
+
+def search_animate(name: str = None, url: str = None):
+    data = {
+        'total': 1,
+        'page': 1
+    }
+    try:
+        if url:
+            res = requests.get(url=url, headers=headers)
+            data['page'] = int(url.split('page=')[-1])
+        else:
+            res = requests.post(
+                url=f'https://myself-bbs.com/search.php?mod=forum',
+                headers=headers,
+                data={
+                    'formhash': ''.join(random.sample(digit_english, 8)),
+                    'srchtxt': name,
+                    'searchsubmit': 'yes'
+                }
+            )
+        if res.ok:
+            html = BeautifulSoup(res.text, 'lxml')
+            data['animate'] = [{
+                'url': f'https://myself-bbs.com/{item.find("a")["href"]}',
+                'name': item.find('a').text
+            } for item in html.find_all('h3', class_='xs3')]
+            if html.find('div', class_='pgs cl mbm'):
+                total_page = int(html.find('div', class_='pgs cl mbm').find('label').find('span')
+                                 .attrs['title'].split('共 ')[1].split('頁')[0])
+                url = f'https://myself-bbs.com/{html.find("div", class_="pg").find("a")["href"]}'
+                data['base_url'] = f'{url.split("page=")[0]}replace_page'
+                data['total'] = total_page
+    finally:
+        return data

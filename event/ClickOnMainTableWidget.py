@@ -14,3 +14,7 @@ def click_on_tablewidget(self, index):
         self.load_anime_label.setVisible(False)
     elif index == 2 and self.load_anime_label_status:
         self.load_anime_label.setVisible(True)
+    if index != 6 and self.load_search_anime_status:
+        self.load_search_anime_label.setVisible(False)
+    elif index == 6 and self.load_search_anime_status:
+        self.load_search_anime_label.setVisible(True)

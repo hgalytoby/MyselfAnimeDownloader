@@ -56,8 +56,8 @@
      <rect>
       <x>10</x>
       <y>55</y>
-      <width>1001</width>
-      <height>405</height>
+      <width>1011</width>
+      <height>401</height>
      </rect>
     </property>
     <property name="font">
@@ -122,8 +122,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>975</width>
+               <height>309</height>
               </rect>
              </property>
             </widget>
@@ -149,8 +149,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>67</width>
+               <height>16</height>
               </rect>
              </property>
             </widget>
@@ -176,8 +176,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>67</width>
+               <height>16</height>
               </rect>
              </property>
             </widget>
@@ -203,8 +203,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>67</width>
+               <height>16</height>
               </rect>
              </property>
             </widget>
@@ -230,8 +230,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>67</width>
+               <height>16</height>
               </rect>
              </property>
             </widget>
@@ -263,8 +263,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>67</width>
+               <height>16</height>
               </rect>
              </property>
             </widget>
@@ -296,8 +296,8 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>965</width>
-               <height>313</height>
+               <width>67</width>
+               <height>16</height>
               </rect>
              </property>
             </widget>
@@ -327,8 +327,8 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>983</width>
-           <height>363</height>
+           <width>993</width>
+           <height>359</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="end_scrollAreaWidgetContents_Layout"/>
@@ -794,8 +794,8 @@ gridline-color:#000000
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>983</width>
-           <height>281</height>
+           <width>993</width>
+           <height>277</height>
           </rect>
          </property>
          <layout class="QGridLayout" name="end_anime_gridLayout"/>
@@ -858,6 +858,82 @@ gridline-color:#000000
          </item>
         </layout>
        </widget>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="search_page_gridLayout_2">
+     <attribute name="title">
+      <string>搜尋動漫</string>
+     </attribute>
+     <layout class="QGridLayout" name="search_page_gridLayout" rowstretch="1,10,1,0,0,0">
+      <item row="0" column="0">
+       <layout class="QHBoxLayout" name="search_title_horizontalLayout" stretch="3,0,3,0,3">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="search_placeholder_label1">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="search_image_label">
+          <property name="text">
+           <string>search_image_label</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="search_lineEdit">
+          <property name="placeholderText">
+           <string>請輸入要搜尋的動漫名字</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="search_button">
+          <property name="text">
+           <string>搜尋</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="search_placeholder_label2">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0">
+       <layout class="QHBoxLayout" name="search_footer_horizontalLayout" stretch="2,8,2">
+        <item>
+         <widget class="QLabel" name="search_page_placeholder_label2">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="search_page_horizontalLayout"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="search_page_placeholder_label1">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <layout class="QGridLayout" name="search_anime_info_gridLayout" rowstretch="0" columnstretch="0"/>
       </item>
      </layout>
     </widget>
@@ -1082,6 +1158,27 @@ background-color: rgba(255, 255, 240, 100)
      <string>尚未登入</string>
     </property>
    </widget>
+   <widget class="QLabel" name="load_search_anime_label">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>220</y>
+      <width>400</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>18</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>搜尋動漫中</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -1151,7 +1248,7 @@ background-color: rgba(255, 255, 240, 100)
   <action name="menu_about">
    <property name="icon">
     <iconset>
-        <normaloff>../image/logo.ico</normaloff>../image/logo.ico
+     <normaloff>../image/logo.ico</normaloff>../image/logo.ico
     </iconset>
    </property>
    <property name="text">
@@ -1163,9 +1260,9 @@ background-color: rgba(255, 255, 240, 100)
   </action>
   <action name="actionf">
    <property name="icon">
-       <iconset>
-           <normaloff>../image/update.ico</normaloff>../image/update.ico
-       </iconset>
+    <iconset>
+     <normaloff>../image/update.ico</normaloff>../image/update.ico
+    </iconset>
    </property>
    <property name="text">
     <string>檢查更新</string>
