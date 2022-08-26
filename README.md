@@ -15,6 +15,8 @@ Mac 使用者解壓縮後，請將 MyselfAnime.app 放到應用程式的資料�
 ![image](https://i.imgur.com/0hPR31d.png)
 <br><br>
 一定要放到這裡！不然會無法開啟程式唷！
+
+Mac 第一次開啟會有點慢請耐心稍等，如果程式都沒出現請告知。
 <br>
 
 
