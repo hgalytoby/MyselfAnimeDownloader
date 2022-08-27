@@ -4,6 +4,11 @@
 ![image](https://i.imgur.com/rXhfd67.gif)<br>
 GitHub 支援 Gif 只到5MB，所以錄影時有暫停等待爬資料的時間，實際速度請別跟圖片相比。
 
+圖(最後更新 2022/08/07)。<br><br>
+增加搜尋動漫功能
+![image](https://i.imgur.com/1yuc05s.gif)<br>
+
+
 ## 更新日誌(2022/08/27)
 [查看更新日誌](https://github.com/hgalytoby/MyselfAnimeDownloader/blob/master/UpdateLog.md)	
 
@@ -26,6 +31,14 @@ Mac 第一次開啟會有點慢請耐心稍等，如果程式都沒出現請告�
 `pip install -r requirements.txt`<br>
 
 執行 `main.py` <br>
+
+
+## 注意事項
+- 如果遇到 Failed to execute script main 問題，參考 https://github.com/hgalytoby/MyselfAnimeDownloader/issues/25
+
+![image](https://user-images.githubusercontent.com/112224504/187010076-5ae0f4f5-98c5-4ae4-af8b-26a2c0c0e28c.png)<br>
+
+- 23
 
 
 ## 作者想說的話
