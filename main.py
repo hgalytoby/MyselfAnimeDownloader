@@ -906,6 +906,8 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         self.search_button.setEnabled(True)
 
     def search_animate_pagination_event(self):
+        self.load_search_anime_status = True
+        self.load_search_anime_label.setVisible(True)
         sender = self.sender()
         pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
         url = pushButton.objectName()
