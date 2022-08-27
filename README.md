@@ -34,11 +34,12 @@ Mac 第一次開啟會有點慢請耐心稍等，如果程式都沒出現請告�
 
 
 ## 注意事項
-- 如果遇到 Failed to execute script main 問題，參考 https://github.com/hgalytoby/MyselfAnimeDownloader/issues/25
+- 發生 Failed to execute script main 問題，參考 https://github.com/hgalytoby/MyselfAnimeDownloader/issues/25
 
 ![image](https://user-images.githubusercontent.com/112224504/187010076-5ae0f4f5-98c5-4ae4-af8b-26a2c0c0e28c.png)<br>
 
-- 23
+- 如果下載動漫都卡在 0 %，可能是防毒軟體擋住了，參考 https://github.com/hgalytoby/MyselfAnimeDownloader/issues/14
+- 如果有動漫正在下載時，在設定介面更新下載速度，更新前正在下載動漫的速度還會是舊的下載速度，請重開程式。
 
 
 ## 作者想說的話
