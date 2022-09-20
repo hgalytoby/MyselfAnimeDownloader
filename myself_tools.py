@@ -3,13 +3,16 @@ import os
 import random
 import string
 import threading
+import time
 
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 import psutil
 import requests
 from bs4 import BeautifulSoup
 
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.77 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
 }
 
 requests_RequestException = requests.exceptions.RequestException
@@ -32,8 +35,6 @@ def basic_config():
     """
     每次打開會判斷有沒有 config.json。
     """
-    # config = {'path': os.getcwd(), 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5,
-    #           're_download': {'status': True, 'min': 2}, 'status_bar': True, 'update': True}
     config = {'path': os.getcwd(), 'speed': {'type': 'slow', 'value': 1}, 'simultaneous': 5,
               'status_bar': True, 'update': True}
     if not os.path.isfile('config.json'):
@@ -90,25 +91,30 @@ def get_weekly_update():
     爬首頁的每周更新表。
     :return: Dict。
     """
-    res = requests.get(url='https://myself-bbs.com/portal.php', headers=headers)
-    html = BeautifulSoup(res.text, features='lxml')
-    week_dict = dict()
-    for i in html.find_all('div', id='tabSuCvYn'):
-        for index, j in enumerate(i.find_all('div', class_='module cl xl xl1')):
-            num = j.find_all('a') + j.find_all('span')
-            color = list()
-            anime_data = dict()
-            for k, v in enumerate(j.find_all('font')):
-                if k % 3 == 2:
-                    color.append(v.attrs['style'])
-            for k in range(len(num) // 2):
-                anime_data.update({num[k]['title']: {'update': num[k + len(num) // 2].text, 'color': color[k],
-                                                     'url': f'https://myself-bbs.com/{num[k]["href"]}'}})
-            week_dict.update({index: anime_data})
-    res.close()
-    res, html = None, None
-    del res, html
-    return week_dict
+    while True:
+        try:
+            res = requests.get(url='https://myself-bbs.com/portal.php', headers=headers, timeout=(5, 5))
+            html = BeautifulSoup(res.text, features='lxml')
+            week_dict = dict()
+            for i in html.find_all('div', id='tabSuCvYn'):
+                for index, j in enumerate(i.find_all('div', class_='module cl xl xl1')):
+                    num = j.find_all('a') + j.find_all('span')
+                    color = list()
+                    anime_data = dict()
+                    for k, v in enumerate(j.find_all('font')):
+                        if k % 3 == 2:
+                            color.append(v.attrs['style'])
+                    for k in range(len(num) // 2):
+                        anime_data.update({num[k]['title']: {'update': num[k + len(num) // 2].text, 'color': color[k],
+                                                             'url': f'https://myself-bbs.com/{num[k]["href"]}'}})
+                    week_dict.update({index: anime_data})
+            res.close()
+            res, html = None, None
+            del res, html
+            return week_dict
+        except Exception as e:
+            print(f'error get_end_anime_list: {e}')
+            time.sleep(5)
 
 
 def get_end_anime_list():
@@ -116,22 +122,27 @@ def get_end_anime_list():
     爬完結列表頁面的動漫資訊
     :return: Dict。
     """
-    url = 'https://myself-bbs.com/portal.php?mod=topic&topicid=8'
-    res = requests.get(url=url, headers=headers)
-    html = BeautifulSoup(res.text, features='lxml')
-    data = dict()
-    for index, i in enumerate(html.find_all('div', {'class': 'tab-title title column cl'})):
-        month = dict()
-        for j, m in enumerate(i.find_all('div', {'class': 'block move-span'})):
-            anime = dict()
-            for k in m.find('span', {'class': 'titletext'}):
-                year = k
-            for k in m.find_all('a'):
-                anime.update({k['title']: f"https://myself-bbs.com/{k['href']}"})
-            month.update({year: anime})
-        data.update({index: month})
-    res.close()
-    return data
+    while True:
+        try:
+            url = 'https://myself-bbs.com/portal.php?mod=topic&topicid=8'
+            res = requests.get(url=url, headers=headers, timeout=(5, 5))
+            html = BeautifulSoup(res.text, features='lxml')
+            data = dict()
+            for index, i in enumerate(html.find_all('div', {'class': 'tab-title title column cl'})):
+                month = dict()
+                for j, m in enumerate(i.find_all('div', {'class': 'block move-span'})):
+                    anime = dict()
+                    for k in m.find('span', {'class': 'titletext'}):
+                        year = k
+                    for k in m.find_all('a'):
+                        anime.update({k['title']: f"https://myself-bbs.com/{k['href']}"})
+                    month.update({year: anime})
+                data.update({index: month})
+            res.close()
+            return data
+        except Exception as e:
+            print(f'error get_end_anime_list: {e}')
+            time.sleep(5)
 
 
 def get_anime_data(anime_url):
@@ -140,42 +151,54 @@ def get_anime_data(anime_url):
     :param anime_url: 給網址。
     :return: Dict。
     """
-    try:
-        res = requests.get(url=anime_url, headers=headers)
-        html = BeautifulSoup(res.text, features='lxml')
-        data = {'home': anime_url, 'name': badname(html.find('title').text.split('【')[0])}
-        permission = html.find('div', id='messagetext')
-        if permission:
-            data.update({'permission': permission.text.strip()})
-        total = dict()
-        for i in html.select('ul.main_list'):
-            for j in i.find_all('a', href='javascript:;'):
-                title = j.text
-                for k in j.parent.select("ul.display_none li"):
-                    a = k.select_one("a[data-href*='v.myself-bbs.com']")
-                    if k.select_one("a").text == '站內':
-                        url = a["data-href"].replace('player/play', 'vpx').replace("\r", "").replace("\n", "")
-                        total.update({title: url})
-        data.update({'total': total})
-        for i in html.find_all('div', class_='info_info'):
-            for j, m in enumerate(i.find_all('li')):
-                text = m.text
-                if j == 4:
-                    text = text.split('官方網站: ')[1]
-                data.update({j: text})
-        for i in html.find_all('div', class_='info_introduction'):
-            for j in i.find_all('p'):
-                data.update({'info': j.text})
-        for i in html.find_all('div', class_='info_img_box fl'):
-            for j in i.find_all('img'):
-                image = requests.get(url=j['src'], headers=headers).content
-                data.update({'image': image})
-                del image
-        res.close()
-        del res, html
-        return data
-    except BaseException as error:
-        return False
+    while True:
+        try:
+            print(anime_url)
+            res = requests.get(url=anime_url, headers=headers, timeout=(5, 5))
+            html = BeautifulSoup(res.text, features='lxml')
+            data = {'home': anime_url, 'name': badname(html.find('title').text.split('【')[0])}
+            permission = html.find('div', id='messagetext')
+            if permission:
+                data.update({'permission': permission.text.strip()})
+            total = dict()
+            for i in html.select('ul.main_list'):
+                for j in i.find_all('a', href='javascript:;'):
+                    title = j.text
+                    for k in j.parent.select("ul.display_none li"):
+                        a = k.select_one("a[data-href*='v.myself-bbs.com']")
+                        if k.select_one("a").text == '站內':
+                            url = a["data-href"].replace('player/play', 'vpx').replace("\r", "").replace("\n", "")
+                            total.update({title: url})
+            data.update({'total': total})
+            for i in html.find_all('div', class_='info_info'):
+                for j, m in enumerate(i.find_all('li')):
+                    text = m.text
+                    if j == 4:
+                        text = text.split('官方網站: ')[1]
+                    data.update({j: text})
+            for i in html.find_all('div', class_='info_introduction'):
+                for j in i.find_all('p'):
+                    data.update({'info': j.text})
+            for i in html.find_all('div', class_='info_img_box fl'):
+                for j in i.find_all('img'):
+                    while True:
+                        try:
+                            image = requests.get(url=j['src'], headers=headers, timeout=(5, 5)).content
+                            data.update({'image': image})
+                            del image
+                            break
+                        except Exception as e:
+                            print(f'error get_anime_data image: {e}')
+                        time.sleep(5)
+            res.close()
+            del res, html
+            return data
+        except requests.exceptions.ProxyError as e:
+            print(f'error ProxyError get_anime_data: {e}')
+            time.sleep(5)
+        except Exception as e:
+            print(f'error Exception get_anime_data: {e}')
+            return False
 
 
 def cpu_memory(info):
@@ -220,13 +243,18 @@ def get_total_page(get_html=False):
     :param get_html: True = 將 requests.text 返回。
     :return: Dict。
     """
-    res = requests.get(url='https://myself-bbs.com/forum-113-1.html', headers=headers).text
-    html = BeautifulSoup(res, 'lxml')
-    for i in html.find_all('div', class_='pg'):
-        total_page = int(i.find('span')['title'].split(' ')[1])
-        if get_html:
-            return {'total_page': total_page, 'html': res}
-        return {'total_page': total_page}
+    while True:
+        try:
+            res = requests.get(url='https://myself-bbs.com/forum-113-1.html', headers=headers, timeout=(5, 5)).text
+            html = BeautifulSoup(res, 'lxml')
+            for i in html.find_all('div', class_='pg'):
+                total_page = int(i.find('span')['title'].split(' ')[1])
+                if get_html:
+                    return {'total_page': total_page, 'html': res}
+                return {'total_page': total_page}
+        except Exception as e:
+            print(f'error get_total_page: {e}')
+            time.sleep(5)
 
 
 def download_end_anime_preview(img_url):
@@ -246,7 +274,13 @@ def get_now_page_anime_data(page, res=None):
     """
     url = f'https://myself-bbs.com/forum-113-{page}.html'
     if not res:
-        res = requests.get(url=url, headers=headers).text
+        while True:
+            try:
+                res = requests.get(url=url, headers=headers, timeout=(5, 5)).text
+                break
+            except Exception as e:
+                print(f'error get_now_page_anime_data: {e}')
+                time.sleep(5)
     html = BeautifulSoup(res, 'lxml')
     data = dict()
     for i in html.find_all('div', class_='c cl'):
@@ -264,28 +298,39 @@ def check_version(version):
     :param version: 主程式目前版本
     :return: True = 有新版本，False = 最新版本。
     """
-    res = requests.get(url='https://github.com/hgalytoby/MyselfAnimeDownloader', headers=headers).text
-    new_version = res.split('版本ver ')[1].split('<')[0]
-    if new_version != version:
-        return True
-    return False
+    while True:
+        try:
+            res = requests.get(url='https://github.com/hgalytoby/MyselfAnimeDownloader', headers=headers,
+                               timeout=(5, 5)).text
+            new_version = res.split('版本ver ')[1].split('<')[0]
+            if new_version != version:
+                return True
+            return False
+        except:
+            time.sleep(5)
 
 
 def get_login_select():
     default = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.105 Safari/537.36',
     }
-    res = requests.get(url='https://myself-bbs.com/member.php?mod=logging&action=login', headers=default)
-    html = BeautifulSoup(res.text, 'lxml')
-    data = {'login': {}, 'question': {}}
-    for i, m in enumerate(html.find_all('select')):
-        if i == 0:
-            for j in m.find_all('option'):
-                data['login'].update({j.text: j['value']})
-        else:
-            for j in m.find_all('option'):
-                data['question'].update({j.text: j['value']})
-    return data
+    while True:
+        try:
+            res = requests.get(url='https://myself-bbs.com/member.php?mod=logging&action=login', headers=default,
+                               timeout=(5, 5))
+            html = BeautifulSoup(res.text, 'lxml')
+            data = {'login': {}, 'question': {}}
+            for i, m in enumerate(html.find_all('select')):
+                if i == 0:
+                    for j in m.find_all('option'):
+                        data['login'].update({j.text: j['value']})
+                else:
+                    for j in m.find_all('option'):
+                        data['question'].update({j.text: j['value']})
+            return data
+        except Exception as e:
+            print(f'error get_login_select: {e}')
+            time.sleep(5)
 
 
 def get_formhash(res_text):
@@ -313,15 +358,20 @@ def myself_login(login_data):
         'answer': login_data['answer'],
         'cookietime': 2592000,
     }
-    res = requests.Session()
-    home_html = res.get(url=home_url, headers=headers)
-    data.update({'formhash': get_formhash(res_text=home_html)})
-    res.post(url=login_url, headers=headers, data=data)
-    if not res.cookies.get('UETw_aa10_saltkey') or not res.cookies.get('UETw_aa10_auth'):
-        return False
-    headers.update({
-        'cookie': f'UETw_aa10_saltkey={res.cookies["UETw_aa10_saltkey"]}; UETw_aa10_auth={res.cookies["UETw_aa10_auth"]};'})
-    return True
+    while True:
+        try:
+            res = requests.Session()
+            home_html = res.get(url=home_url, headers=headers, timeout=(5, 5))
+            data.update({'formhash': get_formhash(res_text=home_html)})
+            res.post(url=login_url, headers=headers, data=data)
+            if not res.cookies.get('UETw_aa10_saltkey') or not res.cookies.get('UETw_aa10_auth'):
+                return False
+            headers.update({
+                'cookie': f'UETw_aa10_saltkey={res.cookies["UETw_aa10_saltkey"]}; UETw_aa10_auth={res.cookies["UETw_aa10_auth"]};'})
+            return True
+        except Exception as e:
+            print(f'error myself_login: {e}')
+            time.sleep(5)
 
 
 def get_all_page(data):
@@ -332,12 +382,16 @@ def get_all_page(data):
 
 
 def connect_myself_anime():
-    try:
-        res = requests.get(url='https://myself-bbs.com/portal.php', headers=headers, timeout=5)
-        if res.ok:
-            return True
-    except:
-        pass
+    count = 0
+    while count < 10:
+        try:
+            res = requests.get(url='https://myself-bbs.com/portal.php', headers=headers, timeout=(5, 5))
+            if res.ok:
+                return True
+        except Exception as e:
+            print(f'connect_myself_anime: {e}')
+            count += 1
+            time.sleep(5)
     return False
 
 
@@ -356,31 +410,41 @@ def search_animate(name: str = None, url: str = None):
         'total': 1,
         'page': 1
     }
-    try:
-        if url:
-            res = requests.get(url=url, headers=headers)
-            data['page'] = int(url.split('page=')[-1])
-        else:
-            res = requests.post(
-                url=f'https://myself-bbs.com/search.php?mod=forum',
-                headers=headers,
-                data={
-                    'formhash': ''.join(random.sample(digit_english, 8)),
-                    'srchtxt': name,
-                    'searchsubmit': 'yes'
-                }
-            )
-        if res.ok:
-            html = BeautifulSoup(res.text, 'lxml')
-            data['animate'] = [{
-                'url': f'https://myself-bbs.com/{item.find("a")["href"]}',
-                'name': item.find('a').text
-            } for item in html.find_all('h3', class_='xs3')]
-            if html.find('div', class_='pgs cl mbm'):
-                total_page = int(html.find('div', class_='pgs cl mbm').find('label').find('span')
-                                 .attrs['title'].split('共 ')[1].split('頁')[0])
-                url = f'https://myself-bbs.com/{html.find("div", class_="pg").find("a")["href"]}'
-                data['base_url'] = f'{url.split("page=")[0]}replace_page'
-                data['total'] = total_page
-    finally:
-        return data
+    count = 0
+    while count < 2:
+        try:
+            if url:
+                res = requests.get(url=url, headers=headers, timeout=(5, 5))
+                data['page'] = int(url.split('page=')[-1])
+            else:
+                res = requests.post(
+                    url=f'https://myself-bbs.com/search.php?mod=forum',
+                    headers=headers,
+                    data={
+                        'formhash': ''.join(random.sample(digit_english, 8)),
+                        'srchtxt': name,
+                        'searchsubmit': 'yes'
+                    },
+                    timeout=(5, 5)
+                )
+            if res.ok:
+                html = BeautifulSoup(res.text, 'lxml')
+                data['animate'] = [{
+                    'url': f'https://myself-bbs.com/{item.find("a")["href"]}',
+                    'name': item.find('a').text
+                } for item in html.find_all('h3', class_='xs3')]
+                if html.find('div', class_='pgs cl mbm'):
+                    total_page = int(html.find('div', class_='pgs cl mbm').find('label').find('span')
+                                     .attrs['title'].split('共 ')[1].split('頁')[0])
+                    url = f'https://myself-bbs.com/{html.find("div", class_="pg").find("a")["href"]}'
+                    data['base_url'] = f'{url.split("page=")[0]}replace_page'
+                    data['total'] = total_page
+                return data
+            else:
+                print(f'search_animate res error: {res.status_code}')
+                return data
+        except Exception as e:
+            print(f'error search_animate: {e}')
+            time.sleep(5)
+            count += 1
+    return data

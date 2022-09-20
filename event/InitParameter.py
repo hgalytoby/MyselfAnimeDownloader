@@ -21,6 +21,7 @@ def init_parameter(self, pid, os_system):
     self.week_layout_dict = dict()
     self.re_download_dict = dict()
     self.search_animate_dict = dict()
+    self.temp_search_animate_dict = dict()
     self.story_checkbox_dict = dict()
     self.download_anime_Thread = dict()
     self.search_pagination_dict = dict()

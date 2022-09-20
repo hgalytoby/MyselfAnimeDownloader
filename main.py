@@ -28,7 +28,7 @@ from myself_thread import WeeklyUpdate, EndAnime, AnimeData, History, LoadingCon
     CheckVersion, ReDownload, CheckTsStatus, SearchAnimateThread
 from myself_tools import badname, kill_pid, load_localhost_end_anime_data, get_all_page, connect_myself_anime
 
-VERSION = '1.1.8'
+VERSION = '1.1.9'
 
 # if hasattr(QtCore.Qt, 'AA_EnableHighDpiScaling'):
 #     QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -679,7 +679,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             # self.anime_info.terminate()
             # self.anime_info.wait()
             # self.anime_info.quit()
-            del self.anime_data
+            # del self.anime_data
 
     def loading_end_anime(self):
         """
@@ -863,9 +863,12 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
             event.accept()
 
     def mouseMoveEvent(self, QMouseEvent):
-        if QtCore.Qt.LeftButton and self.moveFlag:
-            self.move(QMouseEvent.globalPos() - self.movePosition)
-            QMouseEvent.accept()
+        try:
+            if QtCore.Qt.LeftButton and self.moveFlag:
+                self.move(QMouseEvent.globalPos() - self.movePosition)
+                QMouseEvent.accept()
+        except AttributeError as e:
+            print(f'error mouseMoveEvent: {e}')
 
     def mouseReleaseEvent(self, QMouseEvent):
         self.moveFlag = False
@@ -900,7 +903,15 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
         """
         搜尋動漫結果
         """
-        create_search_item(self, data)
+        if not data.get('animate'):
+            QtWidgets.QMessageBox.information(self, "確定",
+                                              f"<font size=5  color=#000000>已發多次請求，但網路不穩！</font><br/><font size=4  color=#000000>請重新搜尋！</font>",
+                                              QtWidgets.QMessageBox.Ok)
+            if self.temp_search_animate_dict:
+                create_search_item(self, self.temp_search_animate_dict)
+        else:
+            create_search_item(self, data)
+            self.temp_search_animate_dict = data
         self.load_search_anime_status = False
         self.load_search_anime_label.setVisible(False)
         self.search_button.setEnabled(True)
@@ -908,6 +919,7 @@ class Anime(QtWidgets.QMainWindow, Ui_Anime):
     def search_animate_pagination_event(self):
         self.load_search_anime_status = True
         self.load_search_anime_label.setVisible(True)
+        self.search_button.setEnabled(False)
         sender = self.sender()
         pushButton = self.findChild(QtWidgets.QPushButton, sender.objectName())
         url = pushButton.objectName()
@@ -924,21 +936,21 @@ if __name__ == '__main__':
         # MAC 要改 工作路徑，此路徑為 Applications 絕對路徑。
         os.chdir('/Applications/MyselfAnime.app/Contents/Macos')
     app = QtWidgets.QApplication(sys.argv)
-    if not connect_myself_anime():
-        msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Critical)
-        msg.setText("請確認可以進入 <a href=https://myself-bbs.com/portal.php>MyselfAnime</a> 網站")
-        msg.setWindowTitle("無法取得 MyselfAnime 網站資料!")
-        msg.setWindowIcon(QtGui.QIcon('./image/logo.ico'))
-        msg.exec_()
-    else:
-        # myStyle = MyProxyStyle()
-        # app.setStyle(myStyle)
-        anime = Anime(pid=os.getpid(), os_system=os_system)
-        # config = Config(anime=anime)
-        about = About()
-        anime.menu.actions()[1].triggered.connect(about.show)
-        anime.show()
-        tray_icon = TrayIcon(anime)
-        app.exec_()
-        kill_pid(os.getpid())
+    # if not connect_myself_anime():
+    #     msg = QtWidgets.QMessageBox()
+    #     msg.setIcon(QtWidgets.QMessageBox.Critical)
+    #     msg.setText("請確認可以進入 <a href=https://myself-bbs.com/portal.php>MyselfAnime</a> 網站")
+    #     msg.setWindowTitle("無法取得 MyselfAnime 網站資料!")
+    #     msg.setWindowIcon(QtGui.QIcon('./image/logo.ico'))
+    #     msg.exec_()
+    # else:
+    # myStyle = MyProxyStyle()
+    # app.setStyle(myStyle)
+    anime = Anime(pid=os.getpid(), os_system=os_system)
+    # config = Config(anime=anime)
+    about = About()
+    anime.menu.actions()[1].triggered.connect(about.show)
+    anime.show()
+    tray_icon = TrayIcon(anime)
+    app.exec_()
+    kill_pid(os.getpid())
