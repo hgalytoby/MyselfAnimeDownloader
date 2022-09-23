@@ -152,6 +152,8 @@ class DownloadVideo(QtCore.QThread):
             os.makedirs(f'{self.path["path"]}/{self.folder_name}')
         if self.data['video_ts'] == 0 and os.path.isfile(self.file_path):
             os.remove(self.file_path)
+        if os.path.isfile(self.file_path.split('.download')[0]):
+            os.remove(self.file_path.split('.download')[0])
         json.dump({'queue': self.anime.download_queue}, open('./Log/DownloadQueue.json', 'w', encoding='utf-8'),
                   indent=2)
         json.dump(self.data, open(f'./Log/undone/{self.data["total_name"]}.json', 'w', encoding='utf-8'), indent=2)
@@ -293,20 +295,24 @@ class DownloadVideo(QtCore.QThread):
                     })
                     self.exit = True
                     break
-                self.data.update({
-                    'schedule': int(self.data['video_ts'] / (m3u8_count - 1) * 100),
-                    'status': '下載中',
-                })
-                self.download_video.emit(self.data)
+                if self.data['status'] != '已完成':
+                    self.data.update({
+                        'schedule': int(self.data['video_ts'] / (m3u8_count - 1) * 100),
+                        'status': '下載中',
+                    })
+                    self.download_video.emit(self.data)
                 time.sleep(0.3)
-            self.download_video.emit(self.data)
-            self.anime.now_download_value -= 1
             try:
                 if self.data['video_ts'] == m3u8_count:
                     os.rename(self.file_path, self.file_path.split('.download')[0])
                     self.anime.download_queue.remove(self.data["total_name"])
+                    json.dump({'queue': self.anime.download_queue},
+                              open('./Log/DownloadQueue.json', 'w', encoding='utf-8'),
+                              indent=2)
             except BaseException as e:
                 print(f'抓刪除時 queue 有錯誤 {e}')
+            self.download_video.emit(self.data)
+            self.anime.now_download_value -= 1
         json.dump({'queue': self.anime.download_queue}, open('./Log/DownloadQueue.json', 'w', encoding='utf-8'),
                   indent=2)
         self.quit()
