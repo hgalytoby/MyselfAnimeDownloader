@@ -1,4 +1,8 @@
 # MyselfAnimeDownloader 版本ver 1.1.9
+
+# 因結束營運，此 Repo 不再更新。
+![image](https://user-images.githubusercontent.com/50397689/199484552-34664ef5-14c2-4b3b-928e-eeccf22c53b3.png)
+
 ## 預覽
 圖(最後更新 2021/03/15)。<br><br>
 ![image](https://i.imgur.com/rXhfd67.gif)<br>
