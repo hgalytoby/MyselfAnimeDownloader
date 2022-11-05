@@ -1,5 +1,9 @@
 # 更新日誌
 
+## ver1.1.10 2022/11/05
+- 1.改成用 websocket 拿影片資料。
+
+
 ## ver1.1.9 2022/09/20
 - 1.取消開啟程式檢查是否可以連線到 MyselfAnime 網站的功能。
 - 2.將除了影片下載的 requests 都包 while try except，time.sleep(5)(如有漏了請提醒)。
