@@ -1,6 +1,8 @@
 # MyselfAnimeDownloader 版本ver 1.1.10
 
-# 因結束營運，如沒太大問題此 Repo 不再更新。
+# 最後幾次更新了，希望大家動動小手手幫我右上角按星星，謝謝。
+
+# 結束營運後不再更新此 Repo。
 ![image](https://user-images.githubusercontent.com/50397689/199484552-34664ef5-14c2-4b3b-928e-eeccf22c53b3.png)
 
 ## 預覽
