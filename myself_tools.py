@@ -153,7 +153,6 @@ def get_anime_data(anime_url):
     """
     while True:
         try:
-            print(anime_url)
             res = requests.get(url=anime_url, headers=headers, timeout=(5, 5))
             html = BeautifulSoup(res.text, features='lxml')
             data = {'home': anime_url, 'name': badname(html.find('title').text.split('【')[0])}

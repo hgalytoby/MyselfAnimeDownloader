@@ -1,3 +1,4 @@
+import asyncio
 import shutil
 import time
 import os
@@ -6,6 +7,7 @@ import datetime
 from concurrent.futures.thread import ThreadPoolExecutor
 
 import psutil
+import websockets
 from PyQt5 import QtCore
 
 from myself_tools import get_weekly_update, get_end_anime_list, get_anime_data, requests_RequestException, \
@@ -225,6 +227,7 @@ class DownloadVideo(QtCore.QThread):
             self.download_video.emit(self.data)
             try:
                 res = download_request(url=self.data['url'], timeout=(15, 15))
+                print(res, res.text, self.data['url'])
                 if res:
                     data = res.json()
                     res.close()
@@ -266,17 +269,67 @@ class DownloadVideo(QtCore.QThread):
             url = res['host'][index]['host'] + res['video']['720p']
             time.sleep(5)
 
+    def get_m3u8_data_v2(self, url):
+        """
+        取得 m3u8 資料。
+        """
+        error_value = 1
+        self.data.update({'status': '取得影片資料中'})
+        while True:
+            try:
+                m3u8_data = download_request(url=url, timeout=(15, 15))
+                if m3u8_data:
+                    data = m3u8_data.text
+                    m3u8_data.close()
+                    self.data.update({'status': '成功取得影片資料'})
+                    self.download_video.emit(self.data)
+                    return data
+            except BaseException as error:
+                pass
+            self.data.update({'status': f'取得影片資料中(失敗{error_value}次)'})
+            self.download_video.emit(self.data)
+            error_value += 1
+            # if index == len(res['host']) - 1:
+            #     index = 0
+            # else:
+            #     index += 1
+            # url = res['host'][index]['host'] + res['video']['720p']
+            time.sleep(5)
+
+    def ws_get_host_and_m3u8_url(self, tid, vid):
+        async def ws(uri):
+            try:
+                async with websockets.connect(uri) as websocket:
+                    await websocket.send(json.dumps({"tid": tid, "vid": vid, "id": ""}))
+                    recv = await websocket.recv()
+                    res = json.loads(recv)
+                    nonlocal m3u8_url, host
+                    m3u8_url = f'https:{res["video"]}'
+                    host = m3u8_url.split('//')[1].split('.')[0]
+            except BaseException as e:
+                print('websocket 短時間連線太多會出問題')
+
+        m3u8_url, host = '', ''
+        asyncio.run(ws('wss://v.myself-bbs.com/ws'))
+        return host, m3u8_url
+
     def run(self):
         record()
         self.turn_me()
         if not self.exit:
-            res = self.get_host_video_data()
-            m3u8_data = self.get_m3u8_data(res)
+            # v2
+            tid, vid = self.data['url'].split('/')[-2:]
+            host, m3u8_url = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid)
+            m3u8_data = self.get_m3u8_data_v2(m3u8_url)
             m3u8_count = m3u8_data.count('EXTINF')
-            host = sorted(res['host'], key=lambda i: i.get('weight'), reverse=True)
+            # v1
+            # res = self.get_host_video_data()
+            # host = sorted(res['host'], key=lambda i: i.get('weight'), reverse=True)
+            # video_url = f'https://{host}.myself-bbs.com/{tid}/{vid}/720p'
             executor = ThreadPoolExecutor(max_workers=self.anime.speed_value)
             for i in range(self.data['video_ts'], m3u8_count):
-                executor.submit(self.video, i, res, host, m3u8_count)
+                # executor.submit(self.video, i, res, host, m3u8_count)
+                executor.submit(self.video_v2, i, host, tid, vid, m3u8_count)
             while True:
                 if self.data['video_ts'] == m3u8_count or self.exit:
                     break
@@ -373,6 +426,61 @@ class DownloadVideo(QtCore.QThread):
             else:
                 host_value += 1
             url = f"{host[host_value]['host']}{res['video']['720p'].split('.')[0]}_{i:03d}.ts"
+            time.sleep(3)
+        self.ts_time = time.time()
+
+    def video_v2(self, i, host, tid, vid, m3u8_count):
+        """
+        請求 URL 下載影片。
+        """
+        ok = False
+        while True:
+            video_url = f'https://{host}.myself-bbs.com/{tid}/{vid}/720p'
+            url = f"{video_url}_{i:03d}.ts"
+            try:
+                # if not self.stop and not self.exit and self.re_download_count > self.requests_error_count:
+                if not self.stop and not self.exit:
+                    data = download_request(url=url, stream=False, timeout=(5, 15))
+                    if data.ok:
+                        while True:
+                            if self.stop or self.exit:
+                                data.close()
+                                del data
+                                break
+                            elif self.data['video_ts'] == i and self.process_end:
+                                self.process_end = False
+                                with open(self.file_path, 'ab') as v:
+                                    self.write_undone(index=i, m3u8_count=m3u8_count)
+                                    v.write(data.content)
+                                    v.flush()
+                                    # shutil.copyfileobj(data.raw, v)
+                                self.data['video_ts'] += 1
+                                self.write_undone(index=self.data['video_ts'], m3u8_count=m3u8_count)
+                                if self.remove_file:
+                                    self.del_file()
+                                self.process_end = True
+                                ok = True
+                                data.close()
+                                del data
+                                break
+                            # elif self.stop or self.exit or self.requests_error_count > self.re_download_count:
+                            time.sleep(0.1)
+                    if ok:
+                        break
+                # if self.exit or self.requests_error_count > self.re_download_count:
+                if self.exit:
+                    break
+            except (requests_RequestException, requests_ConnectionError,
+                    requests_ChunkedEncodingError, ConnectionResetError) as e:
+                # self.requests_error_count += 1
+                print('req error', url)
+            except BaseException as error:
+                # self.requests_error_count += 1
+                print('BaseException', url)
+                # print(error, url)
+                # print('不明的錯: 暫時先換分流照做')
+            host, _ = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid)
+            print(host)
             time.sleep(3)
         self.ts_time = time.time()
 
