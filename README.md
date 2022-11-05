@@ -1,4 +1,11 @@
 # MyselfAnimeDownloader 版本ver 1.1.9
+
+
+# 在官方公告結束營運的那天晚上，官方改了拿影片的方式，所以現在下載器是無法下載影片的!
+# 如有很多人需要新的下載程式請在 Issues 留言，我在發布新版本，謝謝。
+# 因結束營運，此 Repo 不再更新。
+![image](https://user-images.githubusercontent.com/50397689/199484552-34664ef5-14c2-4b3b-928e-eeccf22c53b3.png)
+
 ## 預覽
 圖(最後更新 2021/03/15)。<br><br>
 ![image](https://i.imgur.com/rXhfd67.gif)<br>
