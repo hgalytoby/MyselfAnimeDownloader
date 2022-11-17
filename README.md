@@ -1,4 +1,4 @@
-# MyselfAnimeDownloader 版本ver 1.1.10
+# MyselfAnimeDownloader 版本ver 1.1.11
 
 # 最後幾次更新了，希望大家動動小手手幫我右上角按星星，謝謝。
 
