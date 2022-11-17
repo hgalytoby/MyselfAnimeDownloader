@@ -4,15 +4,14 @@ import random
 import string
 import threading
 import time
-
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 import psutil
 import requests
 from bs4 import BeautifulSoup
 
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+    'origin': 'https://v.myself-bbs.com',
+    'referer': 'https://v.myself-bbs.com/',
 }
 
 requests_RequestException = requests.exceptions.RequestException
