@@ -5,9 +5,10 @@ import os
 import json
 import datetime
 from concurrent.futures.thread import ThreadPoolExecutor
+from contextlib import closing
 
 import psutil
-import websockets
+import websocket
 from PyQt5 import QtCore
 
 from myself_tools import get_weekly_update, get_end_anime_list, get_anime_data, requests_RequestException, \
@@ -269,7 +270,7 @@ class DownloadVideo(QtCore.QThread):
             url = res['host'][index]['host'] + res['video']['720p']
             time.sleep(5)
 
-    def get_m3u8_data_v2(self, url):
+    def get_m3u8_data_v2(self, url, tid, vid):
         """
         取得 m3u8 資料。
         """
@@ -288,6 +289,7 @@ class DownloadVideo(QtCore.QThread):
                 pass
             self.data.update({'status': f'取得影片資料中(失敗{error_value}次)'})
             self.download_video.emit(self.data)
+            _, url = self.ws_get_host_and_m3u8_url(tid, vid)
             error_value += 1
             # if index == len(res['host']) - 1:
             #     index = 0
@@ -297,21 +299,24 @@ class DownloadVideo(QtCore.QThread):
             time.sleep(5)
 
     def ws_get_host_and_m3u8_url(self, tid, vid):
-        async def ws(uri):
-            try:
-                async with websockets.connect(uri) as websocket:
-                    await websocket.send(json.dumps({"tid": tid, "vid": vid, "id": ""}))
-                    recv = await websocket.recv()
-                    res = json.loads(recv)
-                    nonlocal m3u8_url, host
-                    m3u8_url = f'https:{res["video"]}'
-                    host = m3u8_url.split('//')[1].split('.')[0]
-            except BaseException as e:
-                print('websocket 短時間連線太多會出問題')
-
-        m3u8_url, host = '', ''
-        asyncio.run(ws('wss://v.myself-bbs.com/ws'))
-        return host, m3u8_url
+        try:
+            with closing(websocket.create_connection(
+                    "wss://v.myself-bbs.com/ws",
+                    header={
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+                    },
+                    host='v.myself-bbs.com',
+                    origin='https://v.myself-bbs.com',
+            )) as ws:
+                ws.send(json.dumps({"tid": tid, "vid": vid, "id": ""}))
+                recv = ws.recv()
+                res = json.loads(recv)
+                m3u8_url = f'https:{res["video"]}'
+                host = m3u8_url.split('//')[1].split('.')[0]
+                return host, m3u8_url
+        except BaseException as e:
+            print('websocket 短時間連線太多會出問題')
+            return '', ''
 
     def run(self):
         record()
@@ -320,7 +325,7 @@ class DownloadVideo(QtCore.QThread):
             # v2
             tid, vid = self.data['url'].split('/')[-2:]
             host, m3u8_url = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid)
-            m3u8_data = self.get_m3u8_data_v2(m3u8_url)
+            m3u8_data = self.get_m3u8_data_v2(m3u8_url, tid, vid)
             m3u8_count = m3u8_data.count('EXTINF')
             # v1
             # res = self.get_host_video_data()
@@ -480,7 +485,6 @@ class DownloadVideo(QtCore.QThread):
                 # print(error, url)
                 # print('不明的錯: 暫時先換分流照做')
             host, _ = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid)
-            print(host)
             time.sleep(3)
         self.ts_time = time.time()
 
