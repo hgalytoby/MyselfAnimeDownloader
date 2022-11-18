@@ -309,7 +309,6 @@ class DownloadVideo(QtCore.QThread):
             )) as ws:
                 ws.send(json.dumps({"tid": tid, "vid": vid, "id": ""}))
                 recv = ws.recv()
-                print(recv)
                 res = json.loads(recv)
                 m3u8_url = f'https:{res["video"]}'
                 host = m3u8_url.split('//')[1].split('.')[0]
