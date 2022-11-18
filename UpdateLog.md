@@ -1,12 +1,15 @@
 # 更新日誌
 
+## ver1.1.12 2022/11/17
+- 1.依照 websocket video 給的 vid 及 tid 組合 video url。
+
+
 ## ver1.1.11 2022/11/17
 - 1.增加 Header 參數。
 - 2.換 websocket 套件。
 
 ## ver1.1.10 2022/11/05
 - 1.改成用 websocket 拿影片資料。
-
 
 ## ver1.1.9 2022/09/20
 - 1.取消開啟程式檢查是否可以連線到 MyselfAnime 網站的功能。
