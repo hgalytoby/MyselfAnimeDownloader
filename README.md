@@ -1,4 +1,4 @@
-# MyselfAnimeDownloader 版本ver 1.1.12
+# MyselfAnimeDownloader 版本ver 1.1.13
 
 # 最後幾次更新了，希望大家動動小手手幫我右上角按星星，謝謝。
 
@@ -15,7 +15,7 @@ GitHub 支援 Gif 只到5MB，所以錄影時有暫停等待爬資料的時間�
 ![image](https://i.imgur.com/1yuc05s.gif)<br>
 
 
-## 更新日誌(2022/11/18)
+## 更新日誌(2022/11/21)
 [查看更新日誌](https://github.com/hgalytoby/MyselfAnimeDownloader/blob/master/UpdateLog.md)	
 
 

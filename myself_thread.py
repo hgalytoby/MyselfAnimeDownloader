@@ -311,10 +311,7 @@ class DownloadVideo(QtCore.QThread):
                 recv = ws.recv()
                 res = json.loads(recv)
                 m3u8_url = f'https:{res["video"]}'
-                host = m3u8_url.split('//')[1].split('.')[0]
-                vid = m3u8_url.split('/')[-2]
-                tid = m3u8_url.split('/')[-3]
-                video_url = f'https://{host}.myself-bbs.com/{tid}/{vid}/720p'
+                video_url = m3u8_url.split('.m3u8')[0]
                 return video_url, m3u8_url
         except BaseException as e:
             print('websocket 短時間連線太多會出問題')
@@ -471,6 +468,9 @@ class DownloadVideo(QtCore.QThread):
                                 break
                             # elif self.stop or self.exit or self.requests_error_count > self.re_download_count:
                             time.sleep(0.1)
+                    elif not data.ok:
+                        video_url, _ = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid)
+                        print(f'in not ok, new video_url: {url}{video_url}')
                     if ok:
                         break
                 # if self.exit or self.requests_error_count > self.re_download_count:
@@ -480,12 +480,16 @@ class DownloadVideo(QtCore.QThread):
                     requests_ChunkedEncodingError, ConnectionResetError) as e:
                 # self.requests_error_count += 1
                 print('req error', url)
+                video_url, _ = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid)
+                print('s', video_url, url)
+
             except BaseException as error:
                 # self.requests_error_count += 1
                 print('BaseException', url)
                 # print(error, url)
                 # print('不明的錯: 暫時先換分流照做')
-            video_url, _ = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid)
+                video_url, _ = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid)
+                print('s', video_url, url)
             time.sleep(3)
         self.ts_time = time.time()
 
