@@ -6,6 +6,7 @@ import datetime
 from concurrent.futures.thread import ThreadPoolExecutor
 from contextlib import closing
 
+import m3u8
 import psutil
 import websocket
 from PyQt5 import QtCore
@@ -269,7 +270,7 @@ class DownloadVideo(QtCore.QThread):
             url = res['host'][index]['host'] + res['video']['720p']
             time.sleep(5)
 
-    def get_m3u8_data_v2(self, url, tid, vid):
+    def get_m3u8_data_v2(self, url, tid, vid, video_id):
         """
         取得 m3u8 資料。
         """
@@ -288,7 +289,7 @@ class DownloadVideo(QtCore.QThread):
                 pass
             self.data.update({'status': f'取得影片資料中(失敗{error_value}次)'})
             self.download_video.emit(self.data)
-            _, url = self.ws_get_host_and_m3u8_url(tid, vid)
+            _, url = self.ws_get_host_and_m3u8_url(tid, vid, video_id)
             error_value += 1
             # if index == len(res['host']) - 1:
             #     index = 0
@@ -297,7 +298,7 @@ class DownloadVideo(QtCore.QThread):
             # url = res['host'][index]['host'] + res['video']['720p']
             time.sleep(5)
 
-    def ws_get_host_and_m3u8_url(self, tid, vid):
+    def ws_get_host_and_m3u8_url(self, tid, vid, video_id):
         try:
             with closing(websocket.create_connection(
                     "wss://v.myself-bbs.com/ws",
@@ -307,11 +308,14 @@ class DownloadVideo(QtCore.QThread):
                     host='v.myself-bbs.com',
                     origin='https://v.myself-bbs.com',
             )) as ws:
-                ws.send(json.dumps({"tid": tid, "vid": vid, "id": ""}))
+                ws.send(json.dumps({'tid': tid, 'vid': vid, 'id': video_id}))
                 recv = ws.recv()
                 res = json.loads(recv)
                 m3u8_url = f'https:{res["video"]}'
-                video_url = m3u8_url.split('.m3u8')[0]
+                if video_id:
+                    video_url = m3u8_url.split('/index.m3u8')[0]
+                else:
+                    video_url = m3u8_url[:m3u8_url.rfind('/')]
                 return video_url, m3u8_url
         except BaseException as e:
             print('websocket 短時間連線太多會出問題')
@@ -322,10 +326,15 @@ class DownloadVideo(QtCore.QThread):
         self.turn_me()
         if not self.exit:
             # v2
-            tid, vid = self.data['url'].split('/')[-2:]
-            video_url, m3u8_url = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid)
-            m3u8_data = self.get_m3u8_data_v2(m3u8_url, tid, vid)
-            m3u8_count = m3u8_data.count('EXTINF')
+            temp = self.data['url'].split('/')
+            if temp[-1].isdigit():
+                tid, vid, video_id = temp[-2], temp[-1], ''
+            else:
+                tid, vid, video_id = '', '', temp[-1]
+            video_url, m3u8_url = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid, video_id=video_id)
+            m3u8_data = self.get_m3u8_data_v2(m3u8_url, tid, vid, video_id)
+            m3u8_obj = m3u8.loads(m3u8_data)
+            m3u8_count = len(m3u8_obj.segments)
             # v1
             # res = self.get_host_video_data()
             # host = sorted(res['host'], key=lambda i: i.get('weight'), reverse=True)
@@ -333,7 +342,7 @@ class DownloadVideo(QtCore.QThread):
             executor = ThreadPoolExecutor(max_workers=self.anime.speed_value)
             for i in range(self.data['video_ts'], m3u8_count):
                 # executor.submit(self.video, i, res, host, m3u8_count)
-                executor.submit(self.video_v2, i, video_url, tid, vid, m3u8_count)
+                executor.submit(self.video_v2, i, m3u8_obj.segments[i].uri, video_url, tid, vid, m3u8_count, video_id)
             while True:
                 if self.data['video_ts'] == m3u8_count or self.exit:
                     break
@@ -433,13 +442,13 @@ class DownloadVideo(QtCore.QThread):
             time.sleep(3)
         self.ts_time = time.time()
 
-    def video_v2(self, i, video_url, tid, vid, m3u8_count):
+    def video_v2(self, i, uri, video_url, tid, vid, m3u8_count, video_id):
         """
         請求 URL 下載影片。
         """
         ok = False
         while True:
-            url = f"{video_url}_{i:03d}.ts"
+            url = f'{video_url}/{uri}'
             try:
                 # if not self.stop and not self.exit and self.re_download_count > self.requests_error_count:
                 if not self.stop and not self.exit:
@@ -469,7 +478,7 @@ class DownloadVideo(QtCore.QThread):
                             # elif self.stop or self.exit or self.requests_error_count > self.re_download_count:
                             time.sleep(0.1)
                     elif not data.ok:
-                        video_url, _ = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid)
+                        video_url, _ = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid, video_id=video_id)
                         print(f'in not ok, new video_url: {url}{video_url}')
                     if ok:
                         break
@@ -480,15 +489,15 @@ class DownloadVideo(QtCore.QThread):
                     requests_ChunkedEncodingError, ConnectionResetError) as e:
                 # self.requests_error_count += 1
                 print('req error', url)
-                video_url, _ = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid)
+                video_url, _ = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid, video_id=video_id)
                 print('s', video_url, url)
 
             except BaseException as error:
                 # self.requests_error_count += 1
-                print('BaseException', url)
+                print('BaseException', error, url)
                 # print(error, url)
                 # print('不明的錯: 暫時先換分流照做')
-                video_url, _ = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid)
+                video_url, _ = self.ws_get_host_and_m3u8_url(tid=tid, vid=vid, video_id=video_id)
                 print('s', video_url, url)
             time.sleep(3)
         self.ts_time = time.time()
