@@ -10,7 +10,7 @@ GitHub 支援 Gif 只到5MB，所以錄影時有暫停等待爬資料的時間�
 ![image](https://i.imgur.com/1yuc05s.gif)<br>
 
 
-## 更新日誌(2022/11/21)
+## 更新日誌(2022/12/24)
 [查看更新日誌](https://github.com/hgalytoby/MyselfAnimeDownloader/blob/master/UpdateLog.md)	
 
 
