@@ -9,12 +9,22 @@ from contextlib import closing
 import m3u8
 import psutil
 import websocket
+import ssl
 from PyQt5 import QtCore
 
 from myself_tools import get_weekly_update, get_end_anime_list, get_anime_data, requests_RequestException, \
     requests_ChunkedEncodingError, requests_ConnectionError, download_request, get_total_page, get_now_page_anime_data, \
     download_end_anime_preview, badname, check_version, cpu_memory, myself_login, get_login_select, search_animate, \
     record
+
+ws_opt = {
+    'url': "wss://v.myself-bbs.com/ws",
+    'header': {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+    },
+    'host': 'v.myself-bbs.com',
+    'origin': 'https://v.myself-bbs.com',
+}
 
 
 class WeeklyUpdate(QtCore.QThread):
@@ -298,16 +308,10 @@ class DownloadVideo(QtCore.QThread):
             # url = res['host'][index]['host'] + res['video']['720p']
             time.sleep(5)
 
-    def ws_get_host_and_m3u8_url(self, tid, vid, video_id):
+    @classmethod
+    def ws_get_host_and_m3u8_url(cls, tid, vid, video_id):
         try:
-            with closing(websocket.create_connection(
-                    "wss://v.myself-bbs.com/ws",
-                    header={
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
-                    },
-                    host='v.myself-bbs.com',
-                    origin='https://v.myself-bbs.com',
-            )) as ws:
+            with closing(websocket.create_connection(**ws_opt)) as ws:
                 ws.send(json.dumps({'tid': tid, 'vid': vid, 'id': video_id}))
                 recv = ws.recv()
                 res = json.loads(recv)
@@ -317,8 +321,12 @@ class DownloadVideo(QtCore.QThread):
                 else:
                     video_url = m3u8_url[:m3u8_url.rfind('/')]
                 return video_url, m3u8_url
+        except ssl.SSLCertVerificationError:
+            ws_opt['sslopt'] = {'cert_reqs': ssl.CERT_NONE}
+            print(f'ssl 憑證有問題: ws_opt: {ws_opt}')
+            return '', ''
         except BaseException as e:
-            print('websocket 短時間連線太多會出問題')
+            print(f'websocket 短時間連線太多會出問題: ws_opt: {ws_opt}')
             return '', ''
 
     def run(self):
