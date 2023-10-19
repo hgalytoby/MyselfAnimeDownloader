@@ -1,12 +1,83 @@
-from functools import reduce
-
+import json
+import ssl
 import m3u8
 import requests
+import websocket
+from contextlib import closing
+from functools import reduce
+from typing import TypedDict, List, Tuple
 from bs4 import BeautifulSoup
+
+# 2023/10/19 最後更新
 
 # 偽裝瀏覽器
 headers = {
-    'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.82 Mobile Safari/537.36 Edg/93.0.961.52',
+    'origin': 'https://v.myself-bbs.com',
+    'referer': 'https://v.myself-bbs.com/',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+}
+
+
+class WeekAnimateItemDict(TypedDict):
+    name: str
+    url: str
+    update_color: str
+    color: str
+    update: str
+
+
+class WeekAnimateDict(TypedDict):
+    Monday: List[WeekAnimateItemDict]
+    Tuesday: List[WeekAnimateItemDict]
+    Wednesday: List[WeekAnimateItemDict]
+    Thursday: List[WeekAnimateItemDict]
+    Friday: List[WeekAnimateItemDict]
+    Saturday: List[WeekAnimateItemDict]
+    Sunday: List[WeekAnimateItemDict]
+
+
+class BaseNameUrlTypedDict(TypedDict):
+    name: str
+    url: str
+
+
+class AnimateInfoVideoDataDict(BaseNameUrlTypedDict):
+    pass
+
+
+class AnimateInfoTableDict(TypedDict):
+    animate_type: str
+    premiere_date: str
+    episode: str
+    author: str
+    official_website: str
+    synopsis: str
+    image: str
+
+
+class AnimateTotalInfoTableDict(BaseNameUrlTypedDict):
+    video: List[AnimateInfoVideoDataDict]
+
+
+class FinishAnimatePageDataDict(BaseNameUrlTypedDict):
+    image: str
+
+
+class FinishListDataDict(TypedDict):
+    title: str
+    data: List[BaseNameUrlTypedDict]
+
+
+class FinishListDict(TypedDict):
+    data: List[FinishListDataDict]
+
+
+# websocket 設定
+ws_opt = {
+    'header': headers,
+    'url': "wss://v.myself-bbs.com/ws",
+    'host': 'v.myself-bbs.com',
+    'origin': 'https://v.myself-bbs.com',
 }
 
 # 星期一 ~ 星期日
@@ -31,9 +102,10 @@ animate_table = {
 }
 
 
-def badname(name: str) -> str:
+def bad_name(name: str) -> str:
     """
     避免不正當名字出現導致資料夾或檔案無法創建。
+
     :param name: 名字。
     :return: '白色相簿2'
     """
@@ -47,13 +119,13 @@ class Myself:
         try:
             return requests.get(url=url, headers=headers, timeout=timeout)
         except requests.exceptions.RequestException as error:
-            print(f'請求有錯誤: {error}')
-            return None
+            raise ValueError(f'請求有錯誤: {error}')
 
     @classmethod
-    def week_animate(cls) -> dict:
+    def week_animate(cls) -> WeekAnimateDict:
         """
         爬首頁的每週更新表。
+
         :return: dict。
         {
             'Monday': [{
@@ -81,15 +153,18 @@ class Myself:
                         'update_color': element.find('span').find('font').find('font')['style'],
                         'update': element.find('span').find('font').text,
                     })
+
                 data.update({
                     week[index]: animates
                 })
+
         return data
 
     @staticmethod
-    def animate_info_video_data(html: BeautifulSoup) -> list:
+    def animate_info_video_data(html: BeautifulSoup) -> List[AnimateInfoVideoDataDict]:
         """
         取得動漫網頁的影片 Api Url。
+
         :param html: BeautifulSoup 解析的網頁。
         :return: [{name: 第幾集名稱, url: 網址}]
         """
@@ -97,17 +172,28 @@ class Myself:
         for main_list in html.select('ul.main_list'):
             for a in main_list.find_all('a', href='javascript:;'):
                 name = a.text
-                for display in a.parent.select("ul.display_none li"):
-                    if display.select_one("a").text == '站內':
+                for display in a.parent.select('ul.display_none li'):
+                    if display.select_one('a').text == '站內':
                         a = display.select_one("a[data-href*='v.myself-bbs.com']")
-                        video_url = a["data-href"].replace('player/play', 'vpx').replace("\r", "").replace("\n", "")
-                        data.append({'name': badname(name=name), 'url': video_url})
+                        video_url = a['data-href'].replace(
+                            'player/play',
+                            'vpx',
+                        ).replace(
+                            '\r',
+                            '',
+                        ).replace('\n', '')
+                        data.append({
+                            'name': bad_name(name=name),
+                            'url': video_url,
+                        })
+
         return data
 
     @staticmethod
-    def animate_info_table(html: BeautifulSoup) -> dict:
+    def animate_info_table(html: BeautifulSoup) -> AnimateInfoTableDict:
         """
-        取得動漫資訊
+        取得動漫資訊。
+
         :return: {
             animate_type: 作品類型,
             premiere_date: 首播日期,
@@ -115,7 +201,8 @@ class Myself:
             author: 原著作者,
             official_website: 官方網站,
             remarks: 備注,
-            synopsis: 簡介
+            synopsis: 簡介,
+            image: 圖片網址,
         }
         """
         data = {}
@@ -124,17 +211,21 @@ class Myself:
                 text = element.text
                 key, value = text.split(': ')
                 data.update({animate_table[key]: value})
+
             for element in elements.find_all('p'):
                 data.update({'synopsis': element.text})
+
         for elements in html.find_all('div', class_='info_img_box fl'):
             for element in elements.find_all('img'):
                 data.update({'image': element['src']})
+
         return data
 
     @classmethod
-    def animate_total_info(cls, url: str) -> dict:
+    def animate_total_info(cls, url: str) -> AnimateTotalInfoTableDict:
         """
-        取得動漫業面全部資訊。
+        取得動漫頁面全部資訊。
+
         :param url: str -> 要爬的網址。
         :return: dict -> 動漫資料。
         {
@@ -147,7 +238,8 @@ class Myself:
             author: 原著作者,
             official_website: 官方網站,
             remarks: 備注,
-            synopsis: 簡介
+            synopsis: 簡介,
+            image: 圖片網址,
         }
         """
         res = cls._req(url=url)
@@ -157,15 +249,17 @@ class Myself:
             data.update(cls.animate_info_table(html=html))
             data.update({
                 'url': url,
-                'name': badname(html.find('title').text.split('【')[0]),
+                'name': bad_name(html.find('title').text.split('【')[0]),
                 'video': cls.animate_info_video_data(html=html)
             })
+
         return data
 
     @classmethod
-    def finish_list(cls) -> list:
+    def finish_list(cls) -> List[FinishListDict]:
         """
-        取得完結列表頁面的動漫資訊
+        取得完結列表頁面的動漫資訊。
+
         :return: [{
             'data': [
                 {'title': '2013年10月（秋）','data': [{'name': '白色相簿2', 'url': '動漫網址'}, {...}]},
@@ -185,14 +279,18 @@ class Myself:
                     season_list = []
                     for k in element.find_all('a'):
                         season_list.append({'name': k['title'], 'url': f"https://myself-bbs.com/{k['href']}"})
+
                     year_list.append({'title': year_month_title, 'data': season_list})
+
                 data.append({'data': year_list})
+
         return data
 
     @classmethod
-    def finish_animate_page_data(cls, url: str) -> list:
+    def finish_animate_page_data(cls, url: str) -> list[FinishAnimatePageDataDict]:
         """
         完結動漫頁面的動漫資料。
+
         :param url: 要爬的網址。
         :return: [{'url': 'https://myself-bbs.com/thread-43773-1-1.html', 'name': '白色相簿2'}, {...}]。
         """
@@ -203,21 +301,11 @@ class Myself:
             for elements in html.find_all('div', class_='c cl'):
                 data.append({
                     'url': f"https://myself-bbs.com/{elements.find('a')['href']}",
-                    'name': badname(elements.find('a')['title']),
+                    'name': bad_name(elements.find('a')['title']),
                     'image': f"https://myself-bbs.com/{elements.find('a').find('img')['src']}"
                 })
-        return data
 
-    @classmethod
-    def get_vpx_json(cls, url: str, timeout: tuple = (10, 10)) -> dict:
-        """
-        :param url: 影集的 Api Url。
-        :param timeout: 請求與讀取時間。
-        :return: 官網回應 json 格式。
-        """
-        res = cls._req(url=url, timeout=timeout)
-        if res and res.ok:
-            return res.json()
+        return data
 
     @classmethod
     def get_m3u8_text(cls, url: str, timeout: tuple = (10, 10)) -> str:
@@ -229,6 +317,7 @@ class Myself:
         res = cls._req(url=url, timeout=timeout)
         if res and res.ok:
             return res.text
+        raise ValueError('掛了')
 
     @classmethod
     def get_content(cls, url: str, timeout: tuple = (30, 30)) -> bytes:
@@ -240,11 +329,55 @@ class Myself:
         res = cls._req(url=url, timeout=timeout)
         if res and res.ok:
             return res.content
+        raise ValueError('掛了')
+
+    @classmethod
+    def ws_get_host_and_m3u8_url(
+            cls,
+            tid: str,
+            vid: str,
+            video_id: str,
+    ) -> Tuple[str, str]:
+        """
+        Websocket 取得 Host 和 M3U8 資料。
+
+        :param tid:
+        :param vid:
+        :param video_id:
+        :return: Host, M3U8 的 URL。
+        """
+        try:
+            with closing(websocket.create_connection(**ws_opt)) as ws:
+                ws.send(json.dumps({'tid': tid, 'vid': vid, 'id': video_id}))
+                recv = ws.recv()
+                res = json.loads(recv)
+                m3u8_url = f'https:{res["video"]}'
+                if video_id:
+                    video_url = m3u8_url.split('/index.m3u8')[0]
+                else:
+                    video_url = m3u8_url[:m3u8_url.rfind('/')]
+                return video_url, m3u8_url
+        except ssl.SSLCertVerificationError:
+            print(f'ssl 憑證有問題: ws_opt: {ws_opt}')
+
+            if 'sslopt' in ws_opt:
+                raise ValueError('不知道發生什麼錯誤了!')
+
+            # 有些人電腦會有 SSL 問題，加入 sslopt 設定並重新請求一次。
+            ws_opt['sslopt'] = {'cert_reqs': ssl.CERT_NONE}
+            return cls.ws_get_host_and_m3u8_url(
+                tid=tid,
+                vid=vid,
+                video_id=video_id,
+            )
+        except Exception as e:
+            raise ValueError(f'websocket 其餘未捕抓問題: {e}')
 
     @classmethod
     def download_animate_simple_example(cls):
         """
-        這是一個下載動漫簡單範例，肯定會發生請求錯誤，請自己修改邏輯判斷。
+        這是一個下載動漫簡單範例，有機率會發生請求錯誤，請自己修改邏輯判斷。
+
         :return:
         """
         # 取得白色相簿2的基本資訊。
@@ -253,16 +386,23 @@ class Myself:
         # 我要下載第一集，所以先拿出第一集的資料。
         episode1_info = animate_info['video'][0]
 
-        # 拿 vpx 資料。
-        vpx_json = cls.get_vpx_json(url=episode1_info['url'])
+        # 拆解 url 資料
+        temp = episode1_info['url'].split('/')
 
-        # 整理 host 順序，我個人猜測 weight 越高的越好。
-        host = sorted(vpx_json['host'], key=lambda x: x.get('weight'), reverse=True)
+        # 將需要的資料拆解，url 拆解有兩種模式。
+        if temp[-1].isdigit():
+            tid, vid, video_id = temp[-2], temp[-1], ''
+        else:
+            tid, vid, video_id = '', '', temp[-1]
 
-        # 將 weight 最高的 host 與 720p m3u8網址拿出來，組成完整 m3u8 網址。
-        m3u8_url = f"{host[0]['host']}{vpx_json['video']['720p']}"
+        # 取得影片 url 與 m3u8 url 的資料。
+        video_url, m3u8_url = cls.ws_get_host_and_m3u8_url(
+            tid=tid,
+            vid=vid,
+            video_id=video_id,
+        )
 
-        # 取得 m3u8 的資料。
+        # 取得 m3u8 資料
         m3u8_data = cls.get_m3u8_text(url=m3u8_url)
 
         # 使用 m3u8 套件讀取 m3u8 資料。
@@ -271,9 +411,9 @@ class Myself:
         # 抓出 m3u8 的所有 url。
         for m3u8_data in m3u8_obj.segments:
             # 組成 ts 完整的 url 。
-            ts_url = f"{host[0]['host']}{vpx_json['video']['720p'].replace('720p.m3u8', m3u8_data.uri)}"
-
-            # 開始下載(這裡我就不使用 thread 下載了。)
+            ts_url = f'{video_url}/{m3u8_data.uri}'
+            #
+            # # 開始下載(這裡我就不使用 thread 下載了。)
             video_content = cls.get_content(url=ts_url)
             with open(m3u8_data.uri, 'wb') as f:
                 f.write(video_content)
@@ -282,4 +422,14 @@ class Myself:
 
 
 if __name__ == '__main__':
+    # 完結動畫第一頁。
+    # Myself.finish_animate_page_data(url='https://myself-bbs.com/forum-113-1.html')
+
+    # 每週更新表
+    # print(Myself.week_animate())
+
+    # 完結列表動漫資訊
+    # Myself.finish_list()
+
+    # 下載影片範例
     Myself.download_animate_simple_example()
